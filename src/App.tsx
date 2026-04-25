@@ -249,31 +249,31 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => (
   <div className="group relative cursor-pointer">
-    <div className="relative aspect-[1/1.2] overflow-hidden mb-8">
+    <div className="relative aspect-[4/5] overflow-hidden bg-[#f2f2f2] mb-4">
       <img 
         src={product.image} 
         alt={product.name} 
-        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+        className="w-full h-full object-contain p-4 md:p-8 mix-blend-multiply transition-transform duration-1000 group-hover:scale-110"
       />
       {product.soldOut && (
-        <div className="absolute top-0 left-0 bg-white/90 px-3 py-1 text-[9px] uppercase font-bold tracking-tight m-4 shadow-sm">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10">
           Sold Out
         </div>
       )}
       <button 
         onClick={(e) => { e.stopPropagation(); if(!product.soldOut) onAddToCart(product); }}
         disabled={product.soldOut}
-        className={`absolute bottom-8 left-8 right-8 py-4 bg-black text-white text-[10px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${product.soldOut ? 'hidden' : ''}`}
+        className={`absolute bottom-4 left-4 right-4 py-3 bg-black text-white text-[9px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${product.soldOut ? 'hidden' : ''}`}
       >
         Add to Bag
       </button>
     </div>
-    <div className="flex justify-between items-start px-2">
-      <div className="space-y-1">
-        <h4 className="text-[16px] font-black tracking-tight leading-tight uppercase">{product.name}</h4>
-        {product.colors && <p className="text-[11px] text-gray-400 font-bold tracking-widest uppercase">{product.colors[0]}</p>}
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-baseline">
+        <h4 className="text-[12px] md:text-[13px] font-black tracking-tight leading-tight uppercase">{product.name}</h4>
+        <p className="text-[13px] font-black tracking-tighter shrink-0 ml-4">৳{product.price.toLocaleString()}</p>
       </div>
-      <p className="text-[18px] font-black tracking-tighter shrink-0 ml-4">৳{product.price.toLocaleString()}</p>
+      {product.colors && <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">{product.colors.length} In Colors</p>}
     </div>
   </div>
 );
@@ -561,7 +561,7 @@ export default function App() {
             <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">New Arrivals</h2>
             <div className="w-16 h-1 bg-black mx-auto" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 md:gap-x-12 gap-y-24 md:gap-y-32">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 md:gap-x-4 gap-y-16 md:gap-y-24">
             {products.map(product => (
               <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
             ))}
