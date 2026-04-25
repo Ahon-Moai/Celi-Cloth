@@ -1,6 +1,6 @@
 {
-  "name": "Celifoto E-commerce",
-  "description": "High-performance, SEO-optimized e-commerce platform for Celifoto with static product serving and Firebase-powered order management.",
+  "name": "Wrongs & Rebels Apparel",
+  "description": "Premium e-commerce experience for Wrongs & Rebels featuring immersive 3D hero interactions, real-time order tracking, and a technical brutalist aesthetic.",
   "requestFramePermissions": [],
   "majorCapabilities": ["E-commerce", "Admin Dashboard", "Firebase Integration"]
 }

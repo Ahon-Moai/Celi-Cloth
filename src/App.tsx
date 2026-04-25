@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
@@ -175,46 +175,103 @@ const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], on
 
 // --- Shop Sections ---
 
-const Hero = () => (
-  <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-    <div className="absolute inset-0">
-      <img 
-        src="https://www.image2url.com/r2/default/images/1777093846446-9c04cdcc-61e4-45ca-a34b-28c37a84bdeb.png" 
-        alt="Wrongs & Rebels Hero" 
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute inset-0 bg-black/10" />
-    </div>
-    
-    <div className="absolute bottom-16 left-10 md:left-24 text-white space-y-6">
-      <motion.p 
-        initial={{ opacity: 0, x: -20 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-lg font-bold uppercase tracking-tight"
-      >
-        SPRING'26
-      </motion.p>
-      <motion.h2 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-3xl md:text-5xl font-black tracking-tight uppercase leading-[0.9]"
-      >
-        COLLECTION IS LIVE
-      </motion.h2>
+const Hero = () => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 25 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 25 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <section 
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black"
+      style={{ perspective: "1500px" }}
+    >
       <motion.div 
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 0.6 }}
-        className="flex gap-10 text-[18px] md:text-xl font-bold tracking-tight uppercase"
+        style={{ 
+          rotateX, 
+          rotateY,
+          scale: 1.1,
+          transformStyle: "preserve-3d"
+        }}
+        className="absolute inset-0 w-full h-full transition-transform duration-100 ease-out"
       >
-        <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Surf Spring'26</a>
-        <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Shop Now</a>
+        <img 
+          src="https://www.image2url.com/r2/default/images/1777093846446-9c04cdcc-61e4-45ca-a34b-28c37a84bdeb.png" 
+          alt="Wrongs & Rebels Hero" 
+          className="w-full h-full object-cover select-none pointer-events-none"
+        />
+        <div className="absolute inset-0 bg-black/20" />
+        
+        {/* Dynamic Light Shine */}
+        <motion.div 
+          style={{
+            background: useTransform(
+              [mouseXSpring, mouseYSpring],
+              ([x, y]) => `radial-gradient(circle at ${((x as number) + 0.5) * 100}% ${((y as number) + 0.5) * 100}%, rgba(255,255,255,0.15) 0%, transparent 60%)`
+            ),
+          }}
+          className="absolute inset-0 pointer-events-none"
+        />
       </motion.div>
-    </div>
-  </section>
-);
+      
+      <div 
+        className="absolute bottom-16 left-10 md:left-24 text-white space-y-6 pointer-events-none"
+        style={{ transform: "translateZ(80px)" }}
+      >
+        <motion.p 
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-lg font-bold uppercase tracking-tight"
+        >
+          SPRING'26
+        </motion.p>
+        <motion.h2 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-3xl md:text-5xl font-black tracking-tight uppercase leading-[0.9]"
+        >
+          COLLECTION IS LIVE
+        </motion.h2>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="flex gap-10 text-[18px] md:text-xl font-bold tracking-tight uppercase pointer-events-auto"
+        >
+          <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Surf Spring'26</a>
+          <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Shop Now</a>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
 
 const Categories = () => (
   <section className="grid grid-cols-1 md:grid-cols-3 w-full h-[90vh] md:h-[100vh]">
