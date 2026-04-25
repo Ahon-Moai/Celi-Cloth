@@ -1,0 +1,6 @@
+{
+  "name": "Celifoto E-commerce",
+  "description": "High-performance, SEO-optimized e-commerce platform for Celifoto with static product serving and Firebase-powered order management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["E-commerce", "Admin Dashboard", "Firebase Integration"]
+}

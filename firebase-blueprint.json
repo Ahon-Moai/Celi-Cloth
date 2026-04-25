@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Order",
+      "description": "A customer order for products.",
+      "type": "object",
+      "properties": {
+        "customerInfo": {
+          "type": "object",
+          "properties": {
+            "fullName": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" },
+            "city": { "type": "string" }
+          },
+          "required": ["fullName", "email", "phone", "address", "city"]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "name": { "type": "string" },
+              "price": { "type": "number" },
+              "quantity": { "type": "number" },
+              "selectedSize": { "type": "string" },
+              "selectedColor": { "type": "string" }
+            }
+          }
+        },
+        "totalAmount": { "type": "number" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "confirmed", "shipped", "delivered", "cancelled"]
+        },
+        "paymentMethod": { "type": "string", "enum": ["COD"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerInfo", "items", "totalAmount", "status", "paymentMethod", "createdAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "System administrator with access to the dashboard.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin"] }
+      }
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of customer orders."
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Authorized administrators."
+    }
+  }
+}
