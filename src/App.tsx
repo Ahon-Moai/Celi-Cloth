@@ -18,7 +18,7 @@ const Ticker = () => (
     >
       {[...Array(20)].map((_, i) => (
         <span key={i} className="mx-12 uppercase tracking-widest font-medium">
-          Celifoto™ · SPRING '26 · LIVE NOW · CELIFOTO CLOTHING · LIMITED EDITION · ৳ 1,500 FAST SHIPPING
+          Wrongs & Rebels™ · SPRING '26 · LIVE NOW · WRONGS & REBELS CLOTHING · LIMITED EDITION · ৳ 1,399 FAST SHIPPING
         </span>
       ))}
     </motion.div>
@@ -35,32 +35,25 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin }: { cartCount: nu
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-40 transition-all duration-500 ${isScrolled ? 'top-0' : 'top-10 md:top-12'}`}>
-      <div className={`w-full transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md text-black py-4 shadow-sm' : 'bg-transparent text-white py-8'}`}>
+    <nav className={`fixed top-0 left-0 w-full z-40 transition-all duration-500`}>
+      <div className={`w-full transition-all duration-300 ${isScrolled ? 'bg-black text-white py-4 shadow-sm' : 'bg-transparent text-white py-8'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
+          <div className="flex gap-10 text-[11px] font-bold tracking-[0.1em] uppercase">
             <a href="#" className="hover:opacity-50 transition-opacity">Shop</a>
             <a href="#" className="hover:opacity-50 transition-opacity">Collections</a>
           </div>
-          
-          <div className="md:hidden">
-            <Menu className="w-5 h-5 cursor-pointer" />
-          </div>
 
           <div className="absolute left-1/2 -translate-x-1/2">
-            <h1 className="text-xl md:text-2xl font-black tracking-[0.3em] uppercase">Celifoto</h1>
+            <h1 className="text-xl md:text-2xl font-black tracking-[-0.02em] uppercase">Wrongs & Rebels<span className="text-[10px] align-top">™</span></h1>
           </div>
 
           <div className="flex items-center gap-6">
+            <User className={`w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : ''}`} onClick={onOpenAdmin} />
             <Search className="w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity" />
-            <div className="relative group" onClick={onOpenAdmin}>
-              <User className={`w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : ''}`} />
-              {isAdmin && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
-            </div>
             <div className="relative cursor-pointer group" onClick={onOpenCart}>
               <ShoppingBag className="w-5 h-5 group-hover:opacity-50 transition-opacity" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full border border-white font-bold">
+                <span className="absolute -top-1 -right-1 bg-white text-black text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-sm font-bold">
                   {cartCount}
                 </span>
               )}
@@ -182,41 +175,41 @@ const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], on
 // --- Shop Sections ---
 
 const Hero = () => (
-  <section className="relative h-[100vh] w-full flex items-center justify-center overflow-hidden">
+  <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
     <div className="absolute inset-0">
       <img 
-        src="https://images.unsplash.com/photo-1445205170230-053b830c6039?q=80&w=2000&auto=format&fit=crop" 
-        alt="Hero Fashion" 
+        src="http://image2url.com/r2/default/images/1776600681990-ed5afaaf-419c-4cae-9ae8-d7bc87ed7eff.jpg" 
+        alt="Wrongs & Rebels Hero" 
         className="w-full h-full object-cover"
       />
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/20" />
     </div>
     
-    <div className="relative z-10 text-center text-white space-y-4 px-6 mt-20">
+    <div className="absolute bottom-16 left-10 md:left-24 text-white space-y-6">
       <motion.p 
-        initial={{ opacity: 0, tracking: '0.5em' }}
-        whileInView={{ opacity: 1, tracking: '0.3em' }}
-        transition={{ duration: 1 }}
-        className="text-xs md:text-sm font-medium uppercase"
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-lg font-bold uppercase tracking-tight"
       >
-        Spring '26
+        SPRING'26
       </motion.p>
       <motion.h2 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-5xl md:text-8xl font-black tracking-tight uppercase leading-[0.9]"
+        className="text-3xl md:text-5xl font-black tracking-tight uppercase leading-[0.9]"
       >
-        Collection <br /> is Live
+        COLLECTION IS LIVE
       </motion.h2>
       <motion.div 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.6 }}
-        className="flex flex-wrap justify-center gap-8 pt-8 text-[11px] md:text-xs font-bold tracking-[0.2em] uppercase"
+        className="flex gap-10 text-[18px] md:text-xl font-bold tracking-tight uppercase"
       >
-        <a href="#" className="border-b border-white pb-1 hover:border-white/50 transition-all">Surf Spring '26</a>
-        <a href="#" className="border-b border-white pb-1 hover:border-white/50 transition-all">Shop Now</a>
+        <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Surf Spring'26</a>
+        <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Shop Now</a>
       </motion.div>
     </div>
   </section>
@@ -254,39 +247,34 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 40 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-100px" }}
-    className="group relative cursor-pointer"
-  >
-    <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
+  <div className="group relative cursor-pointer">
+    <div className="relative aspect-[1/1.2] overflow-hidden mb-8">
       <img 
         src={product.image} 
         alt={product.name} 
         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
       />
       {product.soldOut && (
-        <div className="absolute top-4 left-4 bg-white px-3 py-1 text-[10px] uppercase font-black tracking-[0.2em] shadow-sm">
+        <div className="absolute top-0 left-0 bg-white/90 px-3 py-1 text-[9px] uppercase font-bold tracking-tight m-4 shadow-sm">
           Sold Out
         </div>
       )}
       <button 
         onClick={(e) => { e.stopPropagation(); if(!product.soldOut) onAddToCart(product); }}
         disabled={product.soldOut}
-        className={`absolute bottom-0 left-0 w-full py-4 bg-black text-white text-[11px] uppercase font-black tracking-[0.3em] transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-10 ${product.soldOut ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-900'}`}
+        className={`absolute bottom-8 left-8 right-8 py-4 bg-black text-white text-[10px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${product.soldOut ? 'hidden' : ''}`}
       >
         Add to Bag
       </button>
     </div>
-    <div className="mt-6 flex justify-between items-start px-1">
-      <div className="space-y-1.5 flex-1 pr-4">
-        <h4 className="text-[12px] md:text-[14px] font-bold tracking-tight leading-tight uppercase">{product.name}</h4>
-        {product.colors && <p className="text-[10px] text-gray-400 uppercase font-bold tracking-[0.1em]">{product.colors[0]}</p>}
+    <div className="flex justify-between items-start px-2">
+      <div className="space-y-1">
+        <h4 className="text-[16px] font-black tracking-tight leading-tight uppercase">{product.name}</h4>
+        {product.colors && <p className="text-[11px] text-gray-400 font-bold tracking-widest uppercase">{product.colors[0]}</p>}
       </div>
-      <p className="text-[13px] md:text-[15px] font-black tracking-tighter">৳{product.price.toLocaleString()}</p>
+      <p className="text-[18px] font-black tracking-tighter shrink-0 ml-4">৳{product.price.toLocaleString()}</p>
     </div>
-  </motion.div>
+  </div>
 );
 
 const Footer = () => (
@@ -307,7 +295,7 @@ const Footer = () => (
       </div>
       
       <div className="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium">
-        © 2026 - CELIFOTO APPAREL
+        © 2026 - WRONGS & REBELS APPAREL
       </div>
     </div>
   </footer>
@@ -573,7 +561,7 @@ export default function App() {
             <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">New Arrivals</h2>
             <div className="w-16 h-1 bg-black mx-auto" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-16 md:gap-y-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 md:gap-x-12 gap-y-24 md:gap-y-32">
             {products.map(product => (
               <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
             ))}
