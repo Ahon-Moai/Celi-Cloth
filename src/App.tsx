@@ -249,31 +249,31 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => (
   <div className="group relative cursor-pointer">
-    <div className="relative aspect-[4/5] overflow-hidden bg-[#f2f2f2] mb-4">
-      <img 
-        src={product.image} 
-        alt={product.name} 
-        className="w-full h-full object-contain p-4 md:p-8 mix-blend-multiply transition-transform duration-1000 group-hover:scale-110"
+    <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] mb-4">
+      <img
+        src={product.image}
+        alt={product.name}
+        className="w-full h-full object-contain mix-blend-multiply transition-transform duration-1000 group-hover:scale-105"
       />
       {product.soldOut && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10">
+        <div className="absolute top-0 left-0 bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10">
           Sold Out
         </div>
       )}
-      <button 
+      <button
         onClick={(e) => { e.stopPropagation(); if(!product.soldOut) onAddToCart(product); }}
         disabled={product.soldOut}
-        className={`absolute bottom-4 left-4 right-4 py-3 bg-black text-white text-[9px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${product.soldOut ? 'hidden' : ''}`}
+        className={`absolute bottom-4 left-4 right-4 py-4 bg-black text-white text-[9px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${product.soldOut ? 'hidden' : ''}`}
       >
         Add to Bag
       </button>
     </div>
-    <div className="space-y-1.5">
-      <div className="flex justify-between items-baseline">
-        <h4 className="text-[12px] md:text-[13px] font-black tracking-tight leading-tight uppercase">{product.name}</h4>
-        <p className="text-[13px] font-black tracking-tighter shrink-0 ml-4">৳{product.price.toLocaleString()}</p>
+    <div className="space-y-1 px-4 pb-4">
+      <div className="flex justify-between items-baseline gap-4">
+        <h4 className="text-[11px] md:text-[12px] font-black tracking-tight leading-tight uppercase truncate">{product.name}</h4>
+        <p className="text-[12px] md:text-[13px] font-black tracking-tighter shrink-0">৳{product.price.toLocaleString()}</p>
       </div>
-      {product.colors && <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">{product.colors.length} In Colors</p>}
+      {product.colors && <p className="text-[9px] text-gray-500 font-bold tracking-widest uppercase">{product.colors.length} In Colors</p>}
     </div>
   </div>
 );
@@ -555,18 +555,20 @@ export default function App() {
       <main>
         <Hero />
         <Categories />
-        <section className="max-w-7xl mx-auto px-6 py-32 md:py-48">
-          <div className="text-center mb-24 space-y-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Curated pieces</p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">New Arrivals</h2>
-            <div className="w-16 h-1 bg-black mx-auto" />
+        <section id="new-arrivals" className="py-24 md:py-32 bg-white">
+          <div className="w-full px-2 md:px-4">
+            <div className="text-center mb-24 space-y-4 px-6">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Curated pieces</p>
+              <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">New Arrivals</h2>
+              <div className="w-16 h-1 bg-black mx-auto" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 md:gap-x-1.5 gap-y-16 md:gap-y-24">
+              {products.map(product => (
+                <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 md:gap-x-4 gap-y-16 md:gap-y-24">
-            {products.map(product => (
-              <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
-            ))}
-          </div>
-          <div className="mt-32 flex justify-center">
+          <div className="mt-32 flex justify-center px-6">
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-16 py-5 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-black/20" > View All Products </motion.button>
           </div>
         </section>
