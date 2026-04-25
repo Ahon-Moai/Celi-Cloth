@@ -25,8 +25,9 @@ const Ticker = () => (
   </div>
 );
 
-const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean }) => {
+const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop') => void, currentPage: 'home' | 'shop' }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const isShop = currentPage === 'shop';
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -37,14 +38,14 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin }: { cartCount: nu
   return (
     <nav className="fixed top-0 left-0 w-full z-50">
       <Ticker />
-      <div className={`w-full transition-all duration-700 ${isScrolled ? 'bg-black/80 backdrop-blur-md text-white py-4 shadow-2xl' : 'bg-transparent text-white py-6 md:py-8'}`}>
+      <div className={`w-full transition-all duration-700 ${isScrolled || isShop ? 'bg-white/95 backdrop-blur-md text-black py-4 shadow-sm' : 'bg-transparent text-white py-6 md:py-8'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
-            <a href="#" className="hover:opacity-50 transition-opacity">Shop</a>
-            <a href="#" className="hover:opacity-50 transition-opacity">Collections</a>
+            <button onClick={() => setCurrentPage('shop')} className={`transition-opacity uppercase cursor-pointer ${isShop ? 'border-b-2 border-black' : 'hover:opacity-50'}`}>Shop</button>
+            <button onClick={() => setCurrentPage('home')} className="hover:opacity-50 transition-opacity uppercase cursor-pointer">Collections</button>
           </div>
 
-          <div className="md:absolute md:left-1/2 md:-translate-x-1/2">
+          <div className="md:absolute md:left-1/2 md:-translate-x-1/2 cursor-pointer" onClick={() => setCurrentPage('home')}>
             <h1 className="text-xl md:text-3xl font-black tracking-[-0.05em] uppercase pointer-events-none">Wrongs & Rebels<span className="text-[10px] align-top">™</span></h1>
           </div>
 
@@ -53,7 +54,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin }: { cartCount: nu
             <div className="relative cursor-pointer group" onClick={onOpenCart}>
               <ShoppingBag className="w-5 h-5 group-hover:opacity-50 transition-opacity" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-white text-black text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-sm font-black">
+                <span className={`absolute -top-1 -right-1 text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-sm font-black ${isScrolled || isShop ? 'bg-black text-white' : 'bg-white text-black'}`}>
                   {cartCount}
                 </span>
               )}
@@ -226,17 +227,6 @@ const Hero = () => {
           className="w-full h-full object-cover select-none pointer-events-none"
         />
         <div className="absolute inset-0 bg-black/20" />
-        
-        {/* Dynamic Light Shine */}
-        <motion.div 
-          style={{
-            background: useTransform(
-              [mouseXSpring, mouseYSpring],
-              ([x, y]) => `radial-gradient(circle at ${((x as number) + 0.5) * 100}% ${((y as number) + 0.5) * 100}%, rgba(255,255,255,0.15) 0%, transparent 60%)`
-            ),
-          }}
-          className="absolute inset-0 pointer-events-none"
-        />
       </motion.div>
       
       <div 
@@ -305,12 +295,13 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => (
-  <div className="group relative cursor-pointer">
-    <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] mb-4">
-      <img
-        src={product.image}
+  <div className="group relative cursor-pointer w-full">
+    <div className="relative w-full aspect-[3/4] md:aspect-auto md:h-[470px] overflow-hidden bg-gray-100 mb-4 border border-gray-50">
+      <img 
+        src={product.image} 
         alt={product.name}
-        className="w-full h-full object-contain mix-blend-multiply transition-transform duration-1000 group-hover:scale-105"
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        referrerPolicy="no-referrer"
       />
       {product.soldOut && (
         <div className="absolute top-0 left-0 bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10">
@@ -325,12 +316,12 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => (
         Add to Bag
       </button>
     </div>
-    <div className="space-y-1 px-4 pb-4">
-      <div className="flex justify-between items-baseline gap-4">
-        <h4 className="text-[11px] md:text-[12px] font-black tracking-tight leading-tight uppercase truncate">{product.name}</h4>
-        <p className="text-[12px] md:text-[13px] font-black tracking-tighter shrink-0">৳{product.price.toLocaleString()}</p>
+    <div className="space-y-1 px-2 md:px-4 pb-4">
+      <div className="flex justify-between items-baseline gap-2">
+        <h4 className="text-[10px] md:text-[11px] font-black tracking-tight leading-tight uppercase truncate">{product.name}</h4>
+        <p className="text-[11px] md:text-[12px] font-black tracking-tighter shrink-0">৳{product.price.toLocaleString()}</p>
       </div>
-      {product.colors && <p className="text-[9px] text-gray-500 font-bold tracking-widest uppercase">{product.colors.length} In Colors</p>}
+      {product.colors && <p className="text-[8px] text-gray-500 font-bold tracking-widest uppercase">{product.colors.length} In Colors</p>}
     </div>
   </div>
 );
@@ -505,9 +496,64 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
   );
 };
 
+const ShopPage = ({ onAddToCart }: { onAddToCart: (p: Product) => void }) => {
+  const categories = ["All", "New Arrivals", "Tops", "T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Jackets", "Shackets", "Sweaters", "Beanies"];
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const filteredProducts = products.filter(product => {
+    if (activeCategory === "All") return true;
+    if (activeCategory === "New Arrivals") return product.isNewArrival;
+    return product.category === activeCategory;
+  });
+
+  return (
+    <div className="pt-32 md:pt-40 bg-white min-h-screen">
+      <div className="w-full px-4 md:px-8 mb-12">
+        <div className="flex items-baseline gap-2 mb-8">
+          <h2 className="text-xl md:text-2xl font-bold uppercase tracking-tight">All Collections</h2>
+          <span className="text-[10px] text-gray-400 font-bold align-top">{products.length}</span>
+        </div>
+        
+        <div className="flex flex-wrap gap-x-6 gap-y-4 mb-20 scrollbar-hide overflow-x-auto pb-2 whitespace-nowrap">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer ${activeCategory === cat ? 'text-black border-b border-black pb-1' : 'text-gray-400 hover:text-black pb-1'}`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-full px-0">
+        <div className="flex flex-wrap justify-between gap-y-12">
+          {filteredProducts.map(product => (
+            <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%]">
+              <ProductCard product={product} onAddToCart={onAddToCart} />
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination placeholder as seen in screenshot */}
+        <div className="py-20 flex justify-center items-center gap-6">
+          <div className="flex gap-4">
+            <button className="text-[12px] font-black border-b-2 border-black pb-1">1</button>
+            <button className="text-[12px] font-black text-gray-300 hover:text-black">2</button>
+            <button className="text-[12px] font-black text-gray-300 hover:text-black">3</button>
+          </div>
+          <button className="text-gray-300 hover:text-black">&gt;</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- App Component ---
 
 export default function App() {
+  const [currentPage, setCurrentPage] = useState<'home' | 'shop'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -607,28 +653,47 @@ export default function App() {
         onOpenCart={() => setIsCartOpen(true)} 
         onOpenAdmin={toggleAdmin}
         isAdmin={isAdmin}
+        setCurrentPage={setCurrentPage}
+        currentPage={currentPage}
       />
       
       <main>
-        <Hero />
-        <Categories />
-        <section id="new-arrivals" className="py-24 md:py-32 bg-white">
-          <div className="w-full px-2 md:px-4">
-            <div className="text-center mb-24 space-y-4 px-6">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Curated pieces</p>
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">New Arrivals</h2>
-              <div className="w-16 h-1 bg-black mx-auto" />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 md:gap-x-1.5 gap-y-16 md:gap-y-24">
-              {products.map(product => (
-                <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
-              ))}
-            </div>
-          </div>
-          <div className="mt-32 flex justify-center px-6">
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-16 py-5 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-black/20" > View All Products </motion.button>
-          </div>
-        </section>
+        {currentPage === 'home' ? (
+          <>
+            <Hero />
+            <Categories />
+            <section id="new-arrivals" className="py-24 md:py-32 bg-white px-0">
+              <div className="w-full">
+                <div className="text-center mb-24 space-y-4 px-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Curated pieces</p>
+                  <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">New Arrivals</h2>
+                  <div className="w-16 h-1 bg-black mx-auto" />
+                </div>
+                <div className="w-full px-0">
+                  <div className="flex flex-wrap justify-between gap-y-12">
+                    {products.slice(0, 5).map(product => (
+                      <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%]">
+                        <ProductCard product={product} onAddToCart={addToCart} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-32 flex justify-center px-6">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }} 
+                  whileTap={{ scale: 0.95 }} 
+                  onClick={() => setCurrentPage('shop')}
+                  className="px-16 py-5 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-black/20" 
+                > 
+                  View All Products 
+                </motion.button>
+              </div>
+            </section>
+          </>
+        ) : (
+          <ShopPage onAddToCart={addToCart} />
+        )}
       </main>
 
       <Footer />
