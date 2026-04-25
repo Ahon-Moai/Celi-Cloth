@@ -1,64 +1,41 @@
 {
   "entities": {
     "Order": {
-      "title": "Order",
-      "description": "A customer order for products.",
+      "title": "Customer Order",
+      "description": "Represents a purchase made by a customer.",
       "type": "object",
       "properties": {
-        "customerInfo": {
-          "type": "object",
-          "properties": {
-            "fullName": { "type": "string" },
-            "email": { "type": "string", "format": "email" },
-            "phone": { "type": "string" },
-            "address": { "type": "string" },
-            "city": { "type": "string" }
-          },
-          "required": ["fullName", "email", "phone", "address", "city"]
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "productId": { "type": "string" },
-              "name": { "type": "string" },
-              "price": { "type": "number" },
-              "quantity": { "type": "number" },
-              "selectedSize": { "type": "string" },
-              "selectedColor": { "type": "string" }
-            }
-          }
-        },
+        "items": { "type": "array" },
         "totalAmount": { "type": "number" },
-        "status": {
-          "type": "string",
-          "enum": ["pending", "confirmed", "shipped", "delivered", "cancelled"]
-        },
-        "paymentMethod": { "type": "string", "enum": ["COD"] },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" }
+        "status": { "type": "string", "enum": ["pending", "confirmed", "shipped", "delivered", "cancelled"] },
+        "customerInfo": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["customerInfo", "items", "totalAmount", "status", "paymentMethod", "createdAt"]
+      "required": ["items", "totalAmount", "status", "customerInfo", "createdAt"]
     },
-    "Admin": {
-      "title": "Admin",
-      "description": "System administrator with access to the dashboard.",
+    "Product": {
+      "title": "Product Entity",
+      "description": "Represents a product in the catalog.",
       "type": "object",
       "properties": {
-        "email": { "type": "string", "format": "email" },
-        "role": { "type": "string", "enum": ["admin"] }
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "image": { "type": "string" },
+        "description": { "type": "string" },
+        "soldOut": { "type": "boolean" },
+        "isNewArrival": { "type": "boolean" }
       }
     }
   },
   "firestore": {
     "/orders/{orderId}": {
       "schema": "Order",
-      "description": "Collection of customer orders."
+      "description": "Storage for all customer transactions."
     },
-    "/admins/{adminId}": {
-      "schema": "Admin",
-      "description": "Authorized administrators."
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Storage for the product catalog."
     }
   }
 }

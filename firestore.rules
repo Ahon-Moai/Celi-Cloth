@@ -1,44 +1,25 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'mimpy124ahon124@gmail.com'; }
+    
     // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
-    }
-
-    function isValidOrder(data) {
-      return data.customerInfo is map &&
-             data.customerInfo.fullName is string && data.customerInfo.fullName.size() <= 100 &&
-             data.customerInfo.email is string && data.customerInfo.email.size() <= 100 &&
-             data.customerInfo.phone is string && data.customerInfo.phone.size() <= 20 &&
-             data.customerInfo.address is string && data.customerInfo.address.size() <= 500 &&
-             data.customerInfo.city is string && data.customerInfo.city.size() <= 50 &&
-             data.items is list && data.items.size() > 0 &&
-             data.totalAmount is number &&
-             data.paymentMethod == 'COD' &&
-             data.status == 'pending';
-    }
-
-    // Orders: Anyone can create an order, but only admins can read or update them.
+    // Orders Collection
     match /orders/{orderId} {
-      allow create: if isValidOrder(request.resource.data) &&
-                      request.resource.data.createdAt == request.time;
-      allow read, update, delete: if isAdmin();
+      allow create: if true; 
+      allow read, list, update, delete: if isAdmin();
     }
 
-    // Admins: Read-only (populated manually or via secure process)
-    match /admins/{adminId} {
-      allow read: if isSignedIn() && request.auth.uid == adminId;
-      allow write: if false; // Only manageable via Firebase Console or Admin SDK
+    // Products Collection
+    match /products/{productId} {
+      allow read, list: if true;
+      allow write: if isAdmin();
     }
   }
 }

@@ -4,16 +4,16 @@ import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, Exter
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 
-const ProductView = ({ product, onAddToCart, onBack }: { product: Product, onAddToCart: (p: Product) => void, onBack: () => void }) => {
+const ProductView = ({ product, productsList, onAddToCart, onBack }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
   const [activeTab, setActiveTab] = useState('Recommended');
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
   const unavailableSizes = ['XS', 'XL'];
 
-  const relatedProducts = products.filter(p => p.id !== product.id).slice(0, 8);
+  const relatedProducts = productsList.filter(p => p.id !== product.id).slice(0, 8);
 
   return (
     <div className="bg-white min-h-screen pt-20 md:pt-32">
@@ -233,11 +233,114 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
   );
 };
 
-const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], onUpdateStatus: (id: string, s: string) => void, onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'inventory'>('orders');
+const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, onDeleteProduct, onClose }: { orders: any[], productsList: Product[], onUpdateStatus: (id: string, s: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onClose: () => void }) => {
+  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'json'>('orders');
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [jsonInput, setJsonInput] = useState('');
+
+  const [productForm, setProductForm] = useState({
+    name: '',
+    price: 0,
+    category: 'T-shirts',
+    image: '',
+    description: '',
+    isNewArrival: true,
+    soldOut: false
+  });
+
+  const handleOpenAddModal = () => {
+    setEditingProduct(null);
+    setProductForm({ name: '', price: 0, category: 'T-shirts', image: '', description: '', isNewArrival: true, soldOut: false });
+    setIsProductModalOpen(true);
+  };
+
+  const handleOpenEditModal = (p: Product) => {
+    setEditingProduct(p);
+    setProductForm({ 
+      name: p.name, 
+      price: p.price, 
+      category: p.category, 
+      image: p.image, 
+      description: p.description || '', 
+      isNewArrival: p.isNewArrival || false, 
+      soldOut: p.soldOut || false 
+    });
+    setIsProductModalOpen(true);
+  };
+
+  const handleSubmitProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAddProduct({ ...productForm, id: editingProduct?.id });
+    setIsProductModalOpen(false);
+  };
+
+  const handleBulkImport = () => {
+    try {
+      const data = JSON.parse(jsonInput);
+      if (Array.isArray(data)) {
+        data.forEach(p => onAddProduct(p));
+        alert('Bulk synchronization initialized.');
+        setJsonInput('');
+      }
+    } catch (e) {
+      alert('Invalid JSON structure.');
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[300] bg-gray-50 flex flex-col md:flex-row overflow-hidden">
+      <AnimatePresence>
+        {isProductModalOpen && (
+          <div className="fixed inset-0 z-[400] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsProductModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-white w-full max-w-xl p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
+              <h3 className="text-xl font-black uppercase tracking-widest mb-8">{editingProduct ? 'Edit Article' : 'New Article'}</h3>
+              <form onSubmit={handleSubmitProduct} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Article Title</label>
+                  <input required type="text" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Value (৳)</label>
+                    <input required type="number" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.price || ''} onChange={e => setProductForm({...productForm, price: parseInt(e.target.value) || 0})} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Class</label>
+                    <select className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold uppercase" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})}>
+                      {["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"].map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visual URL</label>
+                  <input required type="url" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.image} onChange={e => setProductForm({...productForm, image: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Design Specifications</label>
+                  <textarea rows={3} className="w-full border border-gray-100 p-4 text-sm outline-none focus:border-black resize-none" value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} />
+                </div>
+                <div className="flex gap-10 pt-4">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" checked={productForm.isNewArrival} onChange={e => setProductForm({...productForm, isNewArrival: e.target.checked})} className="w-4 h-4 accent-black" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black transition-colors">Manifesto Peak</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" checked={productForm.soldOut} onChange={e => setProductForm({...productForm, soldOut: e.target.checked})} className="w-4 h-4 accent-red-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-red-500 transition-colors">Depleted</span>
+                  </label>
+                </div>
+                <div className="flex gap-4 pt-10">
+                  <button type="submit" className="flex-1 bg-black text-white py-5 text-[10px] font-black uppercase tracking-widest">{editingProduct ? 'Commit Changes' : 'Initialize Article'}</button>
+                  <button type="button" onClick={() => setIsProductModalOpen(false)} className="px-8 border border-gray-100 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50">Abort</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <div className="w-full md:w-64 bg-black text-white p-8 flex flex-col justify-between">
         <div className="space-y-12">
           <div className="flex items-center justify-between">
@@ -261,6 +364,13 @@ const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], on
                 <ShoppingBag className="w-4 h-4" /> 
                 INVENTORY
               </button>
+              <button 
+                onClick={() => setActiveTab('json')}
+                className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'json' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
+              >
+                <ExternalLink className="w-4 h-4" /> 
+                JSON PORTAL
+              </button>
             </nav>
           </div>
         </div>
@@ -280,15 +390,27 @@ const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], on
       <div className="flex-1 overflow-y-auto p-6 md:p-12 pb-32">
         <div className="flex items-center justify-between mb-12">
           <div className="space-y-1">
-            <h1 className="text-3xl font-black uppercase tracking-tight">{activeTab === 'orders' ? 'Live Orders' : 'Store Inventory'}</h1>
+            <h1 className="text-3xl font-black uppercase tracking-tight">
+              {activeTab === 'orders' ? 'Live Orders' : activeTab === 'inventory' ? 'Store Inventory' : 'JSON Repository'}
+            </h1>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">Real-time administration suite</p>
           </div>
-          <button onClick={onClose} className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] bg-black text-white px-6 py-3 shadow-xl shadow-black/20 hover:scale-105 transition-transform">
-            Return to Store <ExternalLink className="w-3 h-3" />
-          </button>
+          <div className="flex items-center gap-4">
+            {activeTab === 'inventory' && (
+              <button 
+                onClick={handleOpenAddModal}
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] bg-white border border-black text-black px-6 py-3 hover:bg-black hover:text-white transition-all shadow-xl shadow-black/5"
+              >
+                Insert Article <Plus className="w-3 h-3" />
+              </button>
+            )}
+            <button onClick={onClose} className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] bg-black text-white px-6 py-3 shadow-xl shadow-black/20 hover:scale-105 transition-transform">
+              Return to Store <ExternalLink className="w-3 h-3" />
+            </button>
+          </div>
         </div>
 
-        {activeTab === 'orders' ? (
+        {activeTab === 'orders' && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
               <div className="bg-white p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
@@ -315,6 +437,18 @@ const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], on
             </div>
 
             <div className="bg-white border border-gray-100 overflow-x-auto rounded-sm">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex gap-4">
+                  {['all', 'pending', 'confirmed', 'shipped'].map(filter => (
+                    <button key={filter} className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${filter === 'all' ? 'bg-black text-white' : 'text-gray-400 border-gray-100 hover:border-black hover:text-black'}`}>
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+                <button className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:opacity-50 transition-opacity">
+                  Export CSV <ExternalLink className="w-3 h-3" />
+                </button>
+              </div>
               <table className="w-full text-left">
                 <thead className="bg-gray-50 border-b border-gray-100 text-[10px] uppercase font-black tracking-[0.2em] text-gray-400">
                   <tr>
@@ -371,9 +505,11 @@ const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], on
               {orders.length === 0 && <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">System Idle - No Data</div>}
             </div>
           </>
-        ) : (
+        )}
+
+        {activeTab === 'inventory' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {products.map(product => (
+            {productsList.map(product => (
               <div key={product.id} className="bg-white border border-gray-100 p-6 flex flex-col group hover:shadow-2xl transition-all duration-700">
                 <div className="aspect-[4/5] bg-gray-50 mb-6 overflow-hidden relative">
                   <img src={product.image} className={`w-full h-full object-cover transition-all duration-700 ${product.soldOut ? 'grayscale scale-105 opacity-50' : 'group-hover:scale-110'}`} alt={product.name} />
@@ -391,15 +527,56 @@ const AdminDashboard = ({ orders, onUpdateStatus, onClose }: { orders: any[], on
                     </div>
                     <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">{product.category}</p>
                   </div>
-                  <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
+                  <div className="pt-6 border-t border-gray-50 flex items-center justify-between gap-4">
                     <span className={`text-[9px] font-black uppercase tracking-widest ${product.soldOut ? 'text-red-500' : 'text-green-500'}`}>
                       {product.soldOut ? 'Depleted' : 'Active'}
                     </span>
-                    <button className="text-[9px] font-black uppercase tracking-widest border-b border-black pb-1 hover:opacity-50 transition-opacity">Update State</button>
+                    <div className="flex gap-4">
+                      <button onClick={() => handleOpenEditModal(product)} className="text-[9px] font-black uppercase tracking-widest border-b border-black pb-1 hover:opacity-50 transition-opacity">Edit</button>
+                      <button onClick={() => onDeleteProduct(product.id)} className="text-[9px] font-black uppercase tracking-widest border-b border-red-500 text-red-500 pb-1 hover:opacity-50 transition-opacity">Delete</button>
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'json' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Actual Representation</h3>
+                <button 
+                  onClick={() => {navigator.clipboard.writeText(JSON.stringify(productsList, null, 2)); alert('Copied to clipboard');}}
+                  className="text-[9px] font-black uppercase border border-black px-4 py-2 hover:bg-black hover:text-white transition-all"
+                >
+                  Download Current JSON
+                </button>
+              </div>
+              <div className="bg-black text-green-500 p-8 rounded-sm font-mono text-[10px] h-[500px] overflow-auto border border-white/10 shadow-2xl">
+                <pre>{JSON.stringify(productsList, null, 2)}</pre>
+              </div>
+              <p className="text-[10px] font-black text-gray-400 uppercase leading-loose">
+                Copy this content and overwrite your <code>src/data/products.json</code> file to finalize your site updates for visitors.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Sync Channel</h3>
+              <textarea 
+                placeholder="PASTE JSON HERE FOR BULK SYNCHRONIZATION"
+                className="w-full bg-white border border-gray-100 p-8 font-mono text-[10px] h-[500px] outline-none focus:border-black shadow-inner"
+                value={jsonInput}
+                onChange={e => setJsonInput(e.target.value)}
+              />
+              <button 
+                onClick={handleBulkImport}
+                className="w-full bg-black text-white py-6 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-gray-900 transition-all shadow-xl shadow-black/10"
+              >
+                Execute Bulk Sync
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -732,11 +909,11 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
   );
 };
 
-const ShopPage = ({ onAddToCart, onProductClick }: { onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void }) => {
+const ShopPage = ({ productsList, onAddToCart, onProductClick }: { productsList: Product[], onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void }) => {
   const categories = ["All", "New Arrivals", "Tops", "T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Jackets", "Shackets", "Sweaters", "Beanies"];
   const [activeCategory, setActiveCategory] = useState("All");
 
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = productsList.filter(product => {
     if (activeCategory === "All") return true;
     if (activeCategory === "New Arrivals") return product.isNewArrival;
     return product.category === activeCategory;
@@ -815,25 +992,46 @@ export default function App() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
+  const [productsList, setProductsList] = useState<Product[]>(products);
 
   // Auth State
   useEffect(() => {
-    return onAuthStateChanged(auth, async (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       // For this app, any authenticated user can view admin dashboard for demo purposes
       // In production, we'd check against an 'admins' collection
       setIsAdmin(!!user);
       if (!user) setIsAdminMode(false);
     });
+
+    return () => unsubscribeAuth();
   }, []);
 
-  // Listen to Orders
+  // Listen to Orders and Products
   useEffect(() => {
+    let unsubscribeOrders = () => {};
+    let unsubscribeProducts = () => {};
+
     if (isAdmin) {
-      const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-      return onSnapshot(q, (snapshot) => {
+      const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+      unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
         setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
+
+      const qProducts = query(collection(db, 'products'));
+      unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
+        if (!snapshot.empty) {
+          const fbProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+          setProductsList(fbProducts);
+        } else {
+          setProductsList(products);
+        }
+      });
     }
+
+    return () => {
+      unsubscribeOrders();
+      unsubscribeProducts();
+    };
   }, [isAdmin]);
 
   const toggleAdmin = async () => {
@@ -860,6 +1058,36 @@ export default function App() {
     }
   };
 
+  const addOrUpdateProduct = async (p: any) => {
+    try {
+      if (p.id) {
+        const { id, ...rest } = p;
+        const cleanData = Object.fromEntries(
+          Object.entries(rest).filter(([_, v]) => v !== undefined)
+        );
+        await setDoc(doc(db, 'products', id), cleanData);
+      } else {
+        const { id, ...rest } = p;
+        const cleanData = Object.fromEntries(
+          Object.entries(rest).filter(([_, v]) => v !== undefined)
+        );
+        await addDoc(collection(db, 'products'), { ...cleanData, createdAt: serverTimestamp() });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    if (window.confirm('Terminate this article from inventory?')) {
+      try {
+        await deleteDoc(doc(db, 'products', id));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
   const addToCart = (product: Product) => {
     setCart(prev => {
       const existing = prev.find(i => i.id === product.id);
@@ -876,7 +1104,7 @@ export default function App() {
   };
 
   if (isAdminMode && isAdmin) {
-    return <AdminDashboard orders={orders} onUpdateStatus={updateOrderStatus} onClose={() => setIsAdminMode(false)} />;
+    return <AdminDashboard orders={orders} productsList={productsList} onUpdateStatus={updateOrderStatus} onAddProduct={addOrUpdateProduct} onDeleteProduct={deleteProduct} onClose={() => setIsAdminMode(false)} />;
   }
 
   if (orderSuccess) {
@@ -931,7 +1159,7 @@ export default function App() {
                 </div>
                 <div className="w-full px-0">
                   <div className="flex flex-wrap justify-between gap-y-12">
-                    {products.slice(0, 5).map(product => (
+                    {productsList.slice(0, 5).map(product => (
                       <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%]">
                         <ProductCard product={product} onAddToCart={addToCart} onClick={handleProductClick} />
                       </div>
@@ -952,11 +1180,12 @@ export default function App() {
             </section>
           </>
         ) : currentPage === 'shop' ? (
-          <ShopPage onAddToCart={addToCart} onProductClick={handleProductClick} />
+          <ShopPage productsList={productsList} onAddToCart={addToCart} onProductClick={handleProductClick} />
         ) : (
           selectedProduct && (
             <ProductView 
               product={selectedProduct} 
+              productsList={productsList}
               onAddToCart={addToCart} 
               onBack={() => setCurrentPage('shop')} 
             />

@@ -5,9 +5,16 @@ export interface Product {
   currency: string;
   category: string;
   image: string;
+  gallery?: string[];
   colors?: string[];
-  soldOut?: boolean;
+  sizes?: string[];
+  description?: string;
+  details?: string[];
+  fabric?: string;
+  careInstructions?: string[];
   isNewArrival?: boolean;
+  soldOut?: boolean;
+  stock?: number;
 }
 
 export interface Order {
