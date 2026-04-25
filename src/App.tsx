@@ -37,11 +37,11 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin }: { cartCount: nu
   return (
     <nav className="fixed top-0 left-0 w-full z-50">
       <Ticker />
-      <div className={`w-full transition-all duration-700 ${isScrolled ? 'bg-black/60 backdrop-blur-xl text-white py-4' : 'bg-transparent text-white py-10 md:py-16'}`}>
+      <div className={`w-full transition-all duration-700 ${isScrolled ? 'bg-black/80 backdrop-blur-md text-white py-4 shadow-2xl' : 'bg-transparent text-white py-6 md:py-8'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
+            <a href="#" className="hover:opacity-50 transition-opacity">Shop</a>
             <a href="#" className="hover:opacity-50 transition-opacity">Collections</a>
-            <a href="#" className="hover:opacity-50 transition-opacity">Archive</a>
           </div>
 
           <div className="md:absolute md:left-1/2 md:-translate-x-1/2">
@@ -183,7 +183,7 @@ const Hero = () => (
         alt="Wrongs & Rebels Hero" 
         className="w-full h-full object-cover"
       />
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/10" />
     </div>
     
     <div className="absolute bottom-16 left-10 md:left-24 text-white space-y-6">
