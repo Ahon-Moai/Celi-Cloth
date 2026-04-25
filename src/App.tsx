@@ -296,7 +296,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => (
   <div className="group relative cursor-pointer w-full">
-    <div className="relative w-full aspect-[3/4] md:aspect-auto md:h-[470px] overflow-hidden bg-gray-100 mb-4 border border-gray-50">
+    <div className="relative w-full h-[500px] overflow-hidden bg-gray-100 mb-4 border border-gray-50">
       <img 
         src={product.image} 
         alt={product.name}
@@ -508,7 +508,7 @@ const ShopPage = ({ onAddToCart }: { onAddToCart: (p: Product) => void }) => {
 
   return (
     <div className="pt-32 md:pt-40 bg-white min-h-screen">
-      <div className="w-full px-4 md:px-8 mb-12">
+      <div className="w-full px-4 md:px-6 mb-12">
         <div className="flex items-baseline gap-2 mb-8">
           <h2 className="text-xl md:text-2xl font-bold uppercase tracking-tight">All Collections</h2>
           <span className="text-[10px] text-gray-400 font-bold align-top">{products.length}</span>
@@ -530,7 +530,7 @@ const ShopPage = ({ onAddToCart }: { onAddToCart: (p: Product) => void }) => {
       <div className="w-full px-0">
         <div className="flex flex-wrap justify-between gap-y-12">
           {filteredProducts.map(product => (
-            <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%]">
+            <div key={product.id} className="w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5">
               <ProductCard product={product} onAddToCart={onAddToCart} />
             </div>
           ))}
@@ -672,7 +672,7 @@ export default function App() {
                 <div className="w-full px-0">
                   <div className="flex flex-wrap justify-between gap-y-12">
                     {products.slice(0, 5).map(product => (
-                      <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%]">
+                      <div key={product.id} className="w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5">
                         <ProductCard product={product} onAddToCart={addToCart} />
                       </div>
                     ))}
