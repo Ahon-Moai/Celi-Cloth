@@ -35,29 +35,30 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin }: { cartCount: nu
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-40 transition-all duration-500`}>
-      <div className={`w-full transition-all duration-300 ${isScrolled ? 'bg-black text-white py-4 shadow-sm' : 'bg-transparent text-white py-8'}`}>
+    <nav className="fixed top-0 left-0 w-full z-50">
+      <Ticker />
+      <div className={`w-full transition-all duration-700 ${isScrolled ? 'bg-black/60 backdrop-blur-xl text-white py-4' : 'bg-transparent text-white py-10 md:py-16'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex gap-10 text-[11px] font-bold tracking-[0.1em] uppercase">
-            <a href="#" className="hover:opacity-50 transition-opacity">Shop</a>
+          <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
             <a href="#" className="hover:opacity-50 transition-opacity">Collections</a>
+            <a href="#" className="hover:opacity-50 transition-opacity">Archive</a>
           </div>
 
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <h1 className="text-xl md:text-2xl font-black tracking-[-0.02em] uppercase">Wrongs & Rebels<span className="text-[10px] align-top">™</span></h1>
+          <div className="md:absolute md:left-1/2 md:-translate-x-1/2">
+            <h1 className="text-xl md:text-3xl font-black tracking-[-0.05em] uppercase pointer-events-none">Wrongs & Rebels<span className="text-[10px] align-top">™</span></h1>
           </div>
 
           <div className="flex items-center gap-6">
-            <User className={`w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : ''}`} onClick={onOpenAdmin} />
             <Search className="w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity" />
             <div className="relative cursor-pointer group" onClick={onOpenCart}>
               <ShoppingBag className="w-5 h-5 group-hover:opacity-50 transition-opacity" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-white text-black text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-sm font-bold">
+                <span className="absolute -top-1 -right-1 bg-white text-black text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-sm font-black">
                   {cartCount}
                 </span>
               )}
             </div>
+            <User className={`w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : ''}`} onClick={onOpenAdmin} />
           </div>
         </div>
       </div>
@@ -178,11 +179,11 @@ const Hero = () => (
   <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
     <div className="absolute inset-0">
       <img 
-        src="http://image2url.com/r2/default/images/1776600681990-ed5afaaf-419c-4cae-9ae8-d7bc87ed7eff.jpg" 
+        src="https://www.image2url.com/r2/default/images/1777093846446-9c04cdcc-61e4-45ca-a34b-28c37a84bdeb.png" 
         alt="Wrongs & Rebels Hero" 
         className="w-full h-full object-cover"
       />
-      <div className="absolute inset-0 bg-black/20" />
+      <div className="absolute inset-0 bg-black/40" />
     </div>
     
     <div className="absolute bottom-16 left-10 md:left-24 text-white space-y-6">
@@ -544,7 +545,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-950 selection:bg-black selection:text-white overflow-x-hidden">
-      <Ticker />
       <Navbar 
         cartCount={cart.reduce((acc, i) => acc + i.quantity, 0)} 
         onOpenCart={() => setIsCartOpen(true)} 
