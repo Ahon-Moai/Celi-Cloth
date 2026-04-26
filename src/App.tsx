@@ -173,7 +173,7 @@ const Ticker = () => (
     >
       {[...Array(20)].map((_, i) => (
         <span key={i} className="mx-12 uppercase tracking-widest font-medium">
-          Wrongs & Rebels™ · SPRING '26 · LIVE NOW · WRONGS & REBELS CLOTHING · LIMITED EDITION · ৳ 1,399 FAST SHIPPING
+          Feliciteclo™ · SPRING '26 · LIVE NOW · FELICITECLO CLOTHING · LIMITED EDITION · ৳ 1,399 FAST SHIPPING
         </span>
       ))}
     </motion.div>
@@ -224,7 +224,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
               transition={{ duration: 1.2, ease: "easeOut" }}
               className="text-lg md:text-3xl font-black uppercase whitespace-nowrap"
             >
-              Wrongs & Rebels<span className="text-[10px] align-top font-bold">™</span>
+              Feliciteclo<span className="text-[10px] align-top font-bold">™</span>
             </motion.h1>
           </div>
 
@@ -268,7 +268,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
             >
               <div>
                 <div className="flex items-center justify-between mb-20">
-                  <span className="text-xl font-black uppercase tracking-tighter">W&R<span className="text-[10px] align-top">™</span></span>
+                  <span className="text-xl font-black uppercase tracking-tighter">FEL<span className="text-[10px] align-top">™</span></span>
                   <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2">
                     <X className="w-6 h-6" />
                   </button>
@@ -295,7 +295,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
               </div>
 
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">© 2026 Wrongs & Rebels™</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">© 2026 Feliciteclo™</p>
               </div>
             </motion.div>
           </>
@@ -706,7 +706,7 @@ const Hero = () => {
       >
         <img 
           src="https://www.image2url.com/r2/default/images/1777093846446-9c04cdcc-61e4-45ca-a34b-28c37a84bdeb.png" 
-          alt="Wrongs & Rebels Hero" 
+          alt="Feliciteclo Hero" 
           className="w-full h-full object-cover select-none pointer-events-none"
         />
         <div className="absolute inset-0 bg-black/20" />
@@ -829,7 +829,7 @@ const Footer = () => (
       </div>
       
       <div className="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium">
-        © 2026 - WRONGS & REBELS APPAREL
+        © 2026 - FELICITECLO APPAREL
       </div>
     </div>
   </footer>
