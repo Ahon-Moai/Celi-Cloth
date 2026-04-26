@@ -7,7 +7,7 @@ import { db, auth } from './lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 
-const ProductView = ({ product, productsList, onAddToCart, onBack }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void }) => {
+const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
   const [activeTab, setActiveTab] = useState('Recommended');
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
@@ -144,7 +144,7 @@ const ProductView = ({ product, productsList, onAddToCart, onBack }: { product: 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-y-20 px-4 md:px-0">
           {relatedProducts.map(p => (
             <div key={p.id} className="border-r border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
-               <ProductCard product={p} onAddToCart={onAddToCart} />
+               <ProductCard product={p} onAddToCart={onAddToCart} onClick={onProductClick} />
             </div>
           ))}
         </div>
@@ -792,7 +792,7 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
 
 // --- Shop Sections ---
 
-const Hero = () => {
+const Hero = ({ setCurrentPage }: { setCurrentPage: (page: 'home' | 'shop' | 'product') => void }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -871,30 +871,47 @@ const Hero = () => {
           transition={{ duration: 1, delay: 0.6 }}
           className="flex gap-10 text-[18px] md:text-xl font-bold tracking-tight uppercase pointer-events-auto"
         >
-          <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Surf Spring'26</a>
-          <a href="#" className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all">Shop Now</a>
+          <button onClick={() => setCurrentPage('shop')} className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all cursor-pointer">Surf Spring'26</button>
+          <button onClick={() => setCurrentPage('shop')} className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all cursor-pointer">Shop Now</button>
         </motion.div>
       </div>
     </section>
   );
 };
 
-const Categories = () => (
+const Categories = ({ onCategorySelect, setCurrentPage }: { onCategorySelect: (cat: string) => void, setCurrentPage: (page: 'home' | 'shop' | 'product') => void }) => (
   <section className="grid grid-cols-1 md:grid-cols-3 w-full h-[90vh] md:h-[100vh]">
-    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="relative group overflow-hidden cursor-pointer">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      whileInView={{ opacity: 1 }} 
+      className="relative group overflow-hidden cursor-pointer"
+      onClick={() => { onCategorySelect('T-shirts'); setCurrentPage('shop'); }}
+    >
       <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1000" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="T-shirts" />
       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
       <div className="absolute bottom-12 left-12 text-white">
         <h3 className="text-3xl font-black tracking-widest uppercase">T-shirts</h3>
       </div>
     </motion.div>
-    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.1 }} className="relative group overflow-hidden cursor-pointer border-x border-white/5 bg-[#14261d]">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      whileInView={{ opacity: 1 }} 
+      transition={{ delay: 0.1 }} 
+      className="relative group overflow-hidden cursor-pointer border-x border-white/5 bg-[#14261d]"
+      onClick={() => { onCategorySelect('Hoodies'); setCurrentPage('shop'); }}
+    >
       <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1000" className="w-full h-full object-cover opacity-60 mix-blend-overlay transition-transform duration-1000 group-hover:scale-105" alt="Hoodies" />
       <div className="absolute bottom-12 left-12 text-white">
         <h3 className="text-3xl font-black tracking-widest uppercase">Hoodies</h3>
       </div>
     </motion.div>
-    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.2 }} className="relative group overflow-hidden cursor-pointer">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      whileInView={{ opacity: 1 }} 
+      transition={{ delay: 0.2 }} 
+      className="relative group overflow-hidden cursor-pointer"
+      onClick={() => { onCategorySelect('Shirts'); setCurrentPage('shop'); }}
+    >
       <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Shirts" />
       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors duration-500" />
       <div className="absolute bottom-12 left-12 text-white">
@@ -954,11 +971,11 @@ const Footer = () => (
       </div>
       
       <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 mb-24 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold text-gray-500">
-        <a href="#" className="hover:text-white transition-colors">Support</a>
-        <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-        <a href="#" className="hover:text-white transition-colors">Terms of service</a>
-        <a href="#" className="hover:text-white transition-colors">Return & Exchange Portal</a>
-        <a href="#" className="hover:text-white transition-colors">Contact Form</a>
+        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Support</button>
+        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Privacy Policy</button>
+        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Terms of service</button>
+        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Return & Exchange Portal</button>
+        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Contact Form</button>
       </div>
       
       <div className="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium">
@@ -1240,6 +1257,11 @@ export default function App() {
     };
   }, [isAdmin]);
 
+  // Scroll to top on page or product change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [currentPage, selectedProduct]);
+
   const toggleAdmin = async () => {
     if (!isAdmin) {
       try {
@@ -1306,7 +1328,6 @@ export default function App() {
   const handleProductClick = (p: Product) => {
     setSelectedProduct(p);
     setCurrentPage('product');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isAdminMode && isAdmin) {
@@ -1357,8 +1378,8 @@ export default function App() {
       <main>
         {currentPage === 'home' ? (
           <>
-            <Hero />
-            <Categories />
+            <Hero setCurrentPage={setCurrentPage} />
+            <Categories onCategorySelect={setSelectedCategory} setCurrentPage={setCurrentPage} />
             <section id="new-arrivals" className="py-24 md:py-32 bg-white px-0">
               <div className="w-full">
                 <div className="text-center mb-24 space-y-4 px-6">
@@ -1403,6 +1424,7 @@ export default function App() {
               productsList={productsList}
               onAddToCart={addToCart} 
               onBack={() => setCurrentPage('shop')} 
+              onProductClick={handleProductClick}
             />
           )
         )}
