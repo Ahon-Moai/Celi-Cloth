@@ -182,6 +182,7 @@ const Ticker = () => (
 
 const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop' | 'product') => void, currentPage: 'home' | 'shop' | 'product' }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isShop = currentPage === 'shop' || currentPage === 'product';
 
   useEffect(() => {
@@ -190,45 +191,116 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navLinks = [
+    { label: 'Shop', page: 'shop' as const },
+    { label: 'Collections', page: 'home' as const },
+    { label: 'Search', action: () => {} },
+    { label: 'Account', action: onOpenAdmin }
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 w-full z-50">
+    <nav className="fixed top-0 left-0 w-full z-[100]">
       <Ticker />
       <div className={`w-full transition-all duration-700 ${isScrolled || isShop ? 'bg-white/95 backdrop-blur-md text-black py-4 shadow-sm' : 'bg-transparent text-white py-6 md:py-8'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between relative">
+          {/* Mobile Menu Toggle */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-2 -ml-2 hover:opacity-50 transition-opacity"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+
+          {/* Desktop Links */}
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
-            <button onClick={() => setCurrentPage('shop')} className={`transition-opacity uppercase cursor-pointer ${isShop ? 'border-b-2 border-black' : 'hover:opacity-50'}`}>Shop</button>
-            <button onClick={() => setCurrentPage('home')} className={`hover:opacity-50 transition-opacity uppercase cursor-pointer ${!isShop && !isScrolled ? 'border-b-2 border-white pb-1' : ''}`}>Collections</button>
+            <button onClick={() => setCurrentPage('shop')} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
+            <button onClick={() => setCurrentPage('home')} className={`hover:opacity-50 transition-opacity uppercase cursor-pointer ${currentPage === 'home' && !isScrolled && !isShop ? 'border-b-2 border-white pb-1' : ''}`}>Collections</button>
           </div>
 
-          <div className="md:absolute md:left-1/2 md:-translate-x-1/2 cursor-pointer" onClick={() => setCurrentPage('home')}>
+          <div className="absolute left-1/2 -translate-x-1/2 cursor-pointer" onClick={() => setCurrentPage('home')}>
             <motion.h1 
               initial={{ letterSpacing: "0.2em", opacity: 0 }}
               animate={{ letterSpacing: "-0.05em", opacity: 1 }}
               transition={{ duration: 1.2, ease: "easeOut" }}
-              className="text-xl md:text-3xl font-black uppercase pointer-events-none"
+              className="text-lg md:text-3xl font-black uppercase whitespace-nowrap"
             >
               Wrongs & Rebels<span className="text-[10px] align-top font-bold">™</span>
             </motion.h1>
           </div>
 
-          <div className="flex items-center gap-6">
-            <Search className="w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity" />
+          <div className="flex items-center gap-3 md:gap-6">
+            <Search className="hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity" />
+            <Search className="md:hidden w-6 h-6 cursor-pointer hover:opacity-50 transition-opacity" />
             <div className="relative cursor-pointer group" onClick={onOpenCart}>
-              <ShoppingBag className="w-5 h-5 group-hover:opacity-50 transition-opacity" />
+              <ShoppingBag className="w-6 h-6 md:w-5 h-5 group-hover:opacity-50 transition-opacity" />
               {cartCount > 0 && (
                 <motion.span 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`absolute -top-1 -right-1 text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-sm font-black ${isScrolled || isShop ? 'bg-black text-white' : 'bg-white text-black'}`}
+                  className={`absolute -top-1 -right-1 text-[8px] w-4 h-4 md:w-3.5 md:h-3.5 flex items-center justify-center rounded-sm font-black ${isScrolled || isShop ? 'bg-black text-white' : 'bg-white text-black'}`}
                 >
                   {cartCount}
                 </motion.span>
               )}
             </div>
-            <User className={`w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : ''}`} onClick={onOpenAdmin} />
+            <User className={`hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : ''}`} onClick={onOpenAdmin} />
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]"
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white z-[120] p-10 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-20">
+                  <span className="text-xl font-black uppercase tracking-tighter">W&R<span className="text-[10px] align-top">™</span></span>
+                  <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                <nav className="flex flex-col gap-10">
+                  {navLinks.map((link, i) => (
+                    <motion.button
+                      key={link.label}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.1 }}
+                      onClick={() => {
+                        if (link.page) setCurrentPage(link.page);
+                        if (link.action) link.action();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-4xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
+                    >
+                      {link.label}
+                    </motion.button>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">© 2026 Wrongs & Rebels™</p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
