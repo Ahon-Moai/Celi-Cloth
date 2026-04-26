@@ -10,6 +10,7 @@ import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
   const [activeTab, setActiveTab] = useState('Recommended');
+  const [activeAccordion, setActiveAccordion] = useState<string | null>('details');
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
   const unavailableSizes = ['XS', 'XL'];
 
@@ -105,22 +106,67 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
           </Reveal>
 
           <Reveal delay={0.4}>
-            <div className="divide-y divide-gray-100 border-t border-gray-100">
-              <button className="w-full flex items-center justify-between py-8 group text-gray-600 hover:text-black transition-colors">
-                <div className="flex items-center gap-6">
-                  <Package className="w-5 h-5" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">Product Details</span>
-                </div>
-                <Plus className="w-4 h-4 text-gray-300 group-hover:rotate-90 group-hover:text-black transition-all" />
-              </button>
-              <button className="w-full flex items-center justify-between py-8 group text-gray-600 hover:text-black transition-colors">
-                <div className="flex items-center gap-6">
-                  <Truck className="w-5 h-5" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">Shipping Details</span>
-                </div>
-                <Plus className="w-4 h-4 text-gray-300 group-hover:rotate-90 group-hover:text-black transition-all" />
-              </button>
-            </div>
+              <div className="border-t border-gray-100">
+                <button 
+                  onClick={() => setActiveAccordion(activeAccordion === 'details' ? null : 'details')}
+                  className="w-full flex items-center justify-between py-8 group text-gray-600 hover:text-black transition-colors"
+                >
+                  <div className="flex items-center gap-6">
+                    <Package className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">Product Details</span>
+                  </div>
+                  <Plus className={`w-4 h-4 text-gray-300 transition-all ${activeAccordion === 'details' ? 'rotate-45' : 'group-hover:rotate-90'}`} />
+                </button>
+                <AnimatePresence>
+                  {activeAccordion === 'details' && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="pb-8 text-[11px] leading-relaxed text-gray-500 uppercase font-medium whitespace-pre-wrap">
+                        {product.description || 'No detailed specifications available for this article.'}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="border-t border-gray-100">
+                <button 
+                  onClick={() => setActiveAccordion(activeAccordion === 'shipping' ? null : 'shipping')}
+                  className="w-full flex items-center justify-between py-8 group text-gray-600 hover:text-black transition-colors"
+                >
+                  <div className="flex items-center gap-6">
+                    <Truck className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">Shipping Details</span>
+                  </div>
+                  <Plus className={`w-4 h-4 text-gray-300 transition-all ${activeAccordion === 'shipping' ? 'rotate-45' : 'group-hover:rotate-90'}`} />
+                </button>
+                <AnimatePresence>
+                  {activeAccordion === 'shipping' && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pb-8 space-y-4">
+                        <p className="text-[11px] leading-relaxed text-gray-500 uppercase font-medium">
+                          Standard Shipping: 2-4 business days within Dhaka Metro area.
+                        </p>
+                        <p className="text-[11px] leading-relaxed text-gray-500 uppercase font-medium">
+                          Outside Dhaka: 3-7 business days via courier services.
+                        </p>
+                        <p className="text-[11px] leading-relaxed text-gray-500 uppercase font-medium">
+                          Cash on Delivery is available for all regions.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
           </Reveal>
         </div>
       </div>
@@ -937,11 +983,18 @@ const ProductCard = ({ product, onAddToCart, onClick }: { product: Product, onAd
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
-        {product.soldOut && (
-          <div className="absolute top-0 left-0 bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10">
-            Sold Out
-          </div>
-        )}
+        <div className="absolute top-0 left-0 flex flex-col gap-1 items-start">
+          {product.soldOut && (
+            <div className="bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10 text-red-500">
+              Sold Out
+            </div>
+          )}
+          {product.isNewArrival && (
+            <div className="bg-black text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10 whitespace-nowrap">
+              Manifesto Peak
+            </div>
+          )}
+        </div>
         <button
           onClick={(e) => { e.stopPropagation(); if(!product.soldOut) onAddToCart(product); }}
           disabled={product.soldOut}
@@ -950,12 +1003,17 @@ const ProductCard = ({ product, onAddToCart, onClick }: { product: Product, onAd
           Add to Bag
         </button>
       </div>
-      <div className="space-y-1 px-2 md:px-4 pb-4">
+      <div className="space-y-1.5 px-2 md:px-4 pb-4">
         <div className="flex justify-between items-baseline gap-2">
           <h4 className="text-[10px] md:text-[11px] font-black tracking-tight leading-tight uppercase truncate">{product.name}</h4>
           <p className="text-[11px] md:text-[12px] font-black tracking-tighter shrink-0">৳{product.price.toLocaleString()}</p>
         </div>
-        {product.colors && <p className="text-[8px] text-gray-500 font-bold tracking-widest uppercase">{product.colors.length} In Colors</p>}
+        {product.description && (
+          <p className="text-[9px] text-gray-400 font-medium uppercase tracking-widest line-clamp-1 italic">
+            {product.description}
+          </p>
+        )}
+        {product.colors && <p className="text-[8px] text-gray-400 font-bold tracking-[0.2em] uppercase">{product.colors.length} In Colors</p>}
       </div>
     </div>
   </Reveal>
