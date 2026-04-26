@@ -1133,12 +1133,23 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
 
 const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory }: { productsList: Product[], onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void }) => {
   const categories = ["All", "New Arrivals", "Tops", "T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Jackets", "Shackets", "Sweaters", "Beanies"];
+  const [currentPageNum, setCurrentPageNum] = useState(1);
+  const itemsPerPage = 15;
 
   const filteredProducts = productsList.filter(product => {
     if (activeCategory === "All") return true;
     if (activeCategory === "New Arrivals") return product.isNewArrival;
     return product.category === activeCategory;
   });
+
+  // Reset page when category changes
+  useEffect(() => {
+    setCurrentPageNum(1);
+  }, [activeCategory]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPageNum - 1) * itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="pt-32 md:pt-48 bg-white min-h-screen">
@@ -1170,7 +1181,7 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
 
       <div className="w-full px-0">
         <div className="flex flex-wrap justify-between gap-y-16">
-          {filteredProducts.map((product, idx) => (
+          {paginatedProducts.map((product, idx) => (
             <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%] border-r border-gray-50 last:border-0">
               <ProductCard product={product} onAddToCart={onAddToCart} onClick={onProductClick} />
             </div>
@@ -1186,16 +1197,37 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
           </Reveal>
         )}
 
-        <Reveal delay={0.4}>
-          <div className="py-32 flex justify-center items-center gap-12 border-t border-gray-50 mt-24">
-            <div className="flex gap-8">
-              <button className="text-[11px] font-black border-b-2 border-black pb-1">01</button>
-              <button className="text-[11px] font-black text-gray-300 hover:text-black transition-colors">02</button>
-              <button className="text-[11px] font-black text-gray-300 hover:text-black transition-colors">03</button>
+        {totalPages > 1 && (
+          <Reveal delay={0.4}>
+            <div className="py-32 flex justify-center items-center gap-12 border-t border-gray-50 mt-24">
+              <div className="flex gap-8">
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => {
+                      setCurrentPageNum(i + 1);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`text-[11px] font-black pb-1 transition-all ${currentPageNum === i + 1 ? 'border-b-2 border-black' : 'text-gray-300 hover:text-black'}`}
+                  >
+                    {(i + 1).toString().padStart(2, '0')}
+                  </button>
+                ))}
+              </div>
+              {currentPageNum < totalPages && (
+                <button 
+                  onClick={() => {
+                    setCurrentPageNum(prev => prev + 1);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="text-gray-400 hover:text-black transition-colors font-black text-sm"
+                >
+                  &rarr;
+                </button>
+              )}
             </div>
-            <button className="text-gray-400 hover:text-black transition-colors font-black text-sm">&rarr;</button>
-          </div>
-        </Reveal>
+          </Reveal>
+        )}
       </div>
     </div>
   );
