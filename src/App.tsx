@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
@@ -180,9 +180,10 @@ const Ticker = () => (
   </div>
 );
 
-const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop' | 'product') => void, currentPage: 'home' | 'shop' | 'product' }) => {
+const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage, categories, onCategorySelect, selectedCategory }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop' | 'product') => void, currentPage: 'home' | 'shop' | 'product', categories: string[], onCategorySelect: (cat: string) => void, selectedCategory: string }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] = useState(false);
   const isShop = currentPage === 'shop' || currentPage === 'product';
 
   useEffect(() => {
@@ -213,8 +214,41 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
 
           {/* Desktop Links */}
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
-            <button onClick={() => setCurrentPage('shop')} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
-            <button onClick={() => setCurrentPage('home')} className={`hover:opacity-50 transition-opacity uppercase cursor-pointer ${currentPage === 'home' && !isScrolled && !isShop ? 'border-b-2 border-white pb-1' : ''}`}>Collections</button>
+            <button onClick={() => {setCurrentPage('shop'); onCategorySelect('All');}} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory === 'All' ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
+            <div 
+              className="relative group"
+              onMouseEnter={() => setIsCategoriesDropdownOpen(true)}
+              onMouseLeave={() => setIsCategoriesDropdownOpen(false)}
+            >
+              <button className={`hover:opacity-50 transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory !== 'All' ? 'border-b-2 border-black pb-1' : ''}`}>Categories</button>
+              
+              <AnimatePresence>
+                {isCategoriesDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 w-48 bg-white text-black shadow-2xl border border-gray-100 py-6 z-[200]"
+                  >
+                    <div className="flex flex-col">
+                      {categories.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            onCategorySelect(cat);
+                            setCurrentPage('shop');
+                            setIsCategoriesDropdownOpen(false);
+                          }}
+                          className="px-8 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <div className="absolute left-1/2 -translate-x-1/2 cursor-pointer" onClick={() => setCurrentPage('home')}>
@@ -275,22 +309,53 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                 </div>
                 
                 <nav className="flex flex-col gap-10">
-                  {navLinks.map((link, i) => (
-                    <motion.button
-                      key={link.label}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + i * 0.1 }}
-                      onClick={() => {
-                        if (link.page) setCurrentPage(link.page);
-                        if (link.action) link.action();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="text-4xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
-                    >
-                      {link.label}
-                    </motion.button>
-                  ))}
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    onClick={() => {
+                      setCurrentPage('shop');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="text-4xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
+                  >
+                    Shop
+                  </motion.button>
+                  
+                  <div className="space-y-6">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Categories</p>
+                    <div className="flex flex-col gap-4">
+                      {categories.map((cat, i) => (
+                        <motion.button
+                          key={cat}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 + i * 0.05 }}
+                          onClick={() => {
+                            onCategorySelect(cat);
+                            setCurrentPage('shop');
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="text-xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
+                        >
+                          {cat}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 }}
+                    onClick={() => {
+                      onOpenAdmin();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="text-4xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
+                  >
+                    Account
+                  </motion.button>
                 </nav>
               </div>
 
@@ -981,9 +1046,8 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
   );
 };
 
-const ShopPage = ({ productsList, onAddToCart, onProductClick }: { productsList: Product[], onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void }) => {
+const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory }: { productsList: Product[], onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void }) => {
   const categories = ["All", "New Arrivals", "Tops", "T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Jackets", "Shackets", "Sweaters", "Beanies"];
-  const [activeCategory, setActiveCategory] = useState("All");
 
   const filteredProducts = productsList.filter(product => {
     if (activeCategory === "All") return true;
@@ -1055,7 +1119,9 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick }: { productsList:
 // --- App Component ---
 
 export default function App() {
+  const categories = ["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"];
   const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'product'>('home');
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -1215,6 +1281,9 @@ export default function App() {
         isAdmin={isAdmin}
         setCurrentPage={setCurrentPage}
         currentPage={currentPage}
+        categories={categories}
+        onCategorySelect={setSelectedCategory}
+        selectedCategory={selectedCategory}
       />
       
       <main>
@@ -1252,7 +1321,13 @@ export default function App() {
             </section>
           </>
         ) : currentPage === 'shop' ? (
-          <ShopPage productsList={productsList} onAddToCart={addToCart} onProductClick={handleProductClick} />
+          <ShopPage 
+            productsList={productsList} 
+            onAddToCart={addToCart} 
+            onProductClick={handleProductClick} 
+            activeCategory={selectedCategory}
+            setActiveCategory={setSelectedCategory}
+          />
         ) : (
           selectedProduct && (
             <ProductView 
