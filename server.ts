@@ -1,10 +1,15 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
+import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import fs from "fs";
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
@@ -12,18 +17,21 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Health check route
+  // Health check route - useful for verifying if the server is actually reachable
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", env: process.env.NODE_ENV });
+    res.json({ 
+      status: "ok", 
+      env: process.env.NODE_ENV,
+      time: new Date().toISOString()
+    });
   });
 
   // API Route for Gemini Stylist
   app.post("/api/stylist", async (req, res) => {
-    console.log("Stylist API Request received");
+    console.log("Stylist API Request received at:", new Date().toISOString());
     try {
       const { prompt, inventory } = req.body;
       
-      // Extensive logging for debugging API key issues in production
       const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
       
       if (!apiKey || apiKey === "undefined" || apiKey === "") {
@@ -34,11 +42,10 @@ async function startServer() {
         });
       }
 
-      console.log("Initializing Gemini with key (prefix):", apiKey.substring(0, 8));
-      const ai = new GoogleGenAI({ apiKey });
+      const genAI = new GoogleGenAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const result = await ai.models.generateContent({
-        model: "gemini-1.5-flash", // Use a more stable model for production resilience if needed
+      const result = await model.generateContent({
         contents: [{
           role: "user",
           parts: [{
@@ -58,20 +65,14 @@ async function startServer() {
             }`
           }]
         }],
-        config: {
+        generationConfig: {
           responseMimeType: "application/json"
         }
       });
 
-      if (!result.text) {
-        // If text is missing, check if it was blocked
-        const reason = result.candidates?.[0]?.finishReason || "UNKNOWN";
-        throw new Error(`AI response was empty. Reason: ${reason}`);
-      }
-
-      const rawText = result.text;
+      const response = result.response;
+      const rawText = response.text();
       try {
-        // Clean markdown code blocks if present
         const cleanedText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
         res.json(JSON.parse(cleanedText));
       } catch (parseError) {
@@ -87,27 +88,39 @@ async function startServer() {
     }
   });
 
-  // Vite middleware for development
+  // Serve static files or Vite middleware
   const isProd = process.env.NODE_ENV === "production" || process.env.PROD === "true";
   
   if (!isProd) {
-    console.log("Starting server in DEVELOPMENT mode (Vite middleware)");
+    console.log("Starting server in DEVELOPMENT mode");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    console.log("Starting server in PRODUCTION mode (Static files)");
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+    const distPath = path.resolve(__dirname, "dist");
+    console.log(`Starting server in PRODUCTION mode. Serving files from: ${distPath}`);
+    
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        // Only serve index.html for non-API routes
+        if (req.path.startsWith('/api')) {
+          return res.status(404).json({ error: "API route not found" });
+        }
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    } else {
+      console.error("CRITICAL ERROR: dist directory not found! Ensure build script was run.");
+      app.get("*", (req, res) => {
+        res.status(500).send("Application dist directory not found. Please run build.");
+      });
+    }
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
 }
 
