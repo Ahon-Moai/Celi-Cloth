@@ -8,7 +8,6 @@ import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, update
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 // AI is now handled directly in the frontend using Gemini free tier
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
@@ -1670,6 +1669,11 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("API_KEY_MISSING");
+      }
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
@@ -1730,8 +1734,8 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
       const msg = err instanceof Error ? err.message : "";
       
       let errorDisplay = 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.';
-      if (msg.includes("API_KEY") || msg.includes("403") || msg.includes("401")) {
-        errorDisplay = "AI CONFIGURATION ERROR: The Gemini API is currently unavailable. Please try again later.";
+      if (msg.includes("API_KEY_MISSING") || msg.includes("API_KEY") || msg.includes("403") || msg.includes("401")) {
+        errorDisplay = "AI CONFIGURATION ERROR: The Gemini API is currently unavailable. Please ensure GEMINI_API_KEY is set in your Project Secrets.";
       }
 
       setMessages(prev => [...prev, { 
