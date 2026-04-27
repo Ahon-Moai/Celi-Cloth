@@ -6,7 +6,9 @@ import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
-// AI is now handled server-side to secure the API key
+import { GoogleGenAI, Type } from "@google/genai";
+// AI is now handled directly in the frontend using Gemini free tier
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
@@ -1668,36 +1670,54 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
-      const response = await fetch('/api/stylist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: userText,
-          inventory: products.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price }))
-        })
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          {
+            role: "user",
+            parts: [{
+              text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear.
+              Your goal is to provide fashion styling advice based on the user's prompt and our current inventory.
+              
+              Our Inventory: ${JSON.stringify(products.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price })))}
+              
+              Rules:
+              1. Be professional, chic, and encouraging. Use minimalist language.
+              2. Recommend 2-4 products from the provided inventory.
+              3. You MUST return ONLY a valid JSON object.
+              4. JSON Structure:
+              {
+                "analysis": "short vibe analysis",
+                "recommended_ids": ["string array of product IDs"],
+                "chat_output": "the message to the user"
+              }
+              
+              User Request: ${userText}`
+            }]
+          }
+        ],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              analysis: { type: Type.STRING },
+              recommended_ids: { 
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              chat_output: { type: Type.STRING }
+            },
+            required: ["analysis", "recommended_ids", "chat_output"]
+          }
+        }
       });
 
-      const contentType = response.headers.get("content-type");
-      if (!response.ok) {
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await response.json();
-          if (errorData.error === "API_KEY_NOT_CONFIGURED") {
-            throw new Error("API_KEY_MISSING");
-          }
-          throw new Error(errorData.message || 'SERVER_ERROR');
-        } else {
-          const text = await response.text();
-          console.error("Non-JSON Error response:", text);
-          throw new Error(`SERVER_HTTP_ERROR: ${response.status}`);
-        }
+      if (!response.text) {
+        throw new Error("AI_RESPONSE_EMPTY");
       }
 
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        throw new Error(`MALFORMED_RESPONSE: ${text.substring(0, 50)}`);
-      }
-
-      const data = await response.json();
+      const data = JSON.parse(response.text);
       const matchedProducts = products.filter(p => data.recommended_ids?.includes(p.id));
       
       setMessages(prev => [...prev, { 
@@ -1710,10 +1730,8 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
       const msg = err instanceof Error ? err.message : "";
       
       let errorDisplay = 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.';
-      if (msg.includes("API_KEY_MISSING")) {
-        errorDisplay = "AGENT CONFIGURATION ERROR: VITE_GEMINI_API_KEY is not set correctly in your Project Secrets. Please check the environment settings.";
-      } else if (msg !== 'SERVER_COMMUNICATION_ERROR' && msg) {
-        errorDisplay = `SERVER ERROR: ${msg}`;
+      if (msg.includes("API_KEY") || msg.includes("403") || msg.includes("401")) {
+        errorDisplay = "AI CONFIGURATION ERROR: The Gemini API is currently unavailable. Please try again later.";
       }
 
       setMessages(prev => [...prev, { 

@@ -2,7 +2,6 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import fs from "fs";
 
@@ -17,78 +16,13 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Health check route - useful for verifying if the server is actually reachable
+  // Health check route
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
       env: process.env.NODE_ENV,
       time: new Date().toISOString()
     });
-  });
-
-  // API Route for Gemini Stylist
-  app.post("/api/stylist", async (req, res) => {
-    console.log("Stylist API Request received at:", new Date().toISOString());
-    try {
-      const { prompt, inventory } = req.body;
-      
-      const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-      
-      if (!apiKey || apiKey === "undefined" || apiKey === "") {
-        console.error("Stylist API Error: Missing API Key");
-        return res.status(500).json({ 
-          error: "API_KEY_NOT_CONFIGURED",
-          message: "The Gemini API key is not properly configured in the server environment."
-        });
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-
-      const result = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [{
-          role: "user",
-          parts: [{
-            text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear.
-            The user wants a style recommendation: "${prompt}".
-            
-            Our Inventory: ${JSON.stringify(inventory)}
-            
-            Rules:
-            1. Be professional, chic, and encouraging. Use minimalist language.
-            2. Recommend 2-4 products.
-            3. Return JSON:
-            {
-              "analysis": "short vibe analysis",
-              "recommended_ids": ["ids"],
-              "chat_output": "the message to the user"
-            }`
-          }]
-        }],
-        config: {
-          responseMimeType: "application/json"
-        }
-      });
-
-      const rawText = result.text;
-      if (!rawText) {
-        const reason = result.candidates?.[0]?.finishReason || "UNKNOWN";
-        throw new Error(`AI response was empty. Reason: ${reason}`);
-      }
-      try {
-        const cleanedText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-        res.json(JSON.parse(cleanedText));
-      } catch (parseError) {
-        console.error("Parse Error. Raw text:", rawText);
-        throw new Error(`Failed to parse AI response: ${rawText.substring(0, 100)}...`);
-      }
-    } catch (error) {
-      console.error("Server AI Error:", error);
-      res.status(500).json({ 
-        error: "SERVER_ERROR",
-        message: error instanceof Error ? error.message : String(error)
-      });
-    }
   });
 
   // Serve static files or Vite middleware
@@ -108,16 +42,16 @@ async function startServer() {
     if (fs.existsSync(distPath)) {
       app.use(express.static(distPath));
       app.get("*", (req, res) => {
-        // Only serve index.html for non-API routes
+        // Handle SPA fallback for non-API routes
         if (req.path.startsWith('/api')) {
           return res.status(404).json({ error: "API route not found" });
         }
         res.sendFile(path.join(distPath, "index.html"));
       });
     } else {
-      console.error("CRITICAL ERROR: dist directory not found! Ensure build script was run.");
+      console.error("CRITICAL ERROR: dist directory not found!");
       app.get("*", (req, res) => {
-        res.status(500).send("Application dist directory not found. Please run build.");
+        res.status(500).send("Application dist directory not found.");
       });
     }
   }
