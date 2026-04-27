@@ -11,31 +11,114 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
   const [selectedSize, setSelectedSize] = useState('S');
   const [activeTab, setActiveTab] = useState('Recommended');
   const [activeAccordion, setActiveAccordion] = useState<string | null>('details');
-  const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
-  const unavailableSizes = ['XS', 'XL'];
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
+  const sizes = product.sizes || ['XS', 'S', 'M', 'L', 'XL', '2XL'];
+  const gallery = product.gallery && product.gallery.length > 0 ? product.gallery : [product.image];
+
+  const sizeChartImages: Record<string, string> = {
+    'Hoodies': 'https://www.image2url.com/r2/default/images/1777270928450-aa406a06-2c71-4548-ab42-a148066f4b25.jpeg',
+    'Shirts': 'https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg',
+    'T-shirts': 'https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg', // Using shirt as default if none provided
+    'default': 'https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg'
+  };
+
+  const currentSizeChart = sizeChartImages[product.category] || sizeChartImages['default'];
 
   const relatedProducts = productsList.filter(p => p.id !== product.id).slice(0, 8);
 
   return (
     <div className="bg-white min-h-screen pt-20 md:pt-32">
+      <AnimatePresence>
+        {isSizeChartOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[500] flex items-center justify-center p-4 md:p-12"
+          >
+            <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setIsSizeChartOpen(false)} />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-4xl bg-white p-2 md:p-4 rounded-sm shadow-2xl overflow-hidden"
+            >
+              <button 
+                onClick={() => setIsSizeChartOpen(false)}
+                className="absolute top-4 right-4 z-10 p-2 bg-black text-white hover:bg-gray-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="aspect-auto max-h-[80vh] overflow-auto flex items-center justify-center bg-white p-4 md:p-8">
+                <img 
+                  src={currentSizeChart} 
+                  alt={`${product.category} Size Chart`} 
+                  className="max-w-full h-auto object-contain"
+                />
+              </div>
+              <div className="p-6 bg-black text-white text-center">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em]">{product.category} Guide Specification</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex flex-col lg:flex-row">
         {/* Left: Image Gallery */}
-        <div className="w-full lg:w-1/2 bg-[#efefef] relative aspect-square lg:aspect-auto lg:h-[calc(100vh-80px)] top-0 lg:sticky">
-          <div className="absolute inset-0 flex items-center justify-center p-8 md:p-24">
-            <img src={product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
+        <div className="w-full lg:w-1/2 bg-[#efefef] relative aspect-square lg:aspect-auto lg:h-[calc(100vh-80px)] top-0 lg:sticky overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center p-8 md:p-24 transition-all duration-700">
+            <AnimatePresence mode="wait">
+              <motion.img 
+                key={activeImageIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                src={gallery[activeImageIndex]} 
+                alt={product.name} 
+                className="w-full h-full object-contain mix-blend-multiply" 
+              />
+            </AnimatePresence>
           </div>
+          
           <button onClick={onBack} className="absolute top-8 left-8 p-2 hover:bg-black/5 rounded-full transition-colors z-20">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <div className="absolute bottom-12 left-12 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
-            1 / 15
-          </div>
-          <div className="absolute top-1/2 -translate-y-1/2 left-8 group">
-            <ChevronLeft className="w-8 h-8 text-gray-300 cursor-pointer group-hover:text-black transition-colors" />
-          </div>
-          <div className="absolute top-1/2 -translate-y-1/2 right-8 group">
-            <ChevronRight className="w-8 h-8 text-gray-300 cursor-pointer group-hover:text-black transition-colors" />
-          </div>
+
+          {gallery.length > 1 && (
+            <>
+              <div className="absolute bottom-12 left-12 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
+                {activeImageIndex + 1} / {gallery.length}
+              </div>
+              <div className="absolute top-1/2 -translate-y-1/2 left-8 group z-20">
+                <button 
+                  onClick={() => setActiveImageIndex(prev => (prev === 0 ? gallery.length - 1 : prev - 1))}
+                  className="p-2 hover:bg-black hover:text-white transition-all rounded-full group"
+                >
+                  <ChevronLeft className="w-8 h-8 text-gray-300 group-hover:text-white transition-colors" />
+                </button>
+              </div>
+              <div className="absolute top-1/2 -translate-y-1/2 right-8 group z-20">
+                <button 
+                  onClick={() => setActiveImageIndex(prev => (prev === gallery.length - 1 ? 0 : prev + 1))}
+                  className="p-2 hover:bg-black hover:text-white transition-all rounded-full group"
+                >
+                  <ChevronRight className="w-8 h-8 text-gray-300 group-hover:text-white transition-colors" />
+                </button>
+              </div>
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+                {gallery.map((_, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => setActiveImageIndex(i)}
+                    className={`w-2 h-2 rounded-full transition-all ${activeImageIndex === i ? 'w-8 bg-black' : 'bg-gray-300'}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right: Product Info */}
@@ -47,48 +130,59 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
             </div>
           </Reveal>
 
-          <Reveal delay={0.1}>
-            <div className="space-y-8">
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Select Color</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-100">|</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Plum</span>
+          {product.colors && product.colors.length > 0 && (
+            <Reveal delay={0.1}>
+              <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Select Color</span>
+                </div>
+                <div className="flex flex-wrap gap-4 p-6 bg-gray-50 rounded-sm">
+                  {product.colors.map((color, i) => (
+                    <div 
+                      key={i}
+                      className="w-14 h-16 border border-gray-200 cursor-pointer hover:ring-2 hover:ring-black transition-all" 
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-4 p-6 bg-gray-50 rounded-sm">
-                <div className="w-14 h-16 bg-[#a35e6a] ring-2 ring-black ring-offset-4 ring-offset-white cursor-pointer" />
-                <div className="w-14 h-16 bg-[#4c3e53] opacity-30 cursor-pointer hover:opacity-100 transition-opacity" />
-                <div className="w-14 h-16 bg-[#3a4454] opacity-30 cursor-pointer hover:opacity-100 transition-opacity" />
-                <div className="w-14 h-16 bg-[#8a2b4a] opacity-30 cursor-pointer hover:opacity-100 transition-opacity" />
-                <div className="w-14 h-16 bg-[#5c4a3e] opacity-30 cursor-pointer hover:opacity-100 transition-opacity" />
-              </div>
-            </div>
-          </Reveal>
+            </Reveal>
+          )}
 
           <Reveal delay={0.2}>
             <div className="space-y-8">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Select Size</span>
-                <button className="text-[9px] font-black underline uppercase tracking-[0.2em] bg-gray-50 px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all">Find Your Size</button>
+                <button 
+                  onClick={() => setIsSizeChartOpen(true)}
+                  className="text-[9px] font-black underline uppercase tracking-[0.2em] bg-gray-50 px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+                >
+                  Size Chart
+                </button>
               </div>
               <div className="grid grid-cols-6 border border-gray-100">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    disabled={unavailableSizes.includes(size)}
-                    onClick={() => setSelectedSize(size)}
-                    className={`h-20 flex items-center justify-center text-[11px] font-black transition-all relative border-r last:border-r-0 border-gray-50
-                      ${selectedSize === size ? 'bg-black text-white' : 'hover:bg-gray-50'}
-                      ${unavailableSizes.includes(size) ? 'text-gray-200 cursor-not-allowed italic' : ''}
-                    `}
-                  >
-                    {size}
-                    {unavailableSizes.includes(size) && (
-                      <div className="absolute inset-0 bg-white/30 flex items-center justify-center overflow-hidden">
-                        <div className="w-[120%] h-[1px] bg-gray-200 rotate-[35deg]" />
-                      </div>
-                    )}
-                  </button>
-                ))}
+                {['XS', 'S', 'M', 'L', 'XL', '2XL'].map((size) => {
+                  const isAvailable = sizes.includes(size);
+                  return (
+                    <button
+                      key={size}
+                      disabled={!isAvailable}
+                      onClick={() => setSelectedSize(size)}
+                      className={`h-20 flex items-center justify-center text-[11px] font-black transition-all relative border-r last:border-r-0 border-gray-50
+                        ${selectedSize === size ? 'bg-black text-white' : 'hover:bg-gray-50'}
+                        ${!isAvailable ? 'text-gray-200 cursor-not-allowed italic' : ''}
+                      `}
+                    >
+                      {size}
+                      {!isAvailable && (
+                        <div className="absolute inset-0 bg-white/30 flex items-center justify-center overflow-hidden">
+                          <div className="w-[120%] h-[1px] bg-gray-200 rotate-[35deg]" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-loose">
                 <span className="text-black">Male</span> model is 6' & 70kg, wearing the size M, <span className="text-black">Female</span> model is 5'9" & 48kg, wearing the size S
@@ -219,7 +313,7 @@ const Ticker = () => (
     >
       {[...Array(20)].map((_, i) => (
         <span key={i} className="mx-12 uppercase tracking-widest font-medium">
-          Feliciteclo™ · SPRING '26 · LIVE NOW · FELICITECLO CLOTHING · LIMITED EDITION · ৳ 1,399 FAST SHIPPING
+          Felicite™ · SPRING '26 · LIVE NOW · FELICITE CLOTHING · LIMITED EDITION · ৳ 1,399 FAST SHIPPING
         </span>
       ))}
     </motion.div>
@@ -304,7 +398,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
               transition={{ duration: 1.2, ease: "easeOut" }}
               className="text-lg md:text-3xl font-black uppercase whitespace-nowrap"
             >
-              Feliciteclo<span className="text-[10px] align-top font-bold">™</span>
+              Felicite<span className="text-[10px] align-top font-bold">™</span>
             </motion.h1>
           </div>
 
@@ -348,7 +442,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
             >
               <div>
                 <div className="flex items-center justify-between mb-20">
-                  <span className="text-xl font-black uppercase tracking-tighter">FEL<span className="text-[10px] align-top">™</span></span>
+                  <span className="text-xl font-black uppercase tracking-tighter">FELICITE<span className="text-[10px] align-top">™</span></span>
                   <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2">
                     <X className="w-6 h-6" />
                   </button>
@@ -406,7 +500,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
               </div>
 
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">© 2026 Feliciteclo™</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">© 2026 Felicite™</p>
               </div>
             </motion.div>
           </>
@@ -422,20 +516,38 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [jsonInput, setJsonInput] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'confirmed' | 'shipped'>('all');
 
   const [productForm, setProductForm] = useState({
     name: '',
     price: 0,
     category: 'T-shirts',
     image: '',
+    gallery: [] as string[],
+    colors: [] as string[],
+    sizes: ['S', 'M', 'L'] as string[],
     description: '',
     isNewArrival: true,
     soldOut: false
   });
 
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
+  const [newColor, setNewColor] = useState('#000000');
+
   const handleOpenAddModal = () => {
     setEditingProduct(null);
-    setProductForm({ name: '', price: 0, category: 'T-shirts', image: '', description: '', isNewArrival: true, soldOut: false });
+    setProductForm({ 
+      name: '', 
+      price: 0, 
+      category: 'T-shirts', 
+      image: '', 
+      gallery: [], 
+      colors: [], 
+      sizes: ['S', 'M', 'L'], 
+      description: '', 
+      isNewArrival: true, 
+      soldOut: false 
+    });
     setIsProductModalOpen(true);
   };
 
@@ -446,6 +558,9 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
       price: p.price, 
       category: p.category, 
       image: p.image, 
+      gallery: p.gallery || [],
+      colors: p.colors || [],
+      sizes: p.sizes || ['S', 'M', 'L'],
       description: p.description || '', 
       isNewArrival: p.isNewArrival || false, 
       soldOut: p.soldOut || false 
@@ -472,55 +587,151 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
     }
   };
 
+  const filteredOrders = orders.filter(o => {
+    if (orderFilter === 'all') return true;
+    return o.status === orderFilter;
+  });
+
+  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL'];
+
+  const toggleSize = (size: string) => {
+    setProductForm(prev => ({
+      ...prev,
+      sizes: prev.sizes.includes(size) 
+        ? prev.sizes.filter(s => s !== size)
+        : [...prev.sizes, size]
+    }));
+  };
+
+  const addGalleryItem = () => {
+    if (newGalleryUrl) {
+      setProductForm(prev => ({ ...prev, gallery: [...prev.gallery, newGalleryUrl] }));
+      setNewGalleryUrl('');
+    }
+  };
+
+  const removeGalleryItem = (index: number) => {
+    setProductForm(prev => ({ ...prev, gallery: prev.gallery.filter((_, i) => i !== index) }));
+  };
+
+  const addColor = () => {
+    setProductForm(prev => ({ ...prev, colors: [...prev.colors, newColor] }));
+  };
+
+  const removeColor = (index: number) => {
+    setProductForm(prev => ({ ...prev, colors: prev.colors.filter((_, i) => i !== index) }));
+  };
+
   return (
     <div className="fixed inset-0 z-[300] bg-gray-50 flex flex-col md:flex-row overflow-hidden">
       <AnimatePresence>
         {isProductModalOpen && (
           <div className="fixed inset-0 z-[400] flex items-center justify-center p-0 md:p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsProductModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="relative bg-white w-full max-w-xl p-6 md:p-10 shadow-2xl overflow-y-auto h-full md:h-auto md:max-h-[90vh]">
+            <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="relative bg-white w-full max-w-2xl p-6 md:p-10 shadow-2xl overflow-y-auto h-full md:h-auto md:max-h-[90vh]">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-black uppercase tracking-widest">{editingProduct ? 'Edit Article' : 'New Article'}</h3>
-                <X className="w-6 h-6 cursor-pointer md:hidden" onClick={() => setIsProductModalOpen(false)} />
+                <X className="w-6 h-6 cursor-pointer" onClick={() => setIsProductModalOpen(false)} />
               </div>
-              <form onSubmit={handleSubmitProduct} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Article Title</label>
-                  <input required type="text" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Value (৳)</label>
-                    <input required type="number" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.price || ''} onChange={e => setProductForm({...productForm, price: parseInt(e.target.value) || 0})} />
+              <form onSubmit={handleSubmitProduct} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Article Title</label>
+                      <input required type="text" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Value (৳)</label>
+                        <input required type="number" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.price || ''} onChange={e => setProductForm({...productForm, price: parseInt(e.target.value) || 0})} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Class</label>
+                        <select className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold uppercase" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})}>
+                          {["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"].map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Primary Visual URL</label>
+                      <input required type="url" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.image} onChange={e => setProductForm({...productForm, image: e.target.value})} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Sizes Available</label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableSizes.map(size => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => toggleSize(size)}
+                            className={`px-4 py-2 text-[10px] font-black border transition-all ${productForm.sizes.includes(size) ? 'bg-black text-white border-black' : 'border-gray-100 text-gray-300 hover:border-black hover:text-black'}`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Class</label>
-                    <select className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold uppercase" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})}>
-                      {["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Gallery Visuals</label>
+                      <div className="flex gap-2 mb-4">
+                        <input type="url" placeholder="Paste URL..." className="flex-1 border-b border-gray-100 py-2 text-xs outline-none" value={newGalleryUrl} onChange={e => setNewGalleryUrl(e.target.value)} />
+                        <button type="button" onClick={addGalleryItem} className="px-3 py-2 bg-black text-white text-[10px] font-black uppercase">Add</button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {productForm.gallery.map((url, i) => (
+                          <div key={i} className="aspect-square relative group bg-gray-50 border border-gray-100">
+                            <img src={url} className="w-full h-full object-cover" alt="" />
+                            <button onClick={() => removeGalleryItem(i)} className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Color Palette</label>
+                      <div className="flex gap-4 items-center mb-4">
+                        <input type="color" className="w-10 h-10 border-none outline-none cursor-pointer" value={newColor} onChange={e => setNewColor(e.target.value)} />
+                        <button type="button" onClick={addColor} className="px-4 py-2 border border-black text-[10px] font-black uppercase">Assign Color</button>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        {productForm.colors.map((color, i) => (
+                          <div key={i} className="flex items-center gap-2 bg-gray-50 px-2 py-1 border border-gray-100">
+                            <div className="w-4 h-4 border border-gray-200" style={{ backgroundColor: color }} />
+                            <X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => removeColor(i)} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Design Specifications</label>
+                      <textarea rows={4} className="w-full border border-gray-100 p-4 text-xs outline-none focus:border-black resize-none" value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} />
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visual URL</label>
-                  <input required type="url" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.image} onChange={e => setProductForm({...productForm, image: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Design Specifications</label>
-                  <textarea rows={3} className="w-full border border-gray-100 p-4 text-sm outline-none focus:border-black resize-none" value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} />
-                </div>
-                <div className="flex flex-wrap gap-6 pt-4">
+
+                <div className="flex flex-wrap gap-8 pt-4 border-t border-gray-50">
                   <label className="flex items-center gap-3 cursor-pointer group">
-                    <input type="checkbox" checked={productForm.isNewArrival} onChange={e => setProductForm({...productForm, isNewArrival: e.target.checked})} className="w-4 h-4 accent-black" />
+                    <input type="checkbox" checked={productForm.isNewArrival} onChange={e => setProductForm({...productForm, isNewArrival: e.target.checked})} className="w-5 h-5 accent-black" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black transition-colors">Manifesto Peak</span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer group">
-                    <input type="checkbox" checked={productForm.soldOut} onChange={e => setProductForm({...productForm, soldOut: e.target.checked})} className="w-4 h-4 accent-red-500" />
+                    <input type="checkbox" checked={productForm.soldOut} onChange={e => setProductForm({...productForm, soldOut: e.target.checked})} className="w-5 h-5 accent-red-500" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-red-500 transition-colors">Depleted</span>
                   </label>
                 </div>
-                <div className="flex flex-col md:flex-row gap-4 pt-10">
-                  <button type="submit" className="w-full bg-black text-white py-6 text-[10px] font-black uppercase tracking-widest">{editingProduct ? 'Commit Changes' : 'Initialize Article'}</button>
-                  <button type="button" onClick={() => setIsProductModalOpen(false)} className="w-full py-6 border border-gray-100 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50">Abort</button>
+
+                <div className="flex flex-col md:flex-row gap-4 pt-4">
+                  <button type="submit" className="flex-1 bg-black text-white py-6 text-[10px] font-black uppercase tracking-[0.4em] hover:opacity-90 transition-opacity">{editingProduct ? 'Commit Changes' : 'Initialize Article'}</button>
+                  <button type="button" onClick={() => setIsProductModalOpen(false)} className="px-12 py-6 border border-gray-100 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-gray-50">Abort</button>
                 </div>
               </form>
             </motion.div>
@@ -635,7 +846,11 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex gap-4">
                     {['all', 'pending', 'confirmed', 'shipped'].map(filter => (
-                      <button key={filter} className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${filter === 'all' ? 'bg-black text-white' : 'text-gray-400 border-gray-100 hover:border-black hover:text-black'}`}>
+                      <button 
+                        key={filter} 
+                        onClick={() => setOrderFilter(filter as any)}
+                        className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${orderFilter === filter ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-black hover:text-black'}`}
+                      >
                         {filter}
                       </button>
                     ))}
@@ -656,7 +871,7 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {orders.map(order => (
+                      {filteredOrders.map(order => (
                         <tr key={order.id} className="group hover:bg-gray-50 transition-colors">
                           <td className="px-8 py-6">
                             <p className="font-mono text-blue-600 font-black mb-1">#{order.id?.slice(0, 8).toUpperCase()}</p>
@@ -699,12 +914,23 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
                     </tbody>
                   </table>
                 </div>
-                {orders.length === 0 && <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">System Idle - No Data</div>}
+                {filteredOrders.length === 0 && <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">System Idle - No Data</div>}
               </div>
 
               {/* Mobile View: Cards */}
               <div className="md:hidden space-y-4">
-                {orders.map(order => (
+                <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
+                  {['all', 'pending', 'confirmed', 'shipped'].map(filter => (
+                    <button 
+                      key={filter} 
+                      onClick={() => setOrderFilter(filter as any)}
+                      className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border whitespace-nowrap transition-all ${orderFilter === filter ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 bg-white'}`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+                {filteredOrders.map(order => (
                   <div key={order.id} className="bg-white border border-gray-100 p-6 space-y-6">
                     <div className="flex justify-between items-start">
                       <div>
@@ -752,7 +978,7 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
                     </div>
                   </div>
                 ))}
-                {orders.length === 0 && <div className="py-20 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">No data records</div>}
+                {filteredOrders.length === 0 && <div className="py-20 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">No data records</div>}
               </div>
             </>
           )}
@@ -885,7 +1111,7 @@ const Hero = ({ setCurrentPage }: { setCurrentPage: (page: 'home' | 'shop' | 'pr
       >
         <img 
           src="https://www.image2url.com/r2/default/images/1777093846446-9c04cdcc-61e4-45ca-a34b-28c37a84bdeb.png" 
-          alt="Feliciteclo Hero" 
+          alt="Felicite Hero" 
           className="w-full h-full object-cover select-none pointer-events-none"
         />
         <div className="absolute inset-0 bg-black/20" />
@@ -1037,7 +1263,7 @@ const Footer = () => (
       </div>
       
       <div className="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium">
-        © 2026 - FELICITECLO APPAREL
+        © 2026 - FELICITE
       </div>
     </div>
   </footer>

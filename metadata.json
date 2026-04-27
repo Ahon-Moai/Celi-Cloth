@@ -1,6 +1,6 @@
 {
-  "name": "Wrongs & Rebels Apparel",
-  "description": "Premium e-commerce experience for Wrongs & Rebels featuring immersive 3D hero interactions, real-time order tracking, and a technical brutalist aesthetic.",
+  "name": "Felicite",
+  "description": "Premium e-commerce experience for Felicite featuring immersive 3D hero interactions, real-time order tracking, and a technical brutalist aesthetic.",
   "requestFramePermissions": [],
   "majorCapabilities": ["E-commerce", "Admin Dashboard", "Firebase Integration"]
 }
