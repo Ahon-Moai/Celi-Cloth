@@ -30,7 +30,7 @@ async function startServer() {
       const ai = new GoogleGenAI({ apiKey });
 
       const result = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-1.5-flash", // Use a more stable model for production resilience if needed
         contents: [{
           role: "user",
           parts: [{
@@ -55,7 +55,21 @@ async function startServer() {
         }
       });
 
-      res.json(JSON.parse(result.text || "{}"));
+      if (!result.text) {
+        // If text is missing, check if it was blocked
+        const reason = result.candidates?.[0]?.finishReason || "UNKNOWN";
+        throw new Error(`AI response was empty. Reason: ${reason}`);
+      }
+
+      const rawText = result.text;
+      try {
+        // Clean markdown code blocks if present
+        const cleanedText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+        res.json(JSON.parse(cleanedText));
+      } catch (parseError) {
+        console.error("Parse Error. Raw text:", rawText);
+        throw new Error(`Failed to parse AI response: ${rawText.substring(0, 100)}...`);
+      }
     } catch (error) {
       console.error("Server AI Error:", error);
       res.status(500).json({ 
