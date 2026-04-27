@@ -451,7 +451,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
               initial={{ letterSpacing: "0.2em", opacity: 0 }}
               animate={{ letterSpacing: "-0.05em", opacity: 1 }}
               transition={{ duration: 1.2, ease: "easeOut" }}
-              className="text-lg md:text-3xl font-black uppercase whitespace-nowrap"
+              className="text-lg md:text-3xl font-black uppercase whitespace-nowrap text-white"
             >
               Felicite<span className="text-[10px] align-top font-bold">™</span>
             </motion.h1>
@@ -1668,9 +1668,9 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : null);
       if (!apiKey) {
-        throw new Error("VITE_GEMINI_API_KEY IS MISSING. PLEASE ENSURE IT IS SET IN THE SECRETS MENU.");
+        throw new Error("API_KEY_MISSING");
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -1715,8 +1715,8 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
       const msg = err instanceof Error ? err.message : "";
       setMessages(prev => [...prev, { 
         type: 'ai', 
-        text: msg.includes("GEMINI_API_KEY") 
-          ? "ERROR: GEMINI_API_KEY is not set. Please add it to your secrets."
+        text: msg.includes("API_KEY_MISSING") 
+          ? "AGENT CONFIGURATION ERROR: VITE_GEMINI_API_KEY is not set. Please add it to your project secrets to enable the AI Stylist."
           : 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.' 
       }]);
     } finally {
