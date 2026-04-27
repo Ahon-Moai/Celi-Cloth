@@ -22,15 +22,15 @@ async function startServer() {
         process.env.VITE_GEMINI_API_KEY || 
         process.env.GEMINI_API_KEY;
 
-      if (!apiKey) {
+      if (!apiKey || apiKey === "undefined" || apiKey === "") {
         console.error("Server Error: No API Key found in environment variables.");
         return res.status(500).json({ error: "API_KEY_NOT_CONFIGURED" });
       }
 
-      const genAI = new GoogleGenAI({ apiKey });
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const ai = new GoogleGenAI({ apiKey });
 
-      const result = await model.generateContent({
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
         contents: [{
           role: "user",
           parts: [{
@@ -50,16 +50,18 @@ async function startServer() {
             }`
           }]
         }],
-        generationConfig: {
+        config: {
           responseMimeType: "application/json"
         }
       });
 
-      const responseText = result.response.text();
-      res.json(JSON.parse(responseText));
+      res.json(JSON.parse(result.text || "{}"));
     } catch (error) {
       console.error("Server AI Error:", error);
-      res.status(500).json({ error: "Failed to generate styling advice." });
+      res.status(500).json({ 
+        error: "SERVER_ERROR",
+        message: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

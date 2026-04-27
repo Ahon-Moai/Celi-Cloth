@@ -1682,7 +1682,7 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
         if (errorData.error === "API_KEY_NOT_CONFIGURED") {
           throw new Error("API_KEY_MISSING");
         }
-        throw new Error('SERVER_COMMUNICATION_ERROR');
+        throw new Error(errorData.message || 'SERVER_COMMUNICATION_ERROR');
       }
 
       const data = await response.json();
@@ -1696,11 +1696,17 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     } catch (err) {
       console.error("Stylist Error:", err);
       const msg = err instanceof Error ? err.message : "";
+      
+      let errorDisplay = 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.';
+      if (msg.includes("API_KEY_MISSING")) {
+        errorDisplay = "AGENT CONFIGURATION ERROR: VITE_GEMINI_API_KEY is not set correctly in your Project Secrets. Please check the environment settings.";
+      } else if (msg !== 'SERVER_COMMUNICATION_ERROR' && msg) {
+        errorDisplay = `SERVER ERROR: ${msg}`;
+      }
+
       setMessages(prev => [...prev, { 
         type: 'ai', 
-        text: msg.includes("API_KEY_MISSING") 
-          ? "AGENT CONFIGURATION ERROR: VITE_GEMINI_API_KEY is not set correctly in your Project Secrets. Please check the environment settings."
-          : 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.' 
+        text: errorDisplay
       }]);
     } finally {
       setLoading(false);
