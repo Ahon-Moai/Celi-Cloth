@@ -401,20 +401,20 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
           {/* Mobile Menu Toggle */}
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden p-2 -ml-2 hover:opacity-50 transition-opacity"
+            className={`md:hidden p-2 -ml-2 hover:opacity-50 transition-opacity ${isScrolled || isShop ? 'text-black' : 'text-white'}`}
           >
             <Menu className="w-6 h-6" />
           </button>
 
           {/* Desktop Links */}
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
-            <button onClick={() => {setCurrentPage('shop'); onCategorySelect('All'); setSearchQuery("");}} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory === 'All' && !searchQuery ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
+            <button onClick={() => {setCurrentPage('shop'); onCategorySelect('All'); setSearchQuery("");}} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory === 'All' && !searchQuery ? `border-b-2 ${isScrolled || isShop ? 'border-black' : 'border-white'} pb-1` : 'hover:opacity-50'}`}>Shop</button>
             <div 
               className="relative group"
               onMouseEnter={() => setIsCategoriesDropdownOpen(true)}
               onMouseLeave={() => setIsCategoriesDropdownOpen(false)}
             >
-              <button className={`hover:opacity-50 transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory !== 'All' ? 'border-b-2 border-black pb-1' : ''}`}>Categories</button>
+              <button className={`hover:opacity-50 transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory !== 'All' ? `border-b-2 ${isScrolled || isShop ? 'border-black' : 'border-white'} pb-1` : ''}`}>Categories</button>
               
               <AnimatePresence>
                 {isCategoriesDropdownOpen && (
@@ -446,7 +446,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
             </div>
             <button 
               onClick={onOpenStylist}
-              className="transition-all uppercase cursor-pointer hover:text-blue-600 flex items-center gap-2 group"
+              className={`transition-all uppercase cursor-pointer hover:text-blue-600 flex items-center gap-2 group ${isScrolled || isShop ? 'text-black' : 'text-white'}`}
             >
               <Sparkles className="w-3 h-3 group-hover:animate-pulse" />
               AI Stylist
@@ -458,7 +458,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
               initial={{ letterSpacing: "0.2em", opacity: 0 }}
               animate={{ letterSpacing: "-0.05em", opacity: 1 }}
               transition={{ duration: 1.2, ease: "easeOut" }}
-              className="text-lg md:text-3xl font-black uppercase whitespace-nowrap text-white"
+              className={`text-lg md:text-3xl font-black uppercase whitespace-nowrap ${isScrolled || isShop ? 'text-black' : 'text-white'}`}
             >
               Felicite<span className="text-[10px] align-top font-bold">™</span>
             </motion.h1>
@@ -473,7 +473,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
               <span className={`hidden lg:block text-[10px] font-black uppercase tracking-[0.2em] ${isScrolled || isShop ? 'text-black/80' : 'text-white/80'}`}>AI_STYLIST [V.1]</span>
             </button>
             <div className="relative cursor-pointer group" onClick={onOpenCart}>
-              <ShoppingBag className="w-6 h-6 md:w-5 h-5 group-hover:opacity-50 transition-opacity" />
+              <ShoppingBag className={`w-6 h-6 md:w-5 h-5 group-hover:opacity-50 transition-opacity ${isScrolled || isShop ? 'text-black' : 'text-white'}`} />
               {cartCount > 0 && (
                 <motion.span 
                   initial={{ scale: 0 }}
@@ -484,7 +484,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                 </motion.span>
               )}
             </div>
-            <User className={`hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : ''}`} onClick={onOpenAdmin} />
+            <User className={`hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : (isScrolled || isShop ? 'text-black' : 'text-white')}`} onClick={onOpenAdmin} />
           </div>
         </div>
       </div>
