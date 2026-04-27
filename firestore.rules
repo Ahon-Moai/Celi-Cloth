@@ -10,6 +10,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Messages Collection
+    match /messages/{messageId} {
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'subject', 'message', 'status', 'createdAt'])
+                    && request.resource.data.name is string && request.resource.data.name.size() <= 200
+                    && request.resource.data.email is string && request.resource.data.email.size() <= 200
+                    && request.resource.data.subject is string && request.resource.data.subject.size() <= 500
+                    && request.resource.data.message is string && request.resource.data.message.size() <= 5000;
+      allow read, list, update, delete: if isAdmin();
+    }
+
     // Orders Collection
     match /orders/{orderId} {
       allow create: if true; 

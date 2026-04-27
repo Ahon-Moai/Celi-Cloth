@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
@@ -608,8 +608,8 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
   );
 };
 
-const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, onDeleteProduct, onClose }: { orders: any[], productsList: Product[], onUpdateStatus: (id: string, s: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'json'>('orders');
+const AdminDashboard = ({ orders, productsList, messages, onUpdateStatus, onUpdateMessageStatus, onAddProduct, onDeleteProduct, onClose }: { orders: any[], productsList: Product[], messages: any[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onClose: () => void }) => {
+  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json'>('orders');
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [jsonInput, setJsonInput] = useState('');
@@ -861,6 +861,13 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
                 INVENTORY
               </button>
               <button 
+                onClick={() => { setActiveTab('messages'); setIsSidebarOpen(false); }}
+                className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'messages' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
+              >
+                <MessageSquare className="w-4 h-4" /> 
+                MESSAGES
+              </button>
+              <button 
                 onClick={() => { setActiveTab('json'); setIsSidebarOpen(false); }}
                 className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'json' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
               >
@@ -891,7 +898,7 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
             </button>
             <div>
               <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">
-                {activeTab === 'orders' ? 'Live Orders' : activeTab === 'inventory' ? 'Inventory' : 'JSON Portal'}
+                {activeTab === 'orders' ? 'Live Orders' : activeTab === 'inventory' ? 'Inventory' : activeTab === 'messages' ? 'Communications' : 'JSON Portal'}
               </h1>
             </div>
           </div>
@@ -1079,6 +1086,60 @@ const AdminDashboard = ({ orders, productsList, onUpdateStatus, onAddProduct, on
                 {filteredOrders.length === 0 && <div className="py-20 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">No data records</div>}
               </div>
             </>
+          )}
+
+          {activeTab === 'messages' && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-white p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Inquiries</p>
+                    <p className="text-2xl font-black">{messages.length}</p>
+                  </div>
+                  <MessageSquare className="w-10 h-10 text-gray-50 group-hover:text-blue-50" />
+                </div>
+                <div className="bg-white p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Unread Protocol</p>
+                    <p className="text-2xl font-black text-blue-500">{messages.filter(m => m.status === 'new').length}</p>
+                  </div>
+                  <Clock className="w-10 h-10 text-gray-50 group-hover:text-blue-50" />
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-100 divide-y divide-gray-100">
+                {messages.length === 0 ? (
+                  <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">No Communications Logged</div>
+                ) : (
+                  messages.map(msg => (
+                    <div key={msg.id} className="p-8 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-8">
+                      <div className="w-full md:w-64 space-y-2">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">{msg.status}</p>
+                        <p className="font-black text-sm uppercase">{msg.name}</p>
+                        <p className="text-[10px] text-gray-400 font-bold">{msg.email}</p>
+                        <p className="text-[9px] text-gray-300 font-bold uppercase">{msg.createdAt ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : 'N/A'}</p>
+                      </div>
+                      <div className="flex-1 space-y-4">
+                        <h4 className="text-xs font-black uppercase tracking-widest opacity-40">Subject: {msg.subject}</h4>
+                        <p className="text-[13px] leading-relaxed font-medium text-gray-600 uppercase italic">"{msg.message}"</p>
+                      </div>
+                      <div className="w-full md:w-48 flex items-end justify-end gap-4">
+                        <select 
+                          value={msg.status} 
+                          onChange={(e) => onUpdateMessageStatus(msg.id, e.target.value)}
+                          className="bg-transparent border-b-2 border-gray-100 text-[10px] uppercase font-black p-2 outline-none focus:border-blue-500 cursor-pointer"
+                        >
+                          <option value="new">Mark New</option>
+                          <option value="read">Mark Read</option>
+                          <option value="replied">Archived (Replied)</option>
+                          <option value="trash">Trash</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           )}
 
           {activeTab === 'inventory' && (
@@ -1343,7 +1404,7 @@ const ProductCard = ({ product, onAddToCart, onClick }: { product: Product, onAd
   </Reveal>
 );
 
-const Footer = () => (
+const Footer = ({ setCurrentPage }: { setCurrentPage: (page: any) => void }) => (
   <footer className="bg-black text-white pt-32 pb-12 px-6 mt-32">
     <div className="max-w-7xl mx-auto flex flex-col items-center">
       <div className="flex gap-10 mb-16">
@@ -1353,11 +1414,11 @@ const Footer = () => (
       </div>
       
       <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 mb-24 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold text-gray-500">
-        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Support</button>
-        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Privacy Policy</button>
-        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Terms of service</button>
-        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Return & Exchange Portal</button>
-        <button onClick={(e) => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}} className="hover:text-white transition-colors cursor-pointer">Contact Form</button>
+        <button onClick={() => setCurrentPage('support')} className="hover:text-white transition-colors cursor-pointer">Support</button>
+        <button onClick={() => setCurrentPage('privacy')} className="hover:text-white transition-colors cursor-pointer">Privacy Policy</button>
+        <button onClick={() => setCurrentPage('terms')} className="hover:text-white transition-colors cursor-pointer">Terms of service</button>
+        <button onClick={() => setCurrentPage('return')} className="hover:text-white transition-colors cursor-pointer">Return & Exchange Portal</button>
+        <button onClick={() => setCurrentPage('contact')} className="hover:text-white transition-colors cursor-pointer">Contact Form</button>
       </div>
       
       <div className="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium">
@@ -1891,11 +1952,181 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
   );
 };
 
+const InfoPage = ({ title, content, onBack }: { title: string, content: string, onBack: () => void }) => (
+  <div className="bg-white min-h-screen pt-32 pb-40 px-8">
+    <div className="max-w-3xl mx-auto space-y-16">
+      <Reveal>
+        <button onClick={onBack} className="flex items-center gap-2 group text-gray-400 hover:text-black transition-colors mb-8">
+          <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Return to baseline</span>
+        </button>
+        <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight">{title}</h2>
+      </Reveal>
+      <Reveal delay={0.2}>
+        <div className="text-[14px] leading-[2] font-medium text-gray-500 uppercase whitespace-pre-wrap tracking-wide space-y-8">
+          {content}
+        </div>
+      </Reveal>
+    </div>
+  </div>
+);
+
+const ReturnPortal = ({ onBack }: { onBack: () => void }) => {
+  const [orderId, setOrderId] = useState('');
+  return (
+    <div className="bg-white min-h-screen pt-32 pb-40 px-8">
+      <div className="max-w-3xl mx-auto space-y-24">
+        <Reveal>
+          <button onClick={onBack} className="flex items-center gap-2 group text-gray-400 hover:text-black transition-colors mb-8">
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Return to baseline</span>
+          </button>
+          <div className="space-y-4">
+            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight">Returns & Exchanges</h2>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Integrated Logistics V1.0</p>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.2}>
+          <div className="bg-gray-50 p-12 space-y-12 border border-gray-100">
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-widest">Identify Shipment</h3>
+              <p className="text-[11px] text-gray-500 leading-relaxed uppercase font-medium">ENTER YOUR ORDER ID TO INITIATE THE PROTOCOL. ARTICLES MUST BE IN ORIGINAL UNUSED CONDITION WITH TAGS INTACT.</p>
+            </div>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Order Reference</label>
+                <input 
+                  type="text" 
+                  placeholder="E.G. #FLC-102938" 
+                  value={orderId}
+                  onChange={(e) => setOrderId(e.target.value)}
+                  className="w-full bg-white border border-gray-200 p-5 text-sm outline-none focus:border-black font-bold uppercase tracking-widest placeholder:font-normal placeholder:italic transition-all" 
+                />
+              </div>
+              <button 
+                onClick={() => alert('Order status: Protocol not yet active in your region. Please contact support via the Contact Form.')}
+                className="w-full bg-black text-white py-6 text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-black/10 hover:scale-[1.01] active:scale-[0.99] transition-all"
+              >
+                Locate Article
+              </button>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.4}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-gray-100">
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black uppercase tracking-widest">Eligibility</h4>
+              <p className="text-[11px] text-gray-400 leading-relaxed uppercase font-medium">REPLIES WITHIN 7 DAYS OF DELIVERY. SALE ARTICLES ARE FINAL SALE. ACCESSORIES ARE NON-RETURNABLE.</p>
+            </div>
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black uppercase tracking-widest">Global Standards</h4>
+              <p className="text-[11px] text-gray-400 leading-relaxed uppercase font-medium">ALL SHIPMENTS ARE VERIFIED UNDER HIGH-RESOLUTION IMAGING BEFORE DISPATCH TO ENSURE QUALITY CONFORMITY.</p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </div>
+  );
+};
+
+const ContactPage = ({ onBack }: { onBack: () => void }) => {
+  const [formData, setFormData] = useState({ name: '', email: '', subject: 'General Inquiry', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, 'messages'), {
+        ...formData,
+        status: 'new',
+        createdAt: serverTimestamp()
+      });
+      setIsSuccess(true);
+      setFormData({ name: '', email: '', subject: 'General Inquiry', message: '' });
+    } catch (err) {
+      console.error(err);
+      alert('Transmission failed. Emergency backup: contact@felicite.com');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-white min-h-screen pt-32 pb-40 px-8">
+      <div className="max-w-3xl mx-auto">
+        <Reveal>
+          <button onClick={onBack} className="flex items-center gap-2 group text-gray-400 hover:text-black transition-colors mb-8">
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Return to baseline</span>
+          </button>
+          <div className="space-y-4 mb-24">
+            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight">Contact Portal</h2>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Direct Communication Line [ENCRYPTED]</p>
+          </div>
+        </Reveal>
+
+        {isSuccess ? (
+          <Reveal>
+            <div className="bg-gray-50 p-16 text-center space-y-8 border border-gray-100">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+              <div className="space-y-4">
+                <h3 className="text-xl font-black uppercase tracking-widest">Transmission Confirmed</h3>
+                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em]">Our collective will review your message and reply via encrypted mail within 24-48 hours.</p>
+              </div>
+              <button onClick={() => setIsSuccess(false)} className="text-[10px] font-black uppercase tracking-[0.3em] underline underline-offset-8">New Transmission</button>
+            </div>
+          </Reveal>
+        ) : (
+          <Reveal delay={0.2}>
+            <form onSubmit={handleSubmit} className="space-y-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Your Identity</label>
+                  <input required type="text" placeholder="NAME / ALIAS" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border-b border-gray-100 py-4 text-sm outline-none focus:border-black font-bold uppercase tracking-widest" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Neural Mail</label>
+                  <input required type="email" placeholder="YOUR@EMAIL.COM" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border-b border-gray-100 py-4 text-sm outline-none focus:border-black font-bold uppercase tracking-widest" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Transmission Objective</label>
+                <select value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} className="w-full border-b border-gray-100 py-4 text-sm outline-none focus:border-black font-bold uppercase tracking-widest bg-transparent">
+                  <option>General Inquiry</option>
+                  <option>Wholesale Protocol</option>
+                  <option>Press & Media</option>
+                  <option>Technical Error</option>
+                  <option>Return/Exchange</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">The Message</label>
+                <textarea required rows={5} placeholder="DECODE YOUR THOUGHTS..." value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full border border-gray-100 p-6 text-sm outline-none focus:border-black font-medium uppercase tracking-widest resize-none" />
+              </div>
+              <button 
+                disabled={isSubmitting}
+                type="submit" 
+                className="w-full bg-black text-white py-8 text-[11px] font-black uppercase tracking-[0.6em] shadow-2xl shadow-black/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50"
+              >
+                {isSubmitting ? 'ENCRYPTING...' : 'INITIALIZE TRANSMISSION'}
+              </button>
+            </form>
+          </Reveal>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // --- App Component ---
 
 export default function App() {
   const categories = ["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"];
-  const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'product'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'product' | 'support' | 'privacy' | 'terms' | 'return' | 'contact'>('home');
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -1908,6 +2139,7 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<Product[]>(products);
+  const [messages, setMessages] = useState<any[]>([]);
 
   // Auth State
   useEffect(() => {
@@ -1925,11 +2157,17 @@ export default function App() {
   useEffect(() => {
     let unsubscribeOrders = () => {};
     let unsubscribeProducts = () => {};
+    let unsubscribeMessages = () => {};
 
     if (isAdmin) {
       const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
       unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
         setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+
+      const qMessages = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
+      unsubscribeMessages = onSnapshot(qMessages, (snapshot) => {
+        setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
 
       const qProducts = query(collection(db, 'products'));
@@ -1946,6 +2184,7 @@ export default function App() {
     return () => {
       unsubscribeOrders();
       unsubscribeProducts();
+      unsubscribeMessages();
     };
   }, [isAdmin]);
 
@@ -1970,6 +2209,17 @@ export default function App() {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       await updateDoc(doc(db, 'orders', orderId), {
+        status: newStatus,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const updateMessageStatus = async (messageId: string, newStatus: string) => {
+    try {
+      await updateDoc(doc(db, 'messages', messageId), {
         status: newStatus,
         updatedAt: serverTimestamp()
       });
@@ -2023,7 +2273,18 @@ export default function App() {
   };
 
   if (isAdminMode && isAdmin) {
-    return <AdminDashboard orders={orders} productsList={productsList} onUpdateStatus={updateOrderStatus} onAddProduct={addOrUpdateProduct} onDeleteProduct={deleteProduct} onClose={() => setIsAdminMode(false)} />;
+    return (
+      <AdminDashboard 
+        orders={orders} 
+        productsList={productsList} 
+        messages={messages}
+        onUpdateStatus={updateOrderStatus} 
+        onUpdateMessageStatus={updateMessageStatus}
+        onAddProduct={addOrUpdateProduct} 
+        onDeleteProduct={deleteProduct} 
+        onClose={() => setIsAdminMode(false)} 
+      />
+    );
   }
 
   if (orderSuccess) {
@@ -2150,7 +2411,7 @@ export default function App() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
-        ) : (
+        ) : currentPage === 'product' ? (
           selectedProduct && (
             <ProductView 
               product={selectedProduct} 
@@ -2160,10 +2421,63 @@ export default function App() {
               onProductClick={handleProductClick}
             />
           )
-        )}
+        ) : currentPage === 'support' ? (
+          <InfoPage 
+            title="Support" 
+            onBack={() => setCurrentPage('home')}
+            content={`Our support collective is available to assist with your order requirements. 
+
+Dispatch Status:
+Orders are processed within 24-48 hours. You will receive a notification once the shipment has been picked up by our logistics partner.
+
+Sizing Consultation:
+Review the Size Chart available on each product page. Our articles follow a modern streetwear fit, typically slightly oversized.
+
+Payment:
+We currently support Cash on Delivery for all regions in Bangladesh.
+
+Security:
+Your data is encrypted and handled according to global standards.`} 
+          />
+        ) : currentPage === 'privacy' ? (
+          <InfoPage 
+            title="Privacy Protocol" 
+            onBack={() => setCurrentPage('home')}
+            content={`FELICITE™ prioritizes individual data sovereignty.
+
+Data Collection:
+We collect identity information solely for the purpose of shipment fulfillment and communication.
+
+Storage:
+Information is stored on secure, encrypted decentralised servers. We do not sell user data to third-party entities.
+
+Transparency:
+You may request the deletion of your customer profile at any time via the contact portal.`} 
+          />
+        ) : currentPage === 'terms' ? (
+          <InfoPage 
+            title="Terms of Service" 
+            onBack={() => setCurrentPage('home')}
+            content={`Agreement of Use:
+By accessing FELICITE™, you agree to abide by our collection protocols and ethical standards.
+
+Orders:
+We reserve the right to cancel orders that appear fraudulent or violate our terms.
+
+Intellectual Property:
+All designs, visual assets, and trademarks are the sole property of FELICITE™.
+
+Governing Law:
+Usage of this platform is governed by the laws of Bangladesh.`} 
+          />
+        ) : currentPage === 'return' ? (
+           <ReturnPortal onBack={() => setCurrentPage('home')} />
+        ) : currentPage === 'contact' ? (
+           <ContactPage onBack={() => setCurrentPage('home')} />
+        ) : null}
       </main>
 
-      <Footer />
+      <Footer setCurrentPage={setCurrentPage} />
 
       <CartDrawer 
         isOpen={isCartOpen} 
