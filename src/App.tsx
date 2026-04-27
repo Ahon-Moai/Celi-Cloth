@@ -2122,36 +2122,43 @@ const ContactPage = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
-const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
+const LoadingScreen = () => {
   return (
     <motion.div 
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed inset-0 z-[1000] bg-white flex flex-col items-center justify-center p-8"
+      className="fixed inset-0 z-[2000] bg-white flex flex-col items-center justify-center p-8"
     >
       <motion.div 
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-        className="w-full max-w-[280px] md:max-w-md lg:max-w-lg"
+        transition={{ duration: 1.2, ease: "easeOut" }}
+        className="w-full max-w-[280px] md:max-w-md lg:max-w-xl"
       >
         <img 
-          src="https://www.image2url.com/r2/default/images/1777312670418-ca29d9ff-c1e8-4aa9-9e85-31d771c862bd.png" 
+          src="https://artifact.soumya.me/api/v1/artifacts/3ggrexrxpxfx3chm6ovwxy/original" 
           alt="FELICITE" 
-          className="w-full h-auto object-contain"
+          className="w-full h-auto object-contain mix-blend-multiply"
         />
       </motion.div>
-      <div className="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-4">
+      <div className="absolute bottom-16 left-0 right-0 flex flex-col items-center gap-6">
         <div className="w-48 h-[1px] bg-gray-100 relative overflow-hidden">
           <motion.div 
             initial={{ left: '-100%' }}
             animate={{ left: '100%' }}
-            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
             className="absolute top-0 bottom-0 w-1/2 bg-black"
           />
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-black/40">Synchronizing Archive</p>
+        <div className="flex items-center gap-3">
+          <motion.div 
+            animate={{ opacity: [0.2, 1, 0.2] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-1.5 h-1.5 bg-black rounded-full"
+          />
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-black">Initializing Archive</p>
+        </div>
       </div>
     </motion.div>
   );
@@ -2358,7 +2365,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white font-sans text-gray-950 selection:bg-black selection:text-white overflow-x-hidden">
       <AnimatePresence>
-        {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
+        {isLoading && <LoadingScreen key="loader" />}
       </AnimatePresence>
       <Navbar 
         cartCount={cart.reduce((acc, i) => acc + i.quantity, 0)} 
