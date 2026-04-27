@@ -10,8 +10,9 @@ import { GoogleGenAI, Type } from "@google/genai";
 // AI is handled directly in the frontend using Gemini free tier
 const ai = new GoogleGenAI({ apiKey: "AIzaSyAf9pkTSkxro6cLdOvngIKPRzu8RAgTB-U" });
 
-const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
-  const [selectedSize, setSelectedSize] = useState('S');
+const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product, size?: string, color?: string) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || 'S');
+  const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
   const [activeTab, setActiveTab] = useState('Recommended');
   const [activeAccordion, setActiveAccordion] = useState<string | null>('details');
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
@@ -154,7 +155,11 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
                   {product.colors.map((color, i) => (
                     <div 
                       key={i}
-                      className="w-14 h-16 border border-gray-200 cursor-pointer hover:ring-2 hover:ring-black transition-all" 
+                      onClick={() => {
+                        setSelectedColor(color);
+                        if (gallery.length > i) setActiveImageIndex(i);
+                      }}
+                      className={`w-14 h-16 border cursor-pointer hover:ring-2 hover:ring-black transition-all ${selectedColor === color ? 'ring-2 ring-black' : 'border-gray-200'}`} 
                       style={{ backgroundColor: color }}
                       title={color}
                     />
@@ -206,7 +211,7 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
 
           <Reveal delay={0.3}>
             <button 
-              onClick={() => onAddToCart(product)}
+              onClick={() => onAddToCart(product, selectedSize, selectedColor)}
               className="w-full bg-black text-white py-8 text-[11px] font-black uppercase tracking-[0.6em] shadow-2xl shadow-black/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
               Add To Cart
@@ -1292,7 +1297,7 @@ interface ProductCardProps {
   onAddToCart: (p: Product) => void;
 }
 
-const ProductCard = ({ product, onAddToCart, onClick }: { product: Product, onAddToCart: (p: Product) => void, onClick?: (p: Product) => void }) => (
+const ProductCard = ({ product, onAddToCart, onClick }: { product: Product, onAddToCart: (p: Product, size?: string, color?: string) => void, onClick?: (p: Product) => void }) => (
   <Reveal y={40}>
     <div className="group relative cursor-pointer w-full" onClick={() => onClick?.(product)}>
       <div className="relative w-full aspect-[3/4] md:aspect-auto md:h-[470px] overflow-hidden bg-gray-100 mb-4 border border-gray-50">
@@ -1315,7 +1320,7 @@ const ProductCard = ({ product, onAddToCart, onClick }: { product: Product, onAd
           )}
         </div>
         <button
-          onClick={(e) => { e.stopPropagation(); if(!product.soldOut) onAddToCart(product); }}
+          onClick={(e) => { e.stopPropagation(); if(!product.soldOut) onAddToCart(product, product.sizes?.[0], product.colors?.[0]); }}
           disabled={product.soldOut}
           className={`absolute bottom-4 left-4 right-4 py-4 bg-black text-white text-[9px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${product.soldOut ? 'hidden' : ''} shadow-2xl`}
         >
@@ -1364,7 +1369,7 @@ const Footer = () => (
 
 // --- Drawers & Modals ---
 
-const CartDrawer = ({ isOpen, onClose, items, onRemove, onUpdateQty, onCheckout }: { isOpen: boolean, onClose: () => void, items: CartItem[], onRemove: (id: string) => void, onUpdateQty: (id: string, delta: number) => void, onCheckout: () => void }) => (
+const CartDrawer = ({ isOpen, onClose, items, onRemove, onUpdateQty, onCheckout }: { isOpen: boolean, onClose: () => void, items: CartItem[], onRemove: (uniqueId: string) => void, onUpdateQty: (uniqueId: string, delta: number) => void, onCheckout: () => void }) => (
   <AnimatePresence>
     {isOpen && (
       <>
@@ -1382,32 +1387,44 @@ const CartDrawer = ({ isOpen, onClose, items, onRemove, onUpdateQty, onCheckout 
                 <button onClick={onClose} className="text-[10px] font-black uppercase tracking-[0.3em] underline underline-offset-8">Explore Collections</button>
               </div>
             ) : (
-              items.map(item => (
-                <div key={item.id} className="flex gap-6">
-                  <div className="w-24 h-32 bg-gray-50 flex-shrink-0">
-                    <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
-                  </div>
-                  <div className="flex-1 flex flex-col justify-between py-1">
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-start gap-4">
-                        <h4 className="text-[12px] font-black uppercase tracking-tight leading-tight">{item.name}</h4>
-                        <button onClick={() => onRemove(item.id)} className="text-gray-300 hover:text-black">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <p className="text-[11px] font-bold text-gray-500">৳{item.price.toLocaleString()}</p>
+              items.map((item, index) => {
+                const uniqueId = `${item.id}-${item.selectedSize}-${item.selectedColor}`;
+                return (
+                  <div key={uniqueId} className="flex gap-6">
+                    <div className="w-24 h-32 bg-gray-50 flex-shrink-0">
+                      <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center border border-gray-100 rounded-sm">
-                        <button onClick={() => onUpdateQty(item.id, -1)} className="px-3 py-1.5 text-xs hover:bg-gray-50">-</button>
-                        <span className="px-4 py-1.5 text-[11px] font-black">{item.quantity}</span>
-                        <button onClick={() => onUpdateQty(item.id, 1)} className="px-3 py-1.5 text-xs hover:bg-gray-50">+</button>
+                    <div className="flex-1 flex flex-col justify-between py-1">
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-start gap-4">
+                          <h4 className="text-[12px] font-black uppercase tracking-tight leading-tight">{item.name}</h4>
+                          <button onClick={() => onRemove(uniqueId)} className="text-gray-300 hover:text-black">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex gap-4 mb-2">
+                          {item.selectedSize && <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 px-2 py-0.5">Size: {item.selectedSize}</span>}
+                          {item.selectedColor && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Color:</span>
+                              <div className="w-2 h-2 rounded-full border border-gray-200" style={{ backgroundColor: item.selectedColor }} />
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-500">৳{item.price.toLocaleString()}</p>
                       </div>
-                      <p className="text-[12px] font-black">৳{(item.price * item.quantity).toLocaleString()}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center border border-gray-100 rounded-sm">
+                          <button onClick={() => onUpdateQty(uniqueId, -1)} className="px-3 py-1.5 text-xs hover:bg-gray-50">-</button>
+                          <span className="px-4 py-1.5 text-[11px] font-black">{item.quantity}</span>
+                          <button onClick={() => onUpdateQty(uniqueId, 1)} className="px-3 py-1.5 text-xs hover:bg-gray-50">+</button>
+                        </div>
+                        <p className="text-[12px] font-black">৳{(item.price * item.quantity).toLocaleString()}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
           {items.length > 0 && (
@@ -1435,7 +1452,21 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
     e.preventDefault();
     setLoading(true);
     try {
-      const orderData = { customerInfo: formData, items: totalItems.map(i => ({ productId: i.id, name: i.name, price: i.price, quantity: i.quantity })), totalAmount, status: 'pending', paymentMethod: 'COD', createdAt: new Date().toISOString() };
+      const orderData = { 
+        customerInfo: formData, 
+        items: totalItems.map(i => ({ 
+          productId: i.id, 
+          name: i.name, 
+          price: i.price, 
+          quantity: i.quantity,
+          selectedSize: i.selectedSize,
+          selectedColor: i.selectedColor
+        })), 
+        totalAmount, 
+        status: 'pending', 
+        paymentMethod: 'COD', 
+        createdAt: new Date().toISOString() 
+      };
       await addDoc(collection(db, 'orders'), { ...orderData, createdAt: serverTimestamp() });
       onSuccess(orderData);
     } catch (err) {
@@ -1508,7 +1539,7 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
   );
 };
 
-const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory, searchQuery, setSearchQuery }: { productsList: Product[], onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void, searchQuery: string, setSearchQuery: (q: string) => void }) => {
+const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory, searchQuery, setSearchQuery }: { productsList: Product[], onAddToCart: (p: Product, size?: string, color?: string) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void, searchQuery: string, setSearchQuery: (q: string) => void }) => {
   const categories = ["All", "New Arrivals", "Tops", "T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Jackets", "Shackets", "Sweaters", "Beanies"];
   const [currentPageNum, setCurrentPageNum] = useState(1);
   const itemsPerPage = 15;
@@ -1977,11 +2008,11 @@ export default function App() {
     }
   };
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, selectedSize?: string, selectedColor?: string) => {
     setCart(prev => {
-      const existing = prev.find(i => i.id === product.id);
-      if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...prev, { ...product, quantity: 1 }];
+      const existing = prev.find(i => i.id === product.id && i.selectedSize === selectedSize && i.selectedColor === selectedColor);
+      if (existing) return prev.map(i => (i.id === product.id && i.selectedSize === selectedSize && i.selectedColor === selectedColor) ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { ...product, quantity: 1, selectedSize, selectedColor }];
     });
     setIsCartOpen(true);
   };
@@ -2134,7 +2165,14 @@ export default function App() {
 
       <Footer />
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cart} onRemove={(id) => setCart(prev => prev.filter(i => i.id !== id))} onUpdateQty={(id, delta) => setCart(prev => prev.map(i => i.id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i))} onCheckout={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} />
+      <CartDrawer 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        items={cart} 
+        onRemove={(uid) => setCart(prev => prev.filter(i => `${i.id}-${i.selectedSize}-${i.selectedColor}` !== uid))} 
+        onUpdateQty={(uid, delta) => setCart(prev => prev.map(i => `${i.id}-${i.selectedSize}-${i.selectedColor}` === uid ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i))} 
+        onCheckout={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} 
+      />
       <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} onSuccess={(data) => { setIsCheckoutOpen(false); setOrderSuccess(data); }} totalItems={cart} totalAmount={cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)} />
     </div>
   );
