@@ -26,7 +26,18 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
 
   const currentSizeChart = sizeChartImages[product.category] || sizeChartImages['default'];
 
-  const relatedProducts = productsList.filter(p => p.id !== product.id).slice(0, 8);
+  const relatedProducts = React.useMemo(() => {
+    let filtered = productsList.filter(p => p.id !== product.id);
+    if (activeTab === 'Best Sellers') {
+      // Best sellers logic (e.g. products that are not new arrivals or have some flag, 
+      // but here we just shuffle or take specific slices for demo)
+      return filtered.slice(4, 12);
+    } else if (activeTab === 'New Arrivals') {
+      return filtered.filter(p => p.isNewArrival).slice(0, 8);
+    }
+    // Recommended
+    return filtered.slice(0, 8);
+  }, [activeTab, productsList, product.id]);
 
   return (
     <div className="bg-white min-h-screen pt-20 md:pt-32">
@@ -365,6 +376,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       if (currentPage !== 'shop') setCurrentPage('shop');
+                      onCategorySelect('All');
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') setIsSearchOpen(false);
@@ -388,7 +400,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
 
           {/* Desktop Links */}
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
-            <button onClick={() => {setCurrentPage('shop'); onCategorySelect('All');}} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory === 'All' ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
+            <button onClick={() => {setCurrentPage('shop'); onCategorySelect('All'); setSearchQuery("");}} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory === 'All' ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
             <div 
               className="relative group"
               onMouseEnter={() => setIsCategoriesDropdownOpen(true)}
@@ -411,6 +423,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                           onClick={() => {
                             onCategorySelect(cat);
                             setCurrentPage('shop');
+                            setSearchQuery("");
                             setIsCategoriesDropdownOpen(false);
                           }}
                           className="px-8 py-3 text-left text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-colors"
@@ -496,6 +509,8 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                     onClick={() => {
                       setCurrentPage('shop');
                       setIsMobileMenuOpen(false);
+                      onCategorySelect('All');
+                      setSearchQuery("");
                     }}
                     className="text-4xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
                   >
@@ -515,6 +530,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                             onCategorySelect(cat);
                             setCurrentPage('shop');
                             setIsMobileMenuOpen(false);
+                            setSearchQuery("");
                           }}
                           className="text-xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
                         >
@@ -1484,10 +1500,18 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
     <div className="pt-32 md:pt-48 bg-white min-h-screen">
       <div className="w-full px-4 md:px-8 mb-20">
         <Reveal>
-          <div className="flex items-baseline gap-4 mb-4">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 mb-4">
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
               {searchQuery ? `Searching: ${searchQuery}` : 'Archives'}
             </h2>
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors cursor-pointer"
+              >
+                [ Clear Search ]
+              </button>
+            )}
             <span className="text-xs text-gray-400 font-black mb-1">[{filteredProducts.length} ARTICLES]</span>
           </div>
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-12 max-w-xl leading-loose">
