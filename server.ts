@@ -14,19 +14,22 @@ async function startServer() {
 
   // API Route for Gemini Stylist
   app.post("/api/stylist", async (req, res) => {
+    console.log("Stylist API Request received");
     try {
       const { prompt, inventory } = req.body;
       
-      // Try multiple env variable names for resilience
-      const apiKey = 
-        process.env.VITE_GEMINI_API_KEY || 
-        process.env.GEMINI_API_KEY;
-
+      // Extensive logging for debugging API key issues in production
+      const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      
       if (!apiKey || apiKey === "undefined" || apiKey === "") {
-        console.error("Server Error: No API Key found in environment variables.");
-        return res.status(500).json({ error: "API_KEY_NOT_CONFIGURED" });
+        console.error("Stylist API Error: Missing API Key");
+        return res.status(500).json({ 
+          error: "API_KEY_NOT_CONFIGURED",
+          message: "The Gemini API key is not properly configured in the server environment."
+        });
       }
 
+      console.log("Initializing Gemini with key (prefix):", apiKey.substring(0, 8));
       const ai = new GoogleGenAI({ apiKey });
 
       const result = await ai.models.generateContent({

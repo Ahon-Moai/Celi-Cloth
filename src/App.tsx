@@ -1677,12 +1677,24 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
         })
       });
 
+      const contentType = response.headers.get("content-type");
       if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.error === "API_KEY_NOT_CONFIGURED") {
-          throw new Error("API_KEY_MISSING");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          if (errorData.error === "API_KEY_NOT_CONFIGURED") {
+            throw new Error("API_KEY_MISSING");
+          }
+          throw new Error(errorData.message || 'SERVER_ERROR');
+        } else {
+          const text = await response.text();
+          console.error("Non-JSON Error response:", text);
+          throw new Error(`SERVER_HTTP_ERROR: ${response.status}`);
         }
-        throw new Error(errorData.message || 'SERVER_COMMUNICATION_ERROR');
+      }
+
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`MALFORMED_RESPONSE: ${text.substring(0, 50)}`);
       }
 
       const data = await response.json();
