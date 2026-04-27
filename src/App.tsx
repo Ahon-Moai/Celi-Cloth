@@ -6,7 +6,7 @@ import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
-import { GoogleGenAI } from "@google/genai";
+// AI is now handled server-side to secure the API key
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
@@ -1668,46 +1668,24 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
-      // Check multiple locations for the API key to ensure compatibility across local and production builds
-      const apiKey = 
-        import.meta.env.VITE_GEMINI_API_KEY || 
-        (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : null) ||
-        (typeof process !== 'undefined' ? process.env.VITE_GEMINI_API_KEY : null);
-
-      if (!apiKey || apiKey === "undefined" || apiKey === '""') {
-        throw new Error("API_KEY_MISSING");
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            role: "user",
-            parts: [{
-              text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear.
-              The user wants a style recommendation: "${userText}".
-              
-              Our Inventory: ${JSON.stringify(products.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price })))}
-              
-              Rules:
-              1. Be professional, chic, and encouraging. Use minimalist language.
-              2. Recommend 2-4 products.
-              3. Return JSON:
-              {
-                "analysis": "short vibe analysis",
-                "recommended_ids": ["ids"],
-                "chat_output": "the message to the user"
-              }`
-            }]
-          }
-        ],
-        config: {
-          responseMimeType: "application/json"
-        }
+      const response = await fetch('/api/stylist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: userText,
+          inventory: products.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price }))
+        })
       });
 
-      const data = JSON.parse(response.text || "{}");
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.error === "API_KEY_NOT_CONFIGURED") {
+          throw new Error("API_KEY_MISSING");
+        }
+        throw new Error('SERVER_COMMUNICATION_ERROR');
+      }
+
+      const data = await response.json();
       const matchedProducts = products.filter(p => data.recommended_ids?.includes(p.id));
       
       setMessages(prev => [...prev, { 
@@ -1721,7 +1699,7 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
       setMessages(prev => [...prev, { 
         type: 'ai', 
         text: msg.includes("API_KEY_MISSING") 
-          ? "AGENT CONFIGURATION ERROR: VITE_GEMINI_API_KEY is not set. Please add it to your project secrets to enable the AI Stylist."
+          ? "AGENT CONFIGURATION ERROR: VITE_GEMINI_API_KEY is not set correctly in your Project Secrets. Please check the environment settings."
           : 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.' 
       }]);
     } finally {
