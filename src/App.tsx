@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
@@ -331,7 +334,7 @@ const Ticker = () => (
   </div>
 );
 
-const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage, categories, onCategorySelect, selectedCategory, searchQuery, setSearchQuery }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop' | 'product') => void, currentPage: 'home' | 'shop' | 'product', categories: string[], onCategorySelect: (cat: string) => void, selectedCategory: string, searchQuery: string, setSearchQuery: (q: string) => void }) => {
+const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage, categories, onCategorySelect, selectedCategory, searchQuery, setSearchQuery, onOpenStylist }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop' | 'product') => void, currentPage: 'home' | 'shop' | 'product', categories: string[], onCategorySelect: (cat: string) => void, selectedCategory: string, searchQuery: string, setSearchQuery: (q: string) => void, onOpenStylist: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] = useState(false);
@@ -400,7 +403,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
 
           {/* Desktop Links */}
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
-            <button onClick={() => {setCurrentPage('shop'); onCategorySelect('All'); setSearchQuery("");}} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory === 'All' ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
+            <button onClick={() => {setCurrentPage('shop'); onCategorySelect('All'); setSearchQuery("");}} className={`transition-opacity uppercase cursor-pointer ${currentPage === 'shop' && selectedCategory === 'All' && !searchQuery ? 'border-b-2 border-black pb-1' : 'hover:opacity-50'}`}>Shop</button>
             <div 
               className="relative group"
               onMouseEnter={() => setIsCategoriesDropdownOpen(true)}
@@ -436,9 +439,16 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                 )}
               </AnimatePresence>
             </div>
+            <button 
+              onClick={onOpenStylist}
+              className="transition-all uppercase cursor-pointer hover:text-blue-600 flex items-center gap-2 group"
+            >
+              <Sparkles className="w-3 h-3 group-hover:animate-pulse" />
+              AI Stylist
+            </button>
           </div>
 
-          <div className="absolute left-1/2 -translate-x-1/2 cursor-pointer" onClick={() => setCurrentPage('home')}>
+          <div className="absolute left-1/2 -translate-x-1/2 cursor-pointer" onClick={() => { setCurrentPage('home'); setSearchQuery(""); onCategorySelect('All'); }}>
             <motion.h1 
               initial={{ letterSpacing: "0.2em", opacity: 0 }}
               animate={{ letterSpacing: "-0.05em", opacity: 1 }}
@@ -450,14 +460,13 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
-            <Search 
-              className="hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity" 
-              onClick={() => setIsSearchOpen(true)}
-            />
-            <Search 
-              className="md:hidden w-6 h-6 cursor-pointer hover:opacity-50 transition-opacity" 
-              onClick={() => setIsSearchOpen(true)}
-            />
+            <button 
+              onClick={onOpenStylist}
+              className="flex items-center gap-2 group hover:opacity-100 transition-opacity"
+            >
+              <Sparkles className={`w-5 h-5 group-hover:animate-pulse ${isScrolled || isShop ? 'text-black' : 'text-white'}`} />
+              <span className={`hidden lg:block text-[10px] font-black uppercase tracking-[0.2em] ${isScrolled || isShop ? 'text-black/80' : 'text-white/80'}`}>AI_STYLIST [V.1]</span>
+            </button>
             <div className="relative cursor-pointer group" onClick={onOpenCart}>
               <ShoppingBag className="w-6 h-6 md:w-5 h-5 group-hover:opacity-50 transition-opacity" />
               {cartCount > 0 && (
@@ -539,6 +548,34 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                       ))}
                     </div>
                   </div>
+
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 }}
+                    onClick={() => {
+                      setIsSearchOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="text-4xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors flex items-center gap-3"
+                  >
+                    <Search className="w-8 h-8" />
+                    Search
+                  </motion.button>
+
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.7 }}
+                    onClick={() => {
+                      onOpenStylist();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="text-4xl font-black uppercase tracking-tighter text-left text-blue-600 hover:text-blue-400 transition-colors flex items-center gap-3"
+                  >
+                    <Sparkles className="w-8 h-8" />
+                    AI Stylist
+                  </motion.button>
 
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
@@ -1603,6 +1640,194 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
   );
 };
 
+const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: boolean, onClose: () => void, products: Product[], onProductClick: (p: Product) => void }) => {
+  const [messages, setMessages] = useState<{ type: 'user' | 'ai', text: string, products?: Product[] }[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([{ 
+        type: 'ai', 
+        text: 'WELCOME TO FELICITE™ INTELLIGENCE. I AM YOUR PERSONAL STYLIST. DESCRIBE THE VIBE YOU WANT TO ARCHIVE TODAY.' 
+      }]);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  const handleSend = async () => {
+    if (!inputValue.trim() || loading) return;
+
+    const userText = inputValue;
+    setInputValue('');
+    setMessages(prev => [...prev, { type: 'user', text: userText }]);
+    setLoading(true);
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          {
+            role: "user",
+            parts: [{
+              text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear.
+              The user wants a style recommendation: "${userText}".
+              
+              Our Inventory: ${JSON.stringify(products.map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price })))}
+              
+              Rules:
+              1. Be professional, chic, and encouraging. Use minimalist language.
+              2. Recommend 2-4 products.
+              3. Return JSON:
+              {
+                "analysis": "short vibe analysis",
+                "recommended_ids": ["ids"],
+                "chat_output": "the message to the user"
+              }`
+            }]
+          }
+        ],
+        config: {
+          responseMimeType: "application/json"
+        }
+      });
+
+      const data = JSON.parse(response.text);
+      const matchedProducts = products.filter(p => data.recommended_ids.includes(p.id));
+      
+      setMessages(prev => [...prev, { 
+        type: 'ai', 
+        text: data.chat_output,
+        products: matchedProducts
+      }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { type: 'ai', text: 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[600] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 md:p-8"
+        >
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="w-full max-w-2xl h-[80vh] flex flex-col bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-100"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-widest leading-none">AI Stylist</h3>
+                  <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Active Intelligence V1.0</span>
+                </div>
+              </div>
+              <button 
+                onClick={onClose}
+                className="p-2 hover:bg-gray-50 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            {/* Chat Messages */}
+            <div 
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth"
+            >
+              {messages.map((m, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${m.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[85%] space-y-4`}>
+                    <div className={`p-5 rounded-2xl text-[11px] font-medium tracking-wide leading-relaxed ${
+                      m.type === 'user' 
+                      ? 'bg-black text-white rounded-tr-none' 
+                      : 'bg-gray-100 text-gray-800 rounded-tl-none'
+                    }`}>
+                      {m.text}
+                    </div>
+                    
+                    {m.products && m.products.length > 0 && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {m.products.map(p => (
+                          <div 
+                            key={p.id}
+                            className="bg-white border border-gray-100 rounded-xl overflow-hidden group cursor-pointer hover:border-black transition-all"
+                            onClick={() => {
+                              onProductClick(p);
+                              onClose();
+                            }}
+                          >
+                            <div className="aspect-[4/5] bg-gray-50 overflow-hidden">
+                              <img src={p.image} alt={p.name} className="w-full h-full object-cover mix-blend-multiply group-hover:scale-110 transition-transform duration-700" />
+                            </div>
+                            <div className="p-3">
+                              <p className="text-[9px] font-black uppercase truncate">{p.name}</p>
+                              <p className="text-[8px] text-gray-400 font-bold">৳{p.price.toLocaleString()}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+              {loading && (
+                <div className="flex gap-2">
+                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" />
+                </div>
+              )}
+            </div>
+
+            {/* Input */}
+            <div className="p-6 border-t border-gray-100">
+              <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-5 py-2">
+                <input 
+                  type="text"
+                  placeholder="Ask for style recommendations..."
+                  className="flex-1 bg-transparent border-none outline-none py-3 text-[11px] font-medium placeholder:text-gray-400"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                />
+                <button 
+                  onClick={handleSend}
+                  disabled={loading}
+                  className="w-10 h-10 bg-black text-white rounded-lg flex items-center justify-center hover:opacity-80 transition-opacity disabled:opacity-20"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // --- App Component ---
 
 export default function App() {
@@ -1611,6 +1836,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [terminalOpen, setTerminalOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -1778,8 +2004,45 @@ export default function App() {
         selectedCategory={selectedCategory}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        onOpenStylist={() => setTerminalOpen(true)}
       />
       
+      <StylistModule 
+        isOpen={terminalOpen} 
+        onClose={() => setTerminalOpen(false)} 
+        products={productsList}
+        onProductClick={handleProductClick}
+      />
+
+      {/* Floating AI Stylist FAB */}
+      <AnimatePresence>
+        {!terminalOpen && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50"
+          >
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setTerminalOpen(true)}
+              className="relative group bg-black text-white p-4 md:p-5 rounded-full shadow-[0_0_30px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-white/10 hover:border-blue-500/50 transition-all duration-700 overflow-hidden"
+            >
+              {/* Pulsing Glow */}
+              <div className="absolute inset-0 bg-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl animate-pulse" />
+              
+              <Sparkles className="relative w-6 h-6 text-white group-hover:text-white transition-colors" />
+              
+              <div className="flex flex-col items-start pr-2 overflow-hidden max-w-0 group-hover:max-w-[150px] transition-all duration-700 ease-in-out">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Find your vibe</span>
+                <span className="text-[7px] text-white/70 font-bold uppercase tracking-[0.1em] whitespace-nowrap">AI_STYLIST [V.1]</span>
+              </div>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main>
         {currentPage === 'home' ? (
           <>
