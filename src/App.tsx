@@ -8,14 +8,6 @@ import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, update
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { GoogleGenAI } from "@google/genai";
 
-function getAI() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is missing. Please set it in your environment variables via the Settings menu in AI Studio, or in your deployment environment.");
-  }
-  return new GoogleGenAI({ apiKey });
-}
-
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
   const [activeTab, setActiveTab] = useState('Recommended');
@@ -1676,7 +1668,12 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
-      const ai = getAI();
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("GEMINI_API_KEY IS MISSING. PLEASE ENSURE IT IS SET IN THE SECRETS MENU.");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
@@ -1705,21 +1702,21 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
         }
       });
 
-      const data = JSON.parse(response.text);
-      const matchedProducts = products.filter(p => data.recommended_ids.includes(p.id));
+      const data = JSON.parse(response.text || "{}");
+      const matchedProducts = products.filter(p => data.recommended_ids?.includes(p.id));
       
       setMessages(prev => [...prev, { 
         type: 'ai', 
-        text: data.chat_output,
+        text: data.chat_output || "I couldn't find a recommendation for that. Try describing a different style.",
         products: matchedProducts
       }]);
     } catch (err) {
-      console.error("Gemini Error:", err);
-      const errorMessage = err instanceof Error ? err.message : 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.';
+      console.error("Stylist Error:", err);
+      const msg = err instanceof Error ? err.message : "";
       setMessages(prev => [...prev, { 
         type: 'ai', 
-        text: errorMessage.includes("GEMINI_API_KEY") 
-          ? "AGENT CONFIGURATION ERROR: GEMINI_API_KEY IS MISSING. PLEASE ENSURE THE API KEY IS SET IN THE ENVIRONMENT SETTINGS." 
+        text: msg.includes("GEMINI_API_KEY") 
+          ? "ERROR: GEMINI_API_KEY is not set. Please add it to your secrets."
           : 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.' 
       }]);
     } finally {
