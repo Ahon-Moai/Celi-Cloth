@@ -12,6 +12,11 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Health check route
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", env: process.env.NODE_ENV });
+  });
+
   // API Route for Gemini Stylist
   app.post("/api/stylist", async (req, res) => {
     console.log("Stylist API Request received");
@@ -83,14 +88,17 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production" && !process.env.PROD) {
+  const isProd = process.env.NODE_ENV === "production" || process.env.PROD === "true";
+  
+  if (!isProd) {
+    console.log("Starting server in DEVELOPMENT mode (Vite middleware)");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    // Correctly serve the dist folder in production/shared preview
+    console.log("Starting server in PRODUCTION mode (Static files)");
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
