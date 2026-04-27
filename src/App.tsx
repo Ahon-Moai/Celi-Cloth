@@ -8,7 +8,13 @@ import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, update
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+function getAI() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is missing. Please set it in your environment variables via the Settings menu in AI Studio, or in your deployment environment.");
+  }
+  return new GoogleGenAI({ apiKey });
+}
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
@@ -1670,6 +1676,7 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
+      const ai = getAI();
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
@@ -1707,7 +1714,14 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
         products: matchedProducts
       }]);
     } catch (err) {
-      setMessages(prev => [...prev, { type: 'ai', text: 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.' }]);
+      console.error("Gemini Error:", err);
+      const errorMessage = err instanceof Error ? err.message : 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.';
+      setMessages(prev => [...prev, { 
+        type: 'ai', 
+        text: errorMessage.includes("GEMINI_API_KEY") 
+          ? "AGENT CONFIGURATION ERROR: GEMINI_API_KEY IS MISSING. PLEASE ENSURE THE API KEY IS SET IN THE ENVIRONMENT SETTINGS." 
+          : 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.' 
+      }]);
     } finally {
       setLoading(false);
     }
