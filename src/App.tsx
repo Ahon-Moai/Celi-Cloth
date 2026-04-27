@@ -7,7 +7,8 @@ import { db, auth } from './lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
-// AI is now handled directly in the frontend using Gemini free tier
+// AI is handled directly in the frontend using Gemini free tier
+const ai = new GoogleGenAI({ apiKey: "AIzaSyAf9pkTSkxro6cLdOvngIKPRzu8RAgTB-U" });
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState('S');
@@ -1669,11 +1670,6 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
-      if (!process.env.GEMINI_API_KEY) {
-        throw new Error("API_KEY_MISSING");
-      }
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
@@ -1734,8 +1730,10 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
       const msg = err instanceof Error ? err.message : "";
       
       let errorDisplay = 'SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY.';
-      if (msg.includes("API_KEY_MISSING") || msg.includes("API_KEY") || msg.includes("403") || msg.includes("401")) {
-        errorDisplay = "AI CONFIGURATION ERROR: The Gemini API is currently unavailable. Please ensure GEMINI_API_KEY is set in your Project Secrets.";
+      if (msg.includes("403") || msg.includes("401") || msg.includes("API_KEY")) {
+        errorDisplay = "AI SERVICE TEMPORARILY UNAVAILABLE. PLEASE TRY AGAIN LATER.";
+      } else {
+        errorDisplay = `AI ERROR: ${msg}`;
       }
 
       setMessages(prev => [...prev, { 
