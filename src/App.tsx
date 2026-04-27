@@ -1668,8 +1668,13 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
     setLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : null);
-      if (!apiKey) {
+      // Check multiple locations for the API key to ensure compatibility across local and production builds
+      const apiKey = 
+        import.meta.env.VITE_GEMINI_API_KEY || 
+        (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : null) ||
+        (typeof process !== 'undefined' ? process.env.VITE_GEMINI_API_KEY : null);
+
+      if (!apiKey || apiKey === "undefined" || apiKey === '""') {
         throw new Error("API_KEY_MISSING");
       }
 
