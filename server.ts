@@ -42,10 +42,10 @@ async function startServer() {
         });
       }
 
-      const genAI = new GoogleGenAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const ai = new GoogleGenAI({ apiKey });
 
-      const result = await model.generateContent({
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
         contents: [{
           role: "user",
           parts: [{
@@ -65,13 +65,16 @@ async function startServer() {
             }`
           }]
         }],
-        generationConfig: {
+        config: {
           responseMimeType: "application/json"
         }
       });
 
-      const response = result.response;
-      const rawText = response.text();
+      const rawText = result.text;
+      if (!rawText) {
+        const reason = result.candidates?.[0]?.finishReason || "UNKNOWN";
+        throw new Error(`AI response was empty. Reason: ${reason}`);
+      }
       try {
         const cleanedText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
         res.json(JSON.parse(cleanedText));
