@@ -320,10 +320,11 @@ const Ticker = () => (
   </div>
 );
 
-const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage, categories, onCategorySelect, selectedCategory }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop' | 'product') => void, currentPage: 'home' | 'shop' | 'product', categories: string[], onCategorySelect: (cat: string) => void, selectedCategory: string }) => {
+const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, currentPage, categories, onCategorySelect, selectedCategory, searchQuery, setSearchQuery }: { cartCount: number, onOpenCart: () => void, onOpenAdmin: () => void, isAdmin: boolean, setCurrentPage: (page: 'home' | 'shop' | 'product') => void, currentPage: 'home' | 'shop' | 'product', categories: string[], onCategorySelect: (cat: string) => void, selectedCategory: string, searchQuery: string, setSearchQuery: (q: string) => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const isShop = currentPage === 'shop' || currentPage === 'product';
 
   useEffect(() => {
@@ -335,7 +336,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
   const navLinks = [
     { label: 'Shop', page: 'shop' as const },
     { label: 'Collections', page: 'home' as const },
-    { label: 'Search', action: () => {} },
+    { label: 'Search', action: () => setIsSearchOpen(true) },
     { label: 'Account', action: onOpenAdmin }
   ];
 
@@ -344,6 +345,39 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
       <Ticker />
       <div className={`w-full transition-all duration-700 ${isScrolled || isShop ? 'bg-white/95 backdrop-blur-md text-black py-4 shadow-sm' : 'bg-transparent text-white py-6 md:py-8'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between relative">
+          
+          <AnimatePresence>
+            {isSearchOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="absolute inset-0 bg-white z-[150] flex items-center px-6 gap-6"
+              >
+                <div className="flex-1 flex items-center gap-4 border-b-2 border-black py-2">
+                  <Search className="w-5 h-5 text-black" />
+                  <input 
+                    autoFocus
+                    type="text" 
+                    placeholder="SEARCH PRODUCTS..." 
+                    className="flex-1 bg-transparent border-none outline-none text-xs font-black uppercase tracking-widest placeholder:text-gray-300"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (currentPage !== 'shop') setCurrentPage('shop');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') setIsSearchOpen(false);
+                    }}
+                  />
+                </div>
+                <button onClick={() => setIsSearchOpen(false)} className="p-2 hover:opacity-50 transition-opacity">
+                  <X className="w-6 h-6 text-black" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Mobile Menu Toggle */}
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
@@ -403,8 +437,14 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
-            <Search className="hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity" />
-            <Search className="md:hidden w-6 h-6 cursor-pointer hover:opacity-50 transition-opacity" />
+            <Search 
+              className="hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity" 
+              onClick={() => setIsSearchOpen(true)}
+            />
+            <Search 
+              className="md:hidden w-6 h-6 cursor-pointer hover:opacity-50 transition-opacity" 
+              onClick={() => setIsSearchOpen(true)}
+            />
             <div className="relative cursor-pointer group" onClick={onOpenCart}>
               <ShoppingBag className="w-6 h-6 md:w-5 h-5 group-hover:opacity-50 transition-opacity" />
               {cartCount > 0 && (
@@ -1415,21 +1455,26 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
   );
 };
 
-const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory }: { productsList: Product[], onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void }) => {
+const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory, searchQuery, setSearchQuery }: { productsList: Product[], onAddToCart: (p: Product) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void, searchQuery: string, setSearchQuery: (q: string) => void }) => {
   const categories = ["All", "New Arrivals", "Tops", "T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Jackets", "Shackets", "Sweaters", "Beanies"];
   const [currentPageNum, setCurrentPageNum] = useState(1);
   const itemsPerPage = 15;
 
   const filteredProducts = productsList.filter(product => {
-    if (activeCategory === "All") return true;
-    if (activeCategory === "New Arrivals") return product.isNewArrival;
-    return product.category === activeCategory;
+    const matchesCategory = activeCategory === "All" || 
+                            (activeCategory === "New Arrivals" ? product.isNewArrival : product.category === activeCategory);
+    
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = product.name.toLowerCase().includes(searchLower) || 
+                         (product.description && product.description.toLowerCase().includes(searchLower));
+    
+    return matchesCategory && matchesSearch;
   });
 
-  // Reset page when category changes
+  // Reset page when category or search changes
   useEffect(() => {
     setCurrentPageNum(1);
-  }, [activeCategory]);
+  }, [activeCategory, searchQuery]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPageNum - 1) * itemsPerPage;
@@ -1440,27 +1485,34 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
       <div className="w-full px-4 md:px-8 mb-20">
         <Reveal>
           <div className="flex items-baseline gap-4 mb-4">
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">Archives</h2>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
+              {searchQuery ? `Searching: ${searchQuery}` : 'Archives'}
+            </h2>
             <span className="text-xs text-gray-400 font-black mb-1">[{filteredProducts.length} ARTICLES]</span>
           </div>
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-12 max-w-xl leading-loose">
-            Precision engineering filtered through aesthetic rebellion. Every piece in the collection is meticulously inspected and verified for quality.
+            {searchQuery 
+              ? `Displaying search results across all collections matching your query.`
+              : 'Precision engineering filtered through aesthetic rebellion. Every piece in the collection is meticulously inspected and verified for quality.'
+            }
           </p>
         </Reveal>
         
-        <Reveal delay={0.2}>
-          <div className="flex flex-wrap gap-x-8 gap-y-4 scrollbar-hide overflow-x-auto pb-4 sticky top-24 bg-white/50 backdrop-blur-md z-40">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all cursor-pointer whitespace-nowrap pb-2 ${activeCategory === cat ? 'text-black border-b-2 border-black' : 'text-gray-300 hover:text-black'}`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </Reveal>
+        {!searchQuery && (
+          <Reveal delay={0.2}>
+            <div className="flex flex-wrap gap-x-8 gap-y-4 scrollbar-hide overflow-x-auto pb-4 sticky top-24 bg-white/50 backdrop-blur-md z-40">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all cursor-pointer whitespace-nowrap pb-2 ${activeCategory === cat ? 'text-black border-b-2 border-black' : 'text-gray-300 hover:text-black'}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </Reveal>
+        )}
       </div>
 
       <div className="w-full px-0">
@@ -1475,8 +1527,18 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
         {filteredProducts.length === 0 && (
           <Reveal>
             <div className="py-40 text-center space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-300">End of Transmission</p>
-              <button onClick={() => setActiveCategory('All')} className="text-xs font-black uppercase underline underline-offset-8 decoration-2">Return to Baseline</button>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-300">
+                {searchQuery ? 'MISSION FAILED - NO MATCHES FOUND' : 'End of Transmission'}
+              </p>
+              <button 
+                onClick={() => {
+                  setActiveCategory('All');
+                  setSearchQuery("");
+                }} 
+                className="text-xs font-black uppercase underline underline-offset-8 decoration-2"
+              >
+                Return to Baseline
+              </button>
             </div>
           </Reveal>
         )}
@@ -1523,6 +1585,7 @@ export default function App() {
   const categories = ["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"];
   const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'product'>('home');
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -1689,6 +1752,8 @@ export default function App() {
         categories={categories}
         onCategorySelect={setSelectedCategory}
         selectedCategory={selectedCategory}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
       
       <main>
@@ -1732,6 +1797,8 @@ export default function App() {
             onProductClick={handleProductClick} 
             activeCategory={selectedCategory}
             setActiveCategory={setSelectedCategory}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
         ) : (
           selectedProduct && (
