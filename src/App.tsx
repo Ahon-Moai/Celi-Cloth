@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy, ShieldCheck, Trash2 } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy, ShieldCheck, Trash2, Image as ImageIcon, Upload } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
@@ -636,6 +636,46 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
   );
 };
 
+const optimizeImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.8): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          reject(new Error('Failed to get canvas context'));
+        }
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
+
 const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateStatus, onUpdateMessageStatus, onDeleteOrder, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], messages: any[], categories: string[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onDeleteOrder: (id: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json' | 'categories'>('orders');
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -644,11 +684,12 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'confirmed' | 'shipped'>('all');
   const [newCatName, setNewCatName] = useState('');
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   const [productForm, setProductForm] = useState({
     name: '',
     price: 0,
-    category: 'T-shirts',
+    category: categories[0] || 'T-shirts',
     image: '',
     gallery: [] as string[],
     colors: [] as string[],
@@ -658,8 +699,39 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
     soldOut: false
   });
 
-  const [newGalleryUrl, setNewGalleryUrl] = useState('');
   const [newColor, setNewColor] = useState('#000000');
+
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsOptimizing(true);
+    try {
+      const optimized = await optimizeImage(file);
+      setProductForm(prev => ({ ...prev, image: optimized }));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to process image');
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsOptimizing(true);
+    try {
+      const optimized = await optimizeImage(file);
+      setProductForm(prev => ({ ...prev, gallery: [...prev.gallery, optimized] }));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to process image');
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
 
   const handleOpenAddModal = () => {
     setEditingProduct(null);
@@ -730,13 +802,6 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
     }));
   };
 
-  const addGalleryItem = () => {
-    if (newGalleryUrl) {
-      setProductForm(prev => ({ ...prev, gallery: [...prev.gallery, newGalleryUrl] }));
-      setNewGalleryUrl('');
-    }
-  };
-
   const removeGalleryItem = (index: number) => {
     setProductForm(prev => ({ ...prev, gallery: prev.gallery.filter((_, i) => i !== index) }));
   };
@@ -781,9 +846,41 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Primary Visual URL</label>
-                      <input required type="url" className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold" value={productForm.image} onChange={e => setProductForm({...productForm, image: e.target.value})} />
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Primary Visual</label>
+                      <div className="relative group">
+                        {productForm.image ? (
+                          <div className="aspect-[4/5] bg-gray-50 border border-gray-100 overflow-hidden relative">
+                            <img src={productForm.image} className="w-full h-full object-cover" alt="Product" />
+                            <button 
+                              type="button"
+                              onClick={() => setProductForm(prev => ({ ...prev, image: '' }))}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center aspect-[4/5] border-2 border-dashed border-gray-200 rounded-sm hover:border-black transition-colors cursor-pointer bg-gray-50">
+                            {isOptimizing ? (
+                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                            ) : (
+                              <>
+                                <Upload className="w-6 h-6 text-gray-400 mb-2" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Select File</span>
+                              </>
+                            )}
+                            <input type="file" accept="image/*" className="hidden" onChange={handleMainImageUpload} disabled={isOptimizing} />
+                          </label>
+                        )}
+                        {productForm.image && (
+                          <label className="absolute bottom-4 right-4 p-3 bg-white shadow-xl rounded-full cursor-pointer hover:bg-gray-50 transition-colors border border-gray-100">
+                             <ImageIcon className="w-4 h-4" />
+                             <input type="file" accept="image/*" className="hidden" onChange={handleMainImageUpload} disabled={isOptimizing} />
+                          </label>
+                        )}
+                      </div>
+                      <input type="hidden" required value={productForm.image} />
                     </div>
 
                     <div className="space-y-2">
@@ -804,13 +901,20 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                   </div>
 
                   <div className="space-y-6">
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Gallery Visuals</label>
-                      <div className="flex gap-2 mb-4">
-                        <input type="url" placeholder="Paste URL..." className="flex-1 border-b border-gray-100 py-2 text-xs outline-none" value={newGalleryUrl} onChange={e => setNewGalleryUrl(e.target.value)} />
-                        <button type="button" onClick={addGalleryItem} className="px-3 py-2 bg-black text-white text-[10px] font-black uppercase">Add</button>
-                      </div>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-3 gap-3">
+                        <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-black transition-colors cursor-pointer bg-gray-50">
+                          {isOptimizing ? (
+                             <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4 text-gray-400" />
+                              <span className="text-[8px] font-black uppercase text-gray-400 mt-1">Add</span>
+                            </>
+                          )}
+                          <input type="file" accept="image/*" className="hidden" onChange={handleGalleryUpload} disabled={isOptimizing} />
+                        </label>
                         {productForm.gallery.map((url, i) => (
                           <div key={i} className="aspect-square relative group bg-gray-50 border border-gray-100">
                             <img src={url} className="w-full h-full object-cover" alt="" />
@@ -1701,6 +1805,23 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
   const [phoneError, setPhoneError] = useState('');
   const [altPhoneError, setAltPhoneError] = useState('');
   const [copiedStatus, setCopiedStatus] = useState<string | null>(null);
+  const [isCProcessing, setIsCProcessing] = useState(false);
+
+  const handleCheckoutImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsCProcessing(true);
+    try {
+      const optimized = await optimizeImage(file, 800, 800, 0.6); // Aggressive optimization for payment proof
+      setFormData(prev => ({ ...prev, paymentInfo: optimized }));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to process image');
+    } finally {
+      setIsCProcessing(false);
+    }
+  };
 
   const deliveryCharge = formData.deliveryZone === 'inside' ? 80 : 150;
   const grandTotal = totalAmount + deliveryCharge;
@@ -1943,9 +2064,46 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Transfer Proof (TrxID or Last 4 Digits)</label>
-                    <input required type="text" placeholder="e.g. ৳{deliveryCharge} sent from XXXX or TrxID: 8N2K..." className="w-full border-b border-gray-200 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold bg-transparent" value={formData.paymentInfo} onChange={(e) => setFormData({...formData, paymentInfo: e.target.value})} />
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Transfer Proof (Screenshot or Details)</label>
+                    <div className="flex flex-col gap-4">
+                      {formData.paymentInfo && formData.paymentInfo.startsWith('data:image') ? (
+                        <div className="relative w-32 aspect-square border border-gray-100 rounded-lg overflow-hidden group">
+                           <img src={formData.paymentInfo} className="w-full h-full object-cover" alt="Proof" />
+                           <button 
+                             type="button"
+                             onClick={() => setFormData(prev => ({ ...prev, paymentInfo: '' }))}
+                             className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-4">
+                          <label className="flex-1 border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-black transition-colors cursor-pointer flex flex-col items-center justify-center bg-white">
+                            {isCProcessing ? (
+                              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                            ) : (
+                              <>
+                                <Upload className="w-4 h-4 text-gray-400 mb-2" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 text-center">Upload Proof Screenshot</span>
+                              </>
+                            )}
+                            <input type="file" accept="image/*" className="hidden" onChange={handleCheckoutImageUpload} disabled={isCProcessing} />
+                          </label>
+                          <div className="flex-1 flex flex-col justify-center">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2 text-center">— OR —</span>
+                            <input 
+                              type="text" 
+                              placeholder="TrxID or Last 4 Digits" 
+                              className="w-full border-b border-gray-200 py-3 text-[12px] outline-none focus:border-black transition-colors font-bold bg-transparent" 
+                              value={formData.paymentInfo.startsWith('data:image') ? '' : formData.paymentInfo} 
+                              onChange={(e) => setFormData({...formData, paymentInfo: e.target.value})} 
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
