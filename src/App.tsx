@@ -1507,8 +1507,27 @@ const CartDrawer = ({ isOpen, onClose, items, onRemove, onUpdateQty, onCheckout 
 );
 
 const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: { isOpen: boolean, onClose: () => void, onSuccess: (data: any) => void, totalItems: CartItem[], totalAmount: number }) => {
-  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', address: '', city: '' });
+  const [formData, setFormData] = useState({ 
+    socialName: '', 
+    phone: '', 
+    altPhone: '', 
+    address: '', 
+    productInfo: totalItems.map(i => `${i.name} (${i.selectedColor})`).join(', '),
+    productSize: totalItems.map(i => i.selectedSize).join(', '),
+    designDetails: '',
+    paymentInfo: ''
+  });
   const [loading, setLoading] = useState(false);
+
+  // Update product info when totalItems changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      productInfo: totalItems.map(i => `${i.name} (${i.selectedColor})`).join(', '),
+      productSize: totalItems.map(i => i.selectedSize).join(', ')
+    }));
+  }, [totalItems]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -1550,39 +1569,51 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                 <X className="w-8 h-8" />
               </button>
               <h2 className="text-2xl font-black uppercase tracking-[0.2em] mb-12">COD Checkout</h2>
-              <form onSubmit={handleSubmit} className="space-y-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Recipient Name</label>
-                    <input required type="text" placeholder="John Doe" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} />
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Social's Name</label>
+                    <input required type="text" placeholder="Facebook/Instagram Name" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.socialName} onChange={(e) => setFormData({...formData, socialName: e.target.value})} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Mobile Number</label>
-                    <input required type="tel" placeholder="+880" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Phone Number</label>
+                    <input required type="tel" placeholder="01XXX-XXXXXX" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Alternative Number</label>
+                    <input type="tel" placeholder="Optional" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.altPhone} onChange={(e) => setFormData({...formData, altPhone: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Product Name & Color</label>
+                    <input required type="text" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.productInfo} onChange={(e) => setFormData({...formData, productInfo: e.target.value})} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Size</label>
+                    <input required type="text" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.productSize} onChange={(e) => setFormData({...formData, productSize: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">bKash/Nagad Amount + Last 4 Digits</label>
+                    <input required type="text" placeholder="e.g. 500 TK, 1234" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.paymentInfo} onChange={(e) => setFormData({...formData, paymentInfo: e.target.value})} />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Contact Email</label>
-                  <input required type="email" placeholder="hello@celifoto.com" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Exact Home/Delivery Address</label>
+                  <textarea required rows={2} placeholder="Apartment, Street, Area..." className="w-full border border-gray-100 p-4 text-[14px] outline-none focus:border-black transition-colors resize-none font-medium placeholder:font-normal placeholder:text-gray-300" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Full Shipping Address</label>
-                  <textarea required rows={3} placeholder="Apartment, Street, Area..." className="w-full border border-gray-100 p-4 text-[14px] outline-none focus:border-black transition-colors resize-none font-medium placeholder:font-normal placeholder:text-gray-300" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Design / Customisation Details (short & clear)</label>
+                  <textarea rows={2} placeholder="Any specific requirements..." className="w-full border border-gray-100 p-4 text-[14px] outline-none focus:border-black transition-colors resize-none font-medium placeholder:font-normal placeholder:text-gray-300" value={formData.designDetails} onChange={(e) => setFormData({...formData, designDetails: e.target.value})} />
                 </div>
-                <div className="grid grid-cols-2 gap-10">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Delivery City</label>
-                    <input required type="text" placeholder="Dhaka" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Payment Option</label>
-                    <div className="py-3 text-[13px] font-black text-gray-900 border-b border-gray-50 flex items-center gap-3">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Cash on Delivery
-                    </div>
-                  </div>
-                </div>
-                <div className="pt-10 border-t border-gray-100 mt-12 flex flex-col md:flex-row md:items-center justify-between gap-8">
+
+                <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-8">
                   <div>
                     <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black mb-1">Total Payable</p>
                     <p className="text-3xl font-black tracking-tight">৳{totalAmount.toLocaleString()}</p>
@@ -2137,9 +2168,9 @@ const LoadingScreen = () => {
         className="w-full max-w-[280px] md:max-w-md lg:max-w-xl"
       >
         <img 
-          src="https://artifact.soumya.me/api/v1/artifacts/3ggrexrxpxfx3chm6ovwxy/original" 
+          src="https://www.image2url.com/r2/default/images/1777312670418-ca29d9ff-c1e8-4aa9-9e85-31d771c862bd.png" 
           alt="FELICITE" 
-          className="w-full h-auto object-contain mix-blend-multiply"
+          className="w-full h-auto object-contain"
         />
       </motion.div>
       <div className="absolute bottom-16 left-0 right-0 flex flex-col items-center gap-6">
