@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy, ShieldCheck } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
@@ -599,9 +599,10 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                       onOpenAdmin();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="text-4xl font-black uppercase tracking-tighter text-left hover:text-gray-400 transition-colors"
+                    className={`text-4xl font-black uppercase tracking-tighter text-left transition-colors flex items-center gap-3 ${isAdmin ? 'text-green-600' : 'hover:text-gray-400'}`}
                   >
-                    Account
+                    {isAdmin && <ShieldCheck className="w-8 h-8" />}
+                    {isAdmin ? 'Admin Console' : 'Account'}
                   </motion.button>
                 </nav>
               </div>
@@ -1005,9 +1006,13 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                             )}
                           </td>
                           <td className="px-8 py-6">
-                            <p className="font-black text-xs uppercase">{order.customerInfo.socialName || order.customerInfo.fullName || 'Anonymous'}</p>
+                            <p className="font-black text-xs uppercase">{order.customerInfo.socialName || order.customerInfo.fullName}</p>
                             <p className="text-[10px] text-gray-500 font-bold">{order.customerInfo.phone}</p>
                             {order.customerInfo.altPhone && <p className="text-[9px] text-gray-400">Alt: {order.customerInfo.altPhone}</p>}
+                            <div className="mt-2 text-[9px] text-gray-400 font-medium leading-relaxed max-w-[200px]">
+                              <p className="font-bold text-black uppercase text-[8px] mb-1">Address:</p>
+                              {order.customerInfo.address}
+                            </div>
                           </td>
                           <td className="px-8 py-6">
                             <div className="space-y-1">
@@ -1017,14 +1022,25 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                                 </p>
                               ))}
                             </div>
+                            {order.customerInfo.designDetails && (
+                              <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-sm">
+                                <p className="text-[8px] font-black text-blue-600 uppercase mb-1">Customization</p>
+                                <p className="text-[9px] text-blue-800 leading-tight">{order.customerInfo.designDetails}</p>
+                              </div>
+                            )}
                             <p className="text-[9px] text-gray-400 font-bold uppercase mt-2">Zone: {order.customerInfo.deliveryZone}</p>
-                            <p className="text-[9px] text-blue-500 font-medium truncate max-w-[150px]">Proof: {order.customerInfo.paymentInfo}</p>
                           </td>
                           <td className="px-8 py-6">
-                            <p className="font-black text-sm">৳{order.grandTotal?.toLocaleString() || order.totalAmount?.toLocaleString()}</p>
-                            <p className="text-[9px] text-gray-400 font-bold uppercase italic">
-                              Prod: ৳{order.totalAmount?.toLocaleString()} | Ship: ৳{order.deliveryCharge || 0}
-                            </p>
+                            <div className="space-y-1">
+                              <p className="font-black text-sm">৳{order.grandTotal?.toLocaleString() || order.totalAmount?.toLocaleString()}</p>
+                              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
+                                Delivery: ৳{order.deliveryCharge || 0}
+                              </p>
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <p className="text-[8px] font-black uppercase text-gray-400 mb-1">Payment Proof</p>
+                                <p className="text-[10px] font-bold text-blue-600 break-all max-w-[120px]">{order.customerInfo.paymentInfo}</p>
+                              </div>
+                            </div>
                           </td>
                           <td className="px-8 py-6 flex items-center gap-4">
                             <select 
@@ -1071,7 +1087,9 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-mono text-blue-600 font-black text-sm">#{order.id?.slice(0, 8).toUpperCase()}</p>
-                        <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                        <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+                          {order.createdAt ? (order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt)).toLocaleString() : 'N/A'}
+                        </p>
                       </div>
                       <span className={`px-3 py-1 rounded-sm text-[9px] font-black uppercase tracking-widest border ${
                         order.status === 'pending' ? 'bg-orange-50 text-orange-600 border-orange-100' :
@@ -1086,25 +1104,40 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
 
                     <div className="space-y-4">
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Customer</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Customer & Logistics</p>
                         <p className="font-black text-sm uppercase">{order.customerInfo.socialName || order.customerInfo.fullName}</p>
                         <p className="text-[11px] text-gray-500 font-bold">{order.customerInfo.phone}</p>
+                        {order.customerInfo.altPhone && <p className="text-[10px] text-gray-400 font-bold tracking-tight">Alt: {order.customerInfo.altPhone}</p>}
+                        <div className="mt-2 p-3 bg-gray-50 border border-gray-100 text-[10px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
+                          <span className="font-black text-black block mb-1">STREET ADDRESS:</span>
+                          {order.customerInfo.address}
+                        </div>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Items</p>
-                        <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Items & Customization</p>
+                        <div className="space-y-1 mb-2">
                           {order.items.map((item: any, idx: number) => (
                             <p key={idx} className="text-[10px] font-bold text-gray-600">
                               {item.name} [{item.selectedSize}/{item.selectedColor}] x{item.quantity}
                             </p>
                           ))}
                         </div>
+                        {order.customerInfo.designDetails && (
+                          <div className="p-3 bg-blue-50 border border-blue-100 rounded-sm">
+                            <p className="text-[8px] font-black text-blue-600 uppercase mb-1 underline">Design Modification Notes</p>
+                            <p className="text-[10px] text-blue-800 leading-tight font-medium">{order.customerInfo.designDetails}</p>
+                          </div>
+                        )}
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Financials</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Capital Workflow</p>
                           <p className="font-black text-lg">৳{order.grandTotal?.toLocaleString() || order.totalAmount?.toLocaleString()}</p>
-                          <p className="text-[9px] text-gray-400 uppercase font-bold uppercase tracking-widest">Zone: {order.customerInfo.deliveryZone}</p>
+                          <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-2 italic">Ship: ৳{order.deliveryCharge || 0}</p>
+                          <div className="p-2 bg-green-50/50 border border-green-100 rounded-sm">
+                            <p className="text-[8px] font-black text-green-700 uppercase mb-1">Verification</p>
+                            <p className="text-[9px] font-bold text-green-600 break-all">{order.customerInfo.paymentInfo}</p>
+                          </div>
                         </div>
                         <div className="flex flex-col justify-end">
                           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1 text-right">Protocol</p>
