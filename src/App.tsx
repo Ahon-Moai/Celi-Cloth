@@ -406,14 +406,6 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
             >
               <Menu className="w-6 h-6" />
             </button>
-            {isAdmin && (
-              <button 
-                onClick={onOpenAdmin}
-                className={`p-1 -ml-1 transition-colors ${isScrolled || isShop ? 'text-green-600' : 'text-green-400'}`}
-              >
-                <ShieldCheck className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
           {/* Desktop Links */}
@@ -475,14 +467,12 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
-            {isAdmin && (
-              <button 
-                onClick={onOpenAdmin}
-                className={`hidden md:flex p-2 rounded-full transition-colors ${isScrolled || isShop ? 'text-black hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
-              >
-                <ShieldCheck className="w-5 h-5" />
-              </button>
-            )}
+            <button 
+              onClick={onOpenAdmin}
+              className={`p-2 rounded-full transition-colors ${isAdmin ? 'text-green-500' : (isScrolled || isShop ? 'text-black hover:bg-gray-100' : 'text-white hover:bg-white/10')}`}
+            >
+              {isAdmin ? <ShieldCheck className="w-5 h-5" /> : <User className="w-5 h-5" />}
+            </button>
             <a 
               href="https://wa.me/8801631818222" 
               target="_blank" 
@@ -511,7 +501,6 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
                 </motion.span>
               )}
             </div>
-            <User className={`hidden md:block w-5 h-5 cursor-pointer hover:opacity-50 transition-opacity ${isAdmin ? 'text-green-500' : (isScrolled || isShop ? 'text-black' : 'text-white')}`} onClick={onOpenAdmin} />
           </div>
         </div>
       </div>
