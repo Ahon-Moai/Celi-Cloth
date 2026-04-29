@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy, ShieldCheck } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy, ShieldCheck, Trash2 } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
@@ -399,12 +399,22 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
           </AnimatePresence>
 
           {/* Mobile Menu Toggle */}
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className={`md:hidden p-2 -ml-2 hover:opacity-50 transition-opacity ${isScrolled || isShop ? 'text-black' : 'text-white'}`}
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+          <div className="md:hidden flex items-center -ml-2">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className={`p-2 hover:opacity-50 transition-opacity ${isScrolled || isShop ? 'text-black' : 'text-white'}`}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            {isAdmin && (
+              <button 
+                onClick={onOpenAdmin}
+                className={`p-1 -ml-1 transition-colors ${isScrolled || isShop ? 'text-green-600' : 'text-green-400'}`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
           {/* Desktop Links */}
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
@@ -465,6 +475,14 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
+            {isAdmin && (
+              <button 
+                onClick={onOpenAdmin}
+                className={`hidden md:flex p-2 rounded-full transition-colors ${isScrolled || isShop ? 'text-black hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
+              >
+                <ShieldCheck className="w-5 h-5" />
+              </button>
+            )}
             <a 
               href="https://wa.me/8801631818222" 
               target="_blank" 
@@ -618,7 +636,7 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
   );
 };
 
-const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateStatus, onUpdateMessageStatus, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], messages: any[], categories: string[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
+const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateStatus, onUpdateMessageStatus, onDeleteOrder, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], messages: any[], categories: string[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onDeleteOrder: (id: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json' | 'categories'>('orders');
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -1060,6 +1078,17 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                               <option value="delivered">Liquidate</option>
                               <option value="cancelled">Abort</option>
                             </select>
+                            <button 
+                              onClick={() => {
+                                if(window.confirm(`PERMANENTLY DELETE ORDER #${order.id?.slice(0,8).toUpperCase()}? This action is irreversible.`)) {
+                                  onDeleteOrder(order.id);
+                                }
+                              }}
+                              className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                              title="Delete Order"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1140,7 +1169,19 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                           </div>
                         </div>
                         <div className="flex flex-col justify-end">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1 text-right">Protocol</p>
+                          <div className="flex justify-between items-center mb-1">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Protocol</p>
+                            <button 
+                              onClick={() => {
+                                if(window.confirm(`PERMANENTLY DELETE ORDER #${order.id?.slice(0,8).toUpperCase()}?`)) {
+                                  onDeleteOrder(order.id);
+                                }
+                              }}
+                              className="text-red-500 font-black text-[9px] uppercase tracking-widest px-2 py-1 bg-red-50 rounded-xs"
+                            >
+                              Delete
+                            </button>
+                          </div>
                           <select 
                             value={order.status} 
                             onChange={(e) => onUpdateStatus(order.id, e.target.value)}
@@ -2616,6 +2657,14 @@ export default function App() {
     }
   };
 
+  const deleteOrder = async (orderId: string) => {
+    try {
+      await deleteDoc(doc(db, 'orders', orderId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const updateMessageStatus = async (messageId: string, newStatus: string) => {
     try {
       await updateDoc(doc(db, 'messages', messageId), {
@@ -2680,6 +2729,7 @@ export default function App() {
         categories={categories}
         onUpdateStatus={updateOrderStatus} 
         onUpdateMessageStatus={updateMessageStatus}
+        onDeleteOrder={deleteOrder}
         onAddProduct={addOrUpdateProduct} 
         onDeleteProduct={deleteProduct} 
         onUpdateCategories={setCategories}
