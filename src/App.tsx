@@ -300,9 +300,9 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-20 px-4 md:px-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-2 px-0">
           {relatedProducts.map(p => (
-            <div key={p.id} className="border-r border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+            <div key={p.id} className="border border-gray-50 hover:bg-gray-50 transition-colors">
                <ProductCard product={p} onAddToCart={onAddToCart} onClick={onProductClick} />
             </div>
           ))}
@@ -608,13 +608,14 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
   );
 };
 
-const AdminDashboard = ({ orders, productsList, messages, onUpdateStatus, onUpdateMessageStatus, onAddProduct, onDeleteProduct, onClose }: { orders: any[], productsList: Product[], messages: any[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json'>('orders');
+const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateStatus, onUpdateMessageStatus, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], messages: any[], categories: string[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
+  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json' | 'categories'>('orders');
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [jsonInput, setJsonInput] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'confirmed' | 'shipped'>('all');
+  const [newCatName, setNewCatName] = useState('');
 
   const [productForm, setProductForm] = useState({
     name: '',
@@ -747,7 +748,7 @@ const AdminDashboard = ({ orders, productsList, messages, onUpdateStatus, onUpda
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Class</label>
                         <select className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold uppercase" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})}>
-                          {["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"].map(c => <option key={c} value={c}>{c}</option>)}
+                          {categories.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
                     </div>
@@ -874,6 +875,13 @@ const AdminDashboard = ({ orders, productsList, messages, onUpdateStatus, onUpda
                 <ExternalLink className="w-4 h-4" /> 
                 JSON PORTAL
               </button>
+              <button 
+                onClick={() => { setActiveTab('categories'); setIsSidebarOpen(false); }}
+                className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'categories' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
+              >
+                <Layers className="w-4 h-4" /> 
+                CATEGORIES
+              </button>
             </nav>
           </div>
         </div>
@@ -898,7 +906,7 @@ const AdminDashboard = ({ orders, productsList, messages, onUpdateStatus, onUpda
             </button>
             <div>
               <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">
-                {activeTab === 'orders' ? 'Live Orders' : activeTab === 'inventory' ? 'Inventory' : activeTab === 'messages' ? 'Communications' : 'JSON Portal'}
+                {activeTab === 'orders' ? 'Live Orders' : activeTab === 'inventory' ? 'Inventory' : activeTab === 'messages' ? 'Communications' : activeTab === 'categories' ? 'Distinction Classes' : 'JSON Portal'}
               </h1>
             </div>
           </div>
@@ -1143,7 +1151,7 @@ const AdminDashboard = ({ orders, productsList, messages, onUpdateStatus, onUpda
           )}
 
           {activeTab === 'inventory' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-2">
               {productsList.map(product => (
                 <div key={product.id} className="bg-white border border-gray-100 p-4 md:p-6 flex flex-col group hover:shadow-2xl transition-all duration-700">
                   <div className="aspect-[4/5] bg-gray-50 mb-6 overflow-hidden relative">
@@ -1174,6 +1182,72 @@ const AdminDashboard = ({ orders, productsList, messages, onUpdateStatus, onUpda
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'categories' && (
+            <div className="space-y-12 max-w-2xl">
+              <div className="bg-white p-8 border border-gray-100 space-y-6">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Initialize New Class</h3>
+                <div className="flex gap-4">
+                  <input 
+                    type="text" 
+                    placeholder="Class Name (e.g. OUTERWEAR)" 
+                    className="flex-1 border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold uppercase"
+                    value={newCatName}
+                    onChange={e => setNewCatName(e.target.value)}
+                  />
+                  <button 
+                    onClick={() => {
+                      if (newCatName.trim()) {
+                        onUpdateCategories([...categories, newCatName.trim()]);
+                        setNewCatName('');
+                      }
+                    }}
+                    className="bg-black text-white px-8 py-3 text-[10px] font-black uppercase tracking-widest"
+                  >
+                    Append
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-gray-50">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Distinction Registry</h3>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {categories.map((cat, i) => (
+                    <div key={i} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                      <span className="text-xs font-black uppercase tracking-widest">{cat}</span>
+                      <div className="flex gap-6">
+                        <button 
+                          onClick={() => {
+                            const newName = prompt('Enter new category name', cat);
+                            if (newName && newName !== cat) {
+                              const newCats = [...categories];
+                              newCats[i] = newName;
+                              onUpdateCategories(newCats);
+                            }
+                          }}
+                          className="text-[9px] font-black uppercase tracking-widest text-blue-600 hover:opacity-50"
+                        >
+                          Modify
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (confirm('Erase this class from registry?')) {
+                              onUpdateCategories(categories.filter((_, idx) => idx !== i));
+                            }
+                          }}
+                          className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:opacity-50"
+                        >
+                          Erase
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1631,8 +1705,8 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
   );
 };
 
-const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory, searchQuery, setSearchQuery }: { productsList: Product[], onAddToCart: (p: Product, size?: string, color?: string) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void, searchQuery: string, setSearchQuery: (q: string) => void }) => {
-  const categories = ["All", "New Arrivals", "Tops", "T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Jackets", "Shackets", "Sweaters", "Beanies"];
+const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, setActiveCategory, searchQuery, setSearchQuery, categoriesList }: { productsList: Product[], onAddToCart: (p: Product, size?: string, color?: string) => void, onProductClick: (p: Product) => void, activeCategory: string, setActiveCategory: (cat: string) => void, searchQuery: string, setSearchQuery: (q: string) => void, categoriesList: string[] }) => {
+  const categories = ["All", "New Arrivals", ...categoriesList];
   const [currentPageNum, setCurrentPageNum] = useState(1);
   const itemsPerPage = 15;
 
@@ -1700,9 +1774,9 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
       </div>
 
       <div className="w-full px-0">
-        <div className="flex flex-wrap justify-between gap-y-16">
-          {paginatedProducts.map((product, idx) => (
-            <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%] border-r border-gray-50 last:border-0">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1">
+          {paginatedProducts.map((product) => (
+            <div key={product.id} className="border border-gray-50 hover:bg-gray-50 transition-colors">
               <ProductCard product={product} onAddToCart={onAddToCart} onClick={onProductClick} />
             </div>
           ))}
@@ -2198,7 +2272,7 @@ const LoadingScreen = () => {
 // --- App Component ---
 
 export default function App() {
-  const categories = ["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"];
+  const [categories, setCategories] = useState(["T-shirts", "Shirts", "Hoodies", "Pants", "Denims", "Sweaters", "Jackets", "Shackets", "Beanies"]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'product' | 'support' | 'privacy' | 'terms' | 'return' | 'contact'>('home');
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -2357,10 +2431,12 @@ export default function App() {
         orders={orders} 
         productsList={productsList} 
         messages={messages}
+        categories={categories}
         onUpdateStatus={updateOrderStatus} 
         onUpdateMessageStatus={updateMessageStatus}
         onAddProduct={addOrUpdateProduct} 
         onDeleteProduct={deleteProduct} 
+        onUpdateCategories={setCategories}
         onClose={() => setIsAdminMode(false)} 
       />
     );
@@ -2462,9 +2538,9 @@ export default function App() {
                   <div className="w-16 h-1 bg-black mx-auto" />
                 </div>
                 <div className="w-full px-0">
-                  <div className="flex flex-wrap justify-between gap-y-12">
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-1">
                     {productsList.slice(0, 5).map(product => (
-                      <div key={product.id} className="w-[49%] md:w-[32%] lg:w-[24%] xl:w-[19.5%]">
+                      <div key={product.id} className="border border-gray-50 hover:bg-gray-50 transition-colors">
                         <ProductCard product={product} onAddToCart={addToCart} onClick={handleProductClick} />
                       </div>
                     ))}
@@ -2492,6 +2568,7 @@ export default function App() {
             setActiveCategory={setSelectedCategory}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            categoriesList={categories}
           />
         ) : currentPage === 'product' ? (
           selectedProduct && (
