@@ -8,7 +8,7 @@ import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, update
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 // AI is handled directly in the frontend using Gemini free tier
-const ai = new GoogleGenAI({ apiKey: "AIzaSyAf9pkTSkxro6cLdOvngIKPRzu8RAgTB-U" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick }: { product: Product, productsList: Product[], onAddToCart: (p: Product, size?: string, color?: string) => void, onBack: () => void, onProductClick: (p: Product) => void }) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || 'S');
@@ -44,7 +44,7 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
   }, [activeTab, productsList, product.id]);
 
   return (
-    <div className="bg-white min-h-screen pt-20 md:pt-32">
+    <div className="bg-white min-h-screen pt-0">
       <AnimatePresence>
         {isSizeChartOpen && (
           <motion.div 
@@ -83,8 +83,8 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
 
       <div className="flex flex-col lg:flex-row">
         {/* Left: Image Gallery */}
-        <div className="w-full lg:w-1/2 bg-[#efefef] relative aspect-square lg:aspect-auto lg:h-[calc(100vh-80px)] top-0 lg:sticky overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center p-8 md:p-24 transition-all duration-700">
+        <div className="w-full lg:w-[60%] bg-[#efefef] relative aspect-square lg:aspect-auto lg:h-screen top-0 lg:sticky overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center p-0 transition-all duration-700">
             <AnimatePresence mode="wait">
               <motion.img 
                 key={activeImageIndex}
@@ -93,13 +93,13 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
                 exit={{ opacity: 0, x: -20 }}
                 src={gallery[activeImageIndex]} 
                 alt={product.name} 
-                className="w-full h-full object-contain mix-blend-multiply" 
+                className="w-full h-full object-cover" 
               />
             </AnimatePresence>
           </div>
           
-          <button onClick={onBack} className="absolute top-8 left-8 p-2 hover:bg-black/5 rounded-full transition-colors z-20">
-            <ChevronLeft className="w-6 h-6" />
+          <button onClick={onBack} className="absolute top-6 left-6 p-3 bg-white/20 backdrop-blur-md hover:bg-white/40 rounded-full transition-all z-20 shadow-xl border border-white/10">
+            <ChevronLeft className="w-6 h-6 text-white drop-shadow-md" />
           </button>
 
           {gallery.length > 1 && (
@@ -137,7 +137,7 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
         </div>
 
         {/* Right: Product Info */}
-        <div className="w-full lg:w-1/2 p-8 md:p-24 md:px-32 space-y-16">
+        <div className="w-full lg:w-[40%] p-8 md:p-12 space-y-12">
           <Reveal>
             <div className="flex justify-between items-start gap-8">
               <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight max-w-md">{product.name}</h1>
@@ -2746,31 +2746,50 @@ export default function App() {
     return () => unsubscribeAuth();
   }, []);
 
-  // Listen to Orders and Products
+  // Listen to Orders, Products, and Messages
   useEffect(() => {
     let unsubscribeOrders = () => {};
     let unsubscribeProducts = () => {};
     let unsubscribeMessages = () => {};
 
+    // Products are public
+    const qProducts = query(collection(db, 'products'));
+    unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
+      if (!snapshot.empty) {
+        const fbProducts = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as Product[];
+        setProductsList(fbProducts);
+        
+        // Dynamically update categories if not already customized
+        const uniqueCats = Array.from(new Set(fbProducts.map(p => p.category)));
+        if (uniqueCats.length > 0) {
+          setCategories(prev => {
+            const combined = Array.from(new Set([...prev, ...uniqueCats]));
+            return combined;
+          });
+        }
+      } else {
+        setProductsList(products);
+      }
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Products listener error:", error);
+      setIsLoading(false);
+      setProductsList(products); 
+    });
+
     if (isAdmin) {
       const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
       unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
         setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }, (error) => {
+        console.error("Orders listener error:", error);
       });
 
       const qMessages = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
       unsubscribeMessages = onSnapshot(qMessages, (snapshot) => {
         setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      });
-
-      const qProducts = query(collection(db, 'products'));
-      unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
-        if (!snapshot.empty) {
-          const fbProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
-          setProductsList(fbProducts);
-        } else {
-          setProductsList(products);
-        }
+      }, (error) => {
+        console.error("Messages listener error:", error);
       });
     }
 
@@ -2786,8 +2805,10 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [currentPage, selectedProduct]);
 
+  // Remove the static 3s timer and let it depend on data loading if possible
+  // or keep it as a fallback but shorter
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 3000);
+    const timer = setTimeout(() => setIsLoading(false), 5000); // 5s safety fallback
     return () => clearTimeout(timer);
   }, []);
 

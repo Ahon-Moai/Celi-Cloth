@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "id": "p1",
+    "name": "FAUCES GRAVITY TEE",
+    "price": 950,
+    "currency": "৳",
+    "category": "T-shirts",
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1200",
+    "gallery": [
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1200",
+      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=1200"
+    ],
+    "colors": ["#000000", "#FFFFFF"],
+    "sizes": ["S", "M", "L", "XL"],
+    "description": "Premium heavy-weight cotton tee with signature gravity print. Designed for the futuristic aesthetic of the modern streets.",
+    "isNewArrival": true
+  },
+  {
+    "id": "p2",
+    "name": "VOID UTILITY SHIRT",
+    "price": 1850,
+    "currency": "৳",
+    "category": "Shirts",
+    "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=1200",
+    "gallery": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=1200"
+    ],
+    "colors": ["#1a1a1a"],
+    "sizes": ["M", "L", "XL"],
+    "description": "Multi-pocket technical shirt featuring water-resistant fabric and modular attachments.",
+    "isNewArrival": true
+  },
+  {
+    "id": "p3",
+    "name": "URBAN NOMAD HOODIE",
+    "price": 2450,
+    "currency": "৳",
+    "category": "Hoodies",
+    "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1200",
+    "gallery": [
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1200"
+    ],
+    "colors": ["#333333", "#4A5568"],
+    "sizes": ["S", "M", "L", "XL", "2XL"],
+    "description": "Thermo-regulating fleece hoodie with oversized fit and reinforced stitching.",
+    "isNewArrival": false
+  }
+]
