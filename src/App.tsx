@@ -985,11 +985,11 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                   <table className="w-full text-left">
                     <thead className="bg-gray-50 border-b border-gray-100 text-[10px] uppercase font-black tracking-[0.2em] text-gray-400">
                       <tr>
-                        <th className="px-8 py-6">Identity</th>
-                        <th className="px-8 py-6">Entity</th>
-                        <th className="px-8 py-6">Value</th>
-                        <th className="px-8 py-6">Protocol</th>
-                        <th className="px-8 py-6">Operation</th>
+                        <th className="px-8 py-6">ID & Date</th>
+                        <th className="px-8 py-6">Customer Detials</th>
+                        <th className="px-8 py-6">Variants & Logistics</th>
+                        <th className="px-8 py-6">Capital Flow</th>
+                        <th className="px-8 py-6">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -997,32 +997,46 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                         <tr key={order.id} className="group hover:bg-gray-50 transition-colors">
                           <td className="px-8 py-6">
                             <p className="font-mono text-blue-600 font-black mb-1">#{order.id?.slice(0, 8).toUpperCase()}</p>
-                            <p className="text-[11px] font-bold text-gray-300">{order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                            <p className="text-[10px] font-bold text-gray-300">
+                              {order.createdAt ? (order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt)).toLocaleString() : 'N/A'}
+                            </p>
+                            {order.paymentMethod === 'WhatsApp' && (
+                              <span className="text-[8px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-black uppercase mt-2 inline-block">WhatsApp Sync</span>
+                            )}
                           </td>
                           <td className="px-8 py-6">
-                            <p className="font-black text-xs uppercase">{order.customerInfo.fullName}</p>
+                            <p className="font-black text-xs uppercase">{order.customerInfo.socialName || order.customerInfo.fullName || 'Anonymous'}</p>
                             <p className="text-[10px] text-gray-500 font-bold">{order.customerInfo.phone}</p>
+                            {order.customerInfo.altPhone && <p className="text-[9px] text-gray-400">Alt: {order.customerInfo.altPhone}</p>}
                           </td>
                           <td className="px-8 py-6">
-                            <p className="font-black text-sm">৳{order.totalAmount?.toLocaleString()}</p>
-                            <p className="text-[9px] text-gray-400 font-bold uppercase">{order.items.length} Units</p>
+                            <div className="space-y-1">
+                              {order.items.map((item: any, idx: number) => (
+                                <p key={idx} className="text-[10px] font-bold text-gray-600">
+                                  {item.name} [{item.selectedSize}/{item.selectedColor}] x{item.quantity}
+                                </p>
+                              ))}
+                            </div>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase mt-2">Zone: {order.customerInfo.deliveryZone}</p>
+                            <p className="text-[9px] text-blue-500 font-medium truncate max-w-[150px]">Proof: {order.customerInfo.paymentInfo}</p>
                           </td>
                           <td className="px-8 py-6">
-                            <span className={`px-3 py-1 rounded-sm text-[9px] font-black uppercase tracking-widest border ${
-                              order.status === 'pending' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                              order.status === 'confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                              order.status === 'shipped' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                              order.status === 'delivered' ? 'bg-green-50 text-green-600 border-green-100' :
-                              'bg-gray-50 text-gray-600 border-gray-100'
-                            }`}>
-                              {order.status}
-                            </span>
+                            <p className="font-black text-sm">৳{order.grandTotal?.toLocaleString() || order.totalAmount?.toLocaleString()}</p>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase italic">
+                              Prod: ৳{order.totalAmount?.toLocaleString()} | Ship: ৳{order.deliveryCharge || 0}
+                            </p>
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-8 py-6 flex items-center gap-4">
                             <select 
                               value={order.status} 
                               onChange={(e) => onUpdateStatus(order.id, e.target.value)}
-                              className="bg-transparent border-b-2 border-gray-100 text-[10px] uppercase font-black p-1 outline-none focus:border-black cursor-pointer transition-colors"
+                              className={`bg-transparent border-b-2 text-[10px] uppercase font-black p-1 outline-none transition-colors cursor-pointer ${
+                                order.status === 'pending' ? 'border-orange-500 text-orange-600' :
+                                order.status === 'confirmed' ? 'border-blue-500 text-blue-600' :
+                                order.status === 'shipped' ? 'border-purple-500 text-purple-600' :
+                                order.status === 'delivered' ? 'border-green-500 text-green-600' :
+                                'border-gray-300 text-gray-400'
+                              }`}
                             >
                               <option value="pending">Authorize</option>
                               <option value="confirmed">Confirm</option>
@@ -1073,17 +1087,27 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                     <div className="space-y-4">
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Customer</p>
-                        <p className="font-black text-sm uppercase">{order.customerInfo.fullName}</p>
+                        <p className="font-black text-sm uppercase">{order.customerInfo.socialName || order.customerInfo.fullName}</p>
                         <p className="text-[11px] text-gray-500 font-bold">{order.customerInfo.phone}</p>
                       </div>
-                      <div className="flex justify-between items-end">
-                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Value</p>
-                          <p className="font-black text-lg">৳{order.totalAmount?.toLocaleString()}</p>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase">{order.items.length} Units</p>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Items</p>
+                        <div className="space-y-1">
+                          {order.items.map((item: any, idx: number) => (
+                            <p key={idx} className="text-[10px] font-bold text-gray-600">
+                              {item.name} [{item.selectedSize}/{item.selectedColor}] x{item.quantity}
+                            </p>
+                          ))}
                         </div>
-                        <div className="w-1/2">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Action</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Financials</p>
+                          <p className="font-black text-lg">৳{order.grandTotal?.toLocaleString() || order.totalAmount?.toLocaleString()}</p>
+                          <p className="text-[9px] text-gray-400 uppercase font-bold uppercase tracking-widest">Zone: {order.customerInfo.deliveryZone}</p>
+                        </div>
+                        <div className="flex flex-col justify-end">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1 text-right">Protocol</p>
                           <select 
                             value={order.status} 
                             onChange={(e) => onUpdateStatus(order.id, e.target.value)}
@@ -1589,14 +1613,12 @@ const CartDrawer = ({ isOpen, onClose, items, onRemove, onUpdateQty, onCheckout 
   </AnimatePresence>
 );
 
-const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: { isOpen: boolean, onClose: () => void, onSuccess: (data: any) => void, totalItems: CartItem[], totalAmount: number }) => {
+const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, onUpdateItem }: { isOpen: boolean, onClose: () => void, onSuccess: (data: any) => void, totalItems: CartItem[], totalAmount: number, onUpdateItem: (uniqueId: string, updates: Partial<CartItem>) => void }) => {
   const [formData, setFormData] = useState({ 
     socialName: '', 
     phone: '', 
     altPhone: '', 
     address: '', 
-    productInfo: totalItems.map(i => `${i.name} (${i.selectedColor})`).join(', '),
-    productSize: totalItems.map(i => i.selectedSize).join(', '),
     designDetails: '',
     paymentInfo: '',
     deliveryZone: 'inside' as 'inside' | 'outside'
@@ -1620,37 +1642,66 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
     return /^\d{11}$/.test(num.replace(/\D/g, ''));
   };
 
-  const handleWhatsAppOrder = () => {
+  const createOrderObject = (method: 'COD' | 'WhatsApp') => {
+    return { 
+      customerInfo: formData, 
+      items: totalItems.map(i => ({ 
+        id: i.id,
+        name: i.name, 
+        price: i.price, 
+        quantity: i.quantity,
+        selectedSize: i.selectedSize,
+        selectedColor: i.selectedColor,
+        image: i.image
+      })), 
+      totalAmount, 
+      deliveryCharge,
+      grandTotal,
+      status: 'pending' as const, 
+      paymentMethod: method, 
+      createdAt: new Date().toISOString() 
+    };
+  };
+
+  const handleWhatsAppOrder = async () => {
     if (!validatePhone(formData.phone)) {
       setPhoneError('Phone must be exactly 11 digits');
       return;
     }
-    
-    const message = `*NEW ORDER FROM FELICITE WEBSITE*%0A%0A` +
-      `*Social Name:* ${formData.socialName}%0A` +
-      `*Phone:* ${formData.phone}%0A` +
-      `*Alt Phone:* ${formData.altPhone || 'N/A'}%0A` +
-      `*Address:* ${formData.address}%0A` +
-      `*Delivery Zone:* ${formData.deliveryZone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}%0A%0A` +
-      `*Products:* ${formData.productInfo}%0A` +
-      `*Size:* ${formData.productSize}%0A` +
-      `*Customization:* ${formData.designDetails || 'None'}%0A%0A` +
-      `*Delivery Charge Pre-paid:* ${formData.paymentInfo}%0A%0A` +
-      `*Product Total:* ৳${totalAmount.toLocaleString()}%0A` +
-      `*Delivery Charge:* ৳${deliveryCharge}%0A` +
-      `*Total Amount:* ৳${grandTotal.toLocaleString()}`;
+    if (!formData.socialName || !formData.phone || !formData.address || !formData.paymentInfo) {
+      alert('Please fill in all required fields to proceed.');
+      return;
+    }
 
-    window.open(`https://wa.me/8801631818222?text=${message}`, '_blank');
+    setLoading(true);
+    try {
+      const orderData = createOrderObject('WhatsApp');
+      await addDoc(collection(db, 'orders'), { ...orderData, createdAt: serverTimestamp() });
+      
+      const productSummary = totalItems.map(i => `• ${i.name} [Size: ${i.selectedSize}, Color: ${i.selectedColor}] x${i.quantity}`).join('%0A');
+      
+      const message = `*NEW ORDER FROM FELICITE WEBSITE*%0A%0A` +
+        `*Social Name:* ${formData.socialName}%0A` +
+        `*Phone:* ${formData.phone}%0A` +
+        `*Alt Phone:* ${formData.altPhone || 'N/A'}%0A` +
+        `*Address:* ${formData.address}%0A` +
+        `*Delivery Zone:* ${formData.deliveryZone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}%0A%0A` +
+        `*Products:* %0A${productSummary}%0A%0A` +
+        `*Customization:* ${formData.designDetails || 'None'}%0A%0A` +
+        `*Payment Proof:* ${formData.paymentInfo}%0A%0A` +
+        `*Product Total:* ৳${totalAmount.toLocaleString()}%0A` +
+        `*Delivery Charge:* ৳${deliveryCharge}%0A` +
+        `*Total Amount:* ৳${grandTotal.toLocaleString()}`;
+
+      window.open(`https://wa.me/8801631818222?text=${message}`, '_blank');
+      onSuccess(orderData);
+    } catch (err) {
+      console.error(err);
+      alert('Error saving order. Link might still work but dashboard record failed.');
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // Update product info when totalItems changes
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      productInfo: totalItems.map(i => `${i.name} (${i.selectedColor})`).join(', '),
-      productSize: totalItems.map(i => i.selectedSize).join(', ')
-    }));
-  }, [totalItems]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1666,21 +1717,7 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
 
     setLoading(true);
     try {
-      const orderData = { 
-        customerInfo: formData, 
-        items: totalItems.map(i => ({ 
-          productId: i.id, 
-          name: i.name, 
-          price: i.price, 
-          quantity: i.quantity,
-          selectedSize: i.selectedSize,
-          selectedColor: i.selectedColor
-        })), 
-        totalAmount, 
-        status: 'pending', 
-        paymentMethod: 'COD', 
-        createdAt: new Date().toISOString() 
-      };
+      const orderData = createOrderObject('COD');
       await addDoc(collection(db, 'orders'), { ...orderData, createdAt: serverTimestamp() });
       onSuccess(orderData);
     } catch (err) {
@@ -1704,6 +1741,54 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
               </button>
               <h2 className="text-2xl font-black uppercase tracking-[0.2em] mb-12">COD Checkout</h2>
               <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Product Selection Table */}
+                <div className="border border-gray-100 overflow-hidden mb-12">
+                  <div className="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Item Manifest</h3>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{totalItems.length} Products</span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {totalItems.map((item) => {
+                      const uid = `${item.id}-${item.selectedSize}-${item.selectedColor}`;
+                      return (
+                        <div key={uid} className="p-6 flex flex-col md:flex-row md:items-center gap-6">
+                          <div className="w-16 h-20 bg-gray-50 flex-shrink-0">
+                            <img referrerPolicy="no-referrer" src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 space-y-4">
+                            <div className="flex justify-between items-start">
+                              <h4 className="text-xs font-black uppercase tracking-widest">{item.name}</h4>
+                              <p className="text-xs font-bold">৳{item.price.toLocaleString()} x {item.quantity}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-[8px] font-black uppercase tracking-widest text-gray-400">Variant Color</label>
+                                <select 
+                                  className="w-full border-b border-gray-100 py-1 text-[11px] outline-none font-bold uppercase cursor-pointer bg-white"
+                                  value={item.selectedColor}
+                                  onChange={(e) => onUpdateItem(uid, { selectedColor: e.target.value })}
+                                >
+                                  {item.colors?.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[8px] font-black uppercase tracking-widest text-gray-400">Distinction Size</label>
+                                <select 
+                                  className="w-full border-b border-gray-100 py-1 text-[11px] outline-none font-bold uppercase cursor-pointer bg-white"
+                                  value={item.selectedSize}
+                                  onChange={(e) => onUpdateItem(uid, { selectedSize: e.target.value })}
+                                >
+                                  {item.sizes?.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Social's Name</label>
@@ -1729,17 +1814,6 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                     {altPhoneError && <p className="text-[9px] text-red-500 font-bold uppercase tracking-widest">{altPhoneError}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Product Name & Color</label>
-                    <input required type="text" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.productInfo} onChange={(e) => setFormData({...formData, productInfo: e.target.value})} />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Size</label>
-                    <input required type="text" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.productSize} onChange={(e) => setFormData({...formData, productSize: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Delivery Zone</label>
                     <div className="flex gap-4 pt-2">
                       <button 
@@ -1758,6 +1832,11 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                       </button>
                     </div>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Exact Home/Delivery Address</label>
+                  <textarea required rows={2} placeholder="Apartment, Street, Area..." className="w-full border border-gray-100 p-4 text-[14px] outline-none focus:border-black transition-colors resize-none font-medium placeholder:font-normal placeholder:text-gray-300" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
                 </div>
 
                 {/* Advanced Payment Instructions */}
@@ -1791,14 +1870,9 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Payment Verification (Last 4 Digits)</label>
-                    <input required type="text" placeholder="e.g. ৳{deliveryCharge} sent from XXXX" className="w-full border-b border-gray-200 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold bg-transparent" value={formData.paymentInfo} onChange={(e) => setFormData({...formData, paymentInfo: e.target.value})} />
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Transfer Proof (TrxID or Last 4 Digits)</label>
+                    <input required type="text" placeholder="e.g. ৳{deliveryCharge} sent from XXXX or TrxID: 8N2K..." className="w-full border-b border-gray-200 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold bg-transparent" value={formData.paymentInfo} onChange={(e) => setFormData({...formData, paymentInfo: e.target.value})} />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Exact Home/Delivery Address</label>
-                  <textarea required rows={2} placeholder="Apartment, Street, Area..." className="w-full border border-gray-100 p-4 text-[14px] outline-none focus:border-black transition-colors resize-none font-medium placeholder:font-normal placeholder:text-gray-300" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
                 </div>
 
                 <div className="space-y-2">
@@ -2589,20 +2663,37 @@ export default function App() {
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
           <div className="space-y-4">
-            <h2 className="text-4xl font-black uppercase tracking-tight">Order Confirmed</h2>
+            <h2 className="text-4xl font-black uppercase tracking-tight">Order Registered</h2>
             <p className="text-gray-500 text-[14px] leading-loose font-medium max-w-sm mx-auto">
-              Your request has been received. Our team will contact you shortly to verify your delivery address.
+              {orderSuccess.paymentMethod === 'WhatsApp' 
+                ? 'Your order details have been saved to our manifest. Please complete the final step in the WhatsApp chat to finalize dispatch.'
+                : 'Your order has been logged into our secure registry. Our logistics team will call you for final vocal verification shortly.'}
             </p>
           </div>
-          <div className="bg-gray-50/50 p-8 text-left border border-gray-100 rounded-sm">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Order Summary</p>
-            <p className="text-[14px] font-black">{orderSuccess.items.length} Items · ৳{orderSuccess.totalAmount.toLocaleString()}</p>
-            <p className="text-[12px] text-gray-500 mt-4 leading-relaxed">
-              Shipping to: <span className="font-bold text-black">{orderSuccess.customerInfo.socialName}</span><br />
-              {orderSuccess.customerInfo.address}
-            </p>
+          <div className="bg-gray-50/50 p-8 text-left border border-gray-100 rounded-sm space-y-6">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Order Manifest</p>
+              <div className="space-y-1">
+                {orderSuccess.items.map((item: any, idx: number) => (
+                  <p key={idx} className="text-[12px] font-bold">{item.name} ({item.selectedSize}/{item.selectedColor}) x{item.quantity}</p>
+                ))}
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t border-gray-100 flex justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Shipping To</p>
+                <p className="text-[12px] font-black">{orderSuccess.customerInfo.socialName}</p>
+                <p className="text-[11px] text-gray-500">{orderSuccess.customerInfo.address}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Financials</p>
+                <p className="text-[18px] font-black">৳{orderSuccess.grandTotal?.toLocaleString()}</p>
+                <p className="text-[9px] text-gray-400 uppercase font-bold">Incl. Shipping</p>
+              </div>
+            </div>
           </div>
-          <button onClick={() => { setOrderSuccess(null); setCart([]); }} className="w-full py-5 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-black/20" > Back to Shop </button>
+          <button onClick={() => { setOrderSuccess(null); setCart([]); }} className="w-full py-5 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-black/20" > Back to Collections </button>
         </motion.div>
       </div>
     );
@@ -2756,7 +2847,14 @@ Usage of this platform is governed by the laws of Bangladesh.`}
         onUpdateQty={(uid, delta) => setCart(prev => prev.map(i => `${i.id}-${i.selectedSize}-${i.selectedColor}` === uid ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i))} 
         onCheckout={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }} 
       />
-      <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} onSuccess={(data) => { setIsCheckoutOpen(false); setOrderSuccess(data); }} totalItems={cart} totalAmount={cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)} />
+      <CheckoutModal 
+        isOpen={isCheckoutOpen} 
+        onClose={() => setIsCheckoutOpen(false)} 
+        onSuccess={(data) => { setIsCheckoutOpen(false); setOrderSuccess(data); }} 
+        totalItems={cart} 
+        totalAmount={cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)} 
+        onUpdateItem={(uid, updates) => setCart(prev => prev.map(i => `${i.id}-${i.selectedSize}-${i.selectedColor}` === uid ? { ...i, ...updates } : i))}
+      />
     </div>
   );
 }
