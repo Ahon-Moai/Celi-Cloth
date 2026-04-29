@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
@@ -465,6 +465,15 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
+            <a 
+              href="https://wa.me/8801631818222" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 group hover:opacity-100 transition-opacity"
+            >
+              <MessageCircle className={`w-5 h-5 group-hover:text-green-500 transition-colors ${isScrolled || isShop ? 'text-black' : 'text-white'}`} />
+              <span className={`hidden xl:block text-[10px] font-black uppercase tracking-[0.2em] ${isScrolled || isShop ? 'text-black/80' : 'text-white/80'}`}>WhatsApp</span>
+            </a>
             <button 
               onClick={onOpenStylist}
               className="flex items-center gap-2 group hover:opacity-100 transition-opacity"
@@ -1592,6 +1601,33 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
     paymentInfo: ''
   });
   const [loading, setLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [altPhoneError, setAltPhoneError] = useState('');
+
+  const validatePhone = (num: string) => {
+    if (!num) return true;
+    return /^\d{11}$/.test(num.replace(/\D/g, ''));
+  };
+
+  const handleWhatsAppOrder = () => {
+    if (!validatePhone(formData.phone)) {
+      setPhoneError('Phone must be exactly 11 digits');
+      return;
+    }
+    
+    const message = `*NEW ORDER FROM FELICITE WEBSITE*%0A%0A` +
+      `*Social Name:* ${formData.socialName}%0A` +
+      `*Phone:* ${formData.phone}%0A` +
+      `*Alt Phone:* ${formData.altPhone || 'N/A'}%0A` +
+      `*Address:* ${formData.address}%0A%0A` +
+      `*Products:* ${formData.productInfo}%0A` +
+      `*Size:* ${formData.productSize}%0A` +
+      `*Customization:* ${formData.designDetails || 'None'}%0A%0A` +
+      `*Payment Info:* ${formData.paymentInfo}%0A%0A` +
+      `*Total Amount:* ৳${totalAmount.toLocaleString()}`;
+
+    window.open(`https://wa.me/8801631818222?text=${message}`, '_blank');
+  };
 
   // Update product info when totalItems changes
   useEffect(() => {
@@ -1604,6 +1640,16 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validatePhone(formData.phone)) {
+      setPhoneError('Phone must be exactly 11 digits');
+      return;
+    }
+    if (formData.altPhone && !validatePhone(formData.altPhone)) {
+      setAltPhoneError('Alternative number must be 11 digits');
+      return;
+    }
+
     setLoading(true);
     try {
       const orderData = { 
@@ -1651,14 +1697,22 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Phone Number</label>
-                    <input required type="tel" placeholder="01XXX-XXXXXX" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                    <input required type="tel" placeholder="01XXX-XXXXXX" className={`w-full border-b ${phoneError ? 'border-red-500' : 'border-gray-100'} py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300`} value={formData.phone} onChange={(e) => {
+                      setFormData({...formData, phone: e.target.value});
+                      if (phoneError) setPhoneError('');
+                    }} />
+                    {phoneError && <p className="text-[9px] text-red-500 font-bold uppercase tracking-widest">{phoneError}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Alternative Number</label>
-                    <input type="tel" placeholder="Optional" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.altPhone} onChange={(e) => setFormData({...formData, altPhone: e.target.value})} />
+                    <input type="tel" placeholder="Optional" className={`w-full border-b ${altPhoneError ? 'border-red-500' : 'border-gray-100'} py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300`} value={formData.altPhone} onChange={(e) => {
+                      setFormData({...formData, altPhone: e.target.value});
+                      if (altPhoneError) setAltPhoneError('');
+                    }} />
+                    {altPhoneError && <p className="text-[9px] text-red-500 font-bold uppercase tracking-widest">{altPhoneError}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Product Name & Color</label>
@@ -1692,9 +1746,19 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                     <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black mb-1">Total Payable</p>
                     <p className="text-3xl font-black tracking-tight">৳{totalAmount.toLocaleString()}</p>
                   </div>
-                  <button disabled={loading} type="submit" className="bg-black text-white px-12 py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-gray-900 disabled:opacity-50 transition-all shadow-2xl shadow-black/20" >
-                    {loading ? 'Confirming...' : 'Place Order Now'}
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button 
+                      type="button"
+                      onClick={handleWhatsAppOrder}
+                      className="bg-green-600 text-white px-8 py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-green-700 transition-all shadow-2xl shadow-green-600/20 flex items-center justify-center gap-3"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Order via WhatsApp
+                    </button>
+                    <button disabled={loading} type="submit" className="bg-black text-white px-12 py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-gray-900 disabled:opacity-50 transition-all shadow-2xl shadow-black/20" >
+                      {loading ? 'Confirming...' : 'Place Order Now'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </motion.div>
@@ -2459,8 +2523,8 @@ export default function App() {
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Order Summary</p>
             <p className="text-[14px] font-black">{orderSuccess.items.length} Items · ৳{orderSuccess.totalAmount.toLocaleString()}</p>
             <p className="text-[12px] text-gray-500 mt-4 leading-relaxed">
-              Shipping to: <span className="font-bold text-black">{orderSuccess.customerInfo.fullName}</span><br />
-              {orderSuccess.customerInfo.address}, {orderSuccess.customerInfo.city}
+              Shipping to: <span className="font-bold text-black">{orderSuccess.customerInfo.socialName}</span><br />
+              {orderSuccess.customerInfo.address}
             </p>
           </div>
           <button onClick={() => { setOrderSuccess(null); setCart([]); }} className="w-full py-5 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-black/20" > Back to Shop </button>
@@ -2495,35 +2559,6 @@ export default function App() {
         products={productsList}
         onProductClick={handleProductClick}
       />
-
-      {/* Floating AI Stylist FAB */}
-      <AnimatePresence>
-        {!terminalOpen && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setTerminalOpen(true)}
-              className="relative group bg-black text-white p-4 md:p-5 rounded-full shadow-[0_0_30px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-white/10 hover:border-blue-500/50 transition-all duration-700 overflow-hidden"
-            >
-              {/* Pulsing Glow */}
-              <div className="absolute inset-0 bg-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl animate-pulse" />
-              
-              <Sparkles className="relative w-6 h-6 text-white group-hover:text-white transition-colors" />
-              
-              <div className="flex flex-col items-start pr-2 overflow-hidden max-w-0 group-hover:max-w-[150px] transition-all duration-700 ease-in-out">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Find your vibe</span>
-                <span className="text-[7px] text-white/70 font-bold uppercase tracking-[0.1em] whitespace-nowrap">AI_STYLIST [V.1]</span>
-              </div>
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <main>
         {currentPage === 'home' ? (
