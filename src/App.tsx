@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
@@ -1598,11 +1598,22 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
     productInfo: totalItems.map(i => `${i.name} (${i.selectedColor})`).join(', '),
     productSize: totalItems.map(i => i.selectedSize).join(', '),
     designDetails: '',
-    paymentInfo: ''
+    paymentInfo: '',
+    deliveryZone: 'inside' as 'inside' | 'outside'
   });
   const [loading, setLoading] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [altPhoneError, setAltPhoneError] = useState('');
+  const [copiedStatus, setCopiedStatus] = useState<string | null>(null);
+
+  const deliveryCharge = formData.deliveryZone === 'inside' ? 80 : 150;
+  const grandTotal = totalAmount + deliveryCharge;
+
+  const handleCopy = (text: string, type: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedStatus(type);
+    setTimeout(() => setCopiedStatus(null), 2000);
+  };
 
   const validatePhone = (num: string) => {
     if (!num) return true;
@@ -1619,12 +1630,15 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
       `*Social Name:* ${formData.socialName}%0A` +
       `*Phone:* ${formData.phone}%0A` +
       `*Alt Phone:* ${formData.altPhone || 'N/A'}%0A` +
-      `*Address:* ${formData.address}%0A%0A` +
+      `*Address:* ${formData.address}%0A` +
+      `*Delivery Zone:* ${formData.deliveryZone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}%0A%0A` +
       `*Products:* ${formData.productInfo}%0A` +
       `*Size:* ${formData.productSize}%0A` +
       `*Customization:* ${formData.designDetails || 'None'}%0A%0A` +
-      `*Payment Info:* ${formData.paymentInfo}%0A%0A` +
-      `*Total Amount:* ৳${totalAmount.toLocaleString()}`;
+      `*Delivery Charge Pre-paid:* ${formData.paymentInfo}%0A%0A` +
+      `*Product Total:* ৳${totalAmount.toLocaleString()}%0A` +
+      `*Delivery Charge:* ৳${deliveryCharge}%0A` +
+      `*Total Amount:* ৳${grandTotal.toLocaleString()}`;
 
     window.open(`https://wa.me/8801631818222?text=${message}`, '_blank');
   };
@@ -1726,8 +1740,59 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                     <input required type="text" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.productSize} onChange={(e) => setFormData({...formData, productSize: e.target.value})} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">bKash/Nagad Amount + Last 4 Digits</label>
-                    <input required type="text" placeholder="e.g. 500 TK, 1234" className="w-full border-b border-gray-100 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold placeholder:font-normal placeholder:text-gray-300" value={formData.paymentInfo} onChange={(e) => setFormData({...formData, paymentInfo: e.target.value})} />
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Delivery Zone</label>
+                    <div className="flex gap-4 pt-2">
+                      <button 
+                        type="button" 
+                        onClick={() => setFormData({...formData, deliveryZone: 'inside'})}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest border transition-all ${formData.deliveryZone === 'inside' ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-100 hover:border-gray-300'}`}
+                      >
+                        Inside Dhaka
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setFormData({...formData, deliveryZone: 'outside'})}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest border transition-all ${formData.deliveryZone === 'outside' ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-100 hover:border-gray-300'}`}
+                      >
+                        Outside Dhaka
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Advanced Payment Instructions */}
+                <div className="bg-gray-50/50 p-6 space-y-6 border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-xs font-black">!</div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Advanced Delivery Charge Required</h3>
+                  </div>
+                  
+                  <p className="text-[11px] text-gray-500 leading-relaxed font-medium">Please send the delivery charge (৳{deliveryCharge}) as advance via bKash or Nagad to confirm your order.</p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 border border-gray-100 flex items-center justify-between group">
+                      <div>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 mb-1">bKash (Personal)</p>
+                        <p className="text-sm font-black tracking-wider">01631818222</p>
+                      </div>
+                      <button type="button" onClick={() => handleCopy('01631818222', 'bkash')} className="text-gray-300 hover:text-black transition-colors">
+                        {copiedStatus === 'bkash' ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <div className="bg-white p-4 border border-gray-100 flex items-center justify-between group">
+                      <div>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 mb-1">Nagad (Personal)</p>
+                        <p className="text-sm font-black tracking-wider">01631818222</p>
+                      </div>
+                      <button type="button" onClick={() => handleCopy('01631818222', 'nagad')} className="text-gray-300 hover:text-black transition-colors">
+                        {copiedStatus === 'nagad' ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Payment Verification (Last 4 Digits)</label>
+                    <input required type="text" placeholder="e.g. ৳{deliveryCharge} sent from XXXX" className="w-full border-b border-gray-200 py-3 text-[14px] outline-none focus:border-black transition-colors font-bold bg-transparent" value={formData.paymentInfo} onChange={(e) => setFormData({...formData, paymentInfo: e.target.value})} />
                   </div>
                 </div>
 
@@ -1742,9 +1807,19 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount }: 
                 </div>
 
                 <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                  <div>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black mb-1">Total Payable</p>
-                    <p className="text-3xl font-black tracking-tight">৳{totalAmount.toLocaleString()}</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-12">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Subtotal</p>
+                      <p className="text-sm font-black">৳{totalAmount.toLocaleString()}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-12">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Delivery</p>
+                      <p className="text-sm font-black">৳{deliveryCharge}</p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-50 flex items-center justify-between gap-12">
+                      <p className="text-[10px] text-black uppercase tracking-widest font-black">Total Payable</p>
+                      <p className="text-2xl font-black tracking-tight">৳{grandTotal.toLocaleString()}</p>
+                    </div>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button 
