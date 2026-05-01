@@ -40,6 +40,16 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "email", "subject", "message", "status", "createdAt"]
+    },
+    "Lead": {
+      "title": "Coupon Lead",
+      "description": "Phone number captured for coupon generation.",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["phone", "createdAt"]
     }
   },
   "firestore": {
@@ -54,6 +64,10 @@
     "/messages/{messageId}": {
       "schema": "Message",
       "description": "Storage for customer contact messages."
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Storage for collected marketing leads."
     }
   }
 }

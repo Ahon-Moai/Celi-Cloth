@@ -44,5 +44,16 @@ service cloud.firestore {
       allow read, list: if true;
       allow write: if isAdmin();
     }
+
+    // Leads Collection
+    match /leads/{leadId} {
+      function isValidLead(data) {
+        return data.keys().hasAll(['phone', 'createdAt'])
+          && data.phone is string && data.phone.size() == 11
+          && data.createdAt is string;
+      }
+      allow create: if isValidLead(incoming());
+      allow read, list, delete: if isAdmin();
+    }
   }
 }

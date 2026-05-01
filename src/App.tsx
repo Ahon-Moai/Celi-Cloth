@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy, ShieldCheck, Trash2, Image as ImageIcon, Upload } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, ExternalLink, Package, CheckCircle, Clock, ChevronLeft, ChevronRight, Plus, Truck, ArrowRight, Terminal as TerminalIcon, Zap, Loader2, Sparkles, MessageSquare, MessageCircle, Layers, Phone, Copy, ShieldCheck, Trash2, Image as ImageIcon, Upload, Users } from 'lucide-react';
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 
@@ -83,8 +83,8 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
 
       <div className="flex flex-col lg:flex-row">
         {/* Left: Image Gallery */}
-        <div className="w-full lg:w-[60%] bg-[#efefef] relative aspect-square lg:aspect-auto lg:h-screen top-0 lg:sticky overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center p-0 transition-all duration-700">
+        <div className="w-full lg:w-[60%] bg-[#f9f9f9] relative aspect-square lg:aspect-auto lg:h-screen top-0 lg:sticky overflow-hidden border-b lg:border-b-0 lg:border-r border-gray-100">
+          <div className="absolute inset-0 flex items-center justify-center p-6 md:p-12 transition-all duration-700">
             <AnimatePresence mode="wait">
               <motion.img 
                 key={activeImageIndex}
@@ -93,7 +93,7 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
                 exit={{ opacity: 0, x: -20 }}
                 src={gallery[activeImageIndex]} 
                 alt={product.name} 
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-contain" 
               />
             </AnimatePresence>
           </div>
@@ -659,8 +659,8 @@ const optimizeImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 
   });
 };
 
-const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateStatus, onUpdateMessageStatus, onDeleteOrder, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], messages: any[], categories: string[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onDeleteOrder: (id: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json' | 'categories'>('orders');
+const AdminDashboard = ({ orders, productsList, messages, categories, leads, onUpdateStatus, onUpdateMessageStatus, onDeleteOrder, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], messages: any[], categories: string[], leads: any[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onDeleteOrder: (id: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
+  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json' | 'categories' | 'leads'>('orders');
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [jsonInput, setJsonInput] = useState('');
@@ -997,6 +997,13 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                 <Layers className="w-4 h-4" /> 
                 CATEGORIES
               </button>
+              <button 
+                onClick={() => { setActiveTab('leads'); setIsSidebarOpen(false); }}
+                className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'leads' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
+              >
+                <Users className="w-4 h-4" /> 
+                COUPON LEADS
+              </button>
             </nav>
           </div>
         </div>
@@ -1114,6 +1121,12 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                             <p className="font-black text-xs uppercase">{order.customerInfo.socialName || order.customerInfo.fullName}</p>
                             <p className="text-[10px] text-gray-500 font-bold">{order.customerInfo.phone}</p>
                             {order.customerInfo.altPhone && <p className="text-[9px] text-gray-400">Alt: {order.customerInfo.altPhone}</p>}
+                            {order.couponUsed && (
+                              <div className="mt-1 flex items-center gap-1">
+                                <span className="text-[8px] font-black uppercase text-pink-600">Voucher:</span>
+                                <span className="text-[8px] font-black uppercase text-pink-700 bg-pink-50 px-1 border border-pink-100">{order.couponUsed}</span>
+                              </div>
+                            )}
                             <div className="mt-2 text-[9px] text-gray-400 font-medium leading-relaxed max-w-[200px]">
                               <p className="font-bold text-black uppercase text-[8px] mb-1">Address:</p>
                               {order.customerInfo.address}
@@ -1224,6 +1237,9 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                         <p className="font-black text-sm uppercase">{order.customerInfo.socialName || order.customerInfo.fullName}</p>
                         <p className="text-[11px] text-gray-500 font-bold">{order.customerInfo.phone}</p>
                         {order.customerInfo.altPhone && <p className="text-[10px] text-gray-400 font-bold tracking-tight">Alt: {order.customerInfo.altPhone}</p>}
+                        {order.couponUsed && (
+                           <p className="text-[9px] font-black text-pink-600 uppercase mt-1">Voucher Detected: {order.couponUsed}</p>
+                        )}
                         <div className="mt-2 p-3 bg-gray-50 border border-gray-100 text-[10px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
                           <span className="font-black text-black block mb-1">STREET ADDRESS:</span>
                           {order.customerInfo.address}
@@ -1376,6 +1392,47 @@ const AdminDashboard = ({ orders, productsList, messages, categories, onUpdateSt
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'leads' && (
+            <div className="space-y-8">
+              <div className="bg-white p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Collected Leads</p>
+                  <p className="text-2xl font-black">{leads.length}</p>
+                </div>
+                <Users className="w-10 h-10 text-gray-50 group-hover:text-pink-50" />
+              </div>
+
+              <div className="bg-white border border-gray-100 divide-y divide-gray-100">
+                {leads.length === 0 ? (
+                  <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">No Leads Capture Yet</div>
+                ) : (
+                  leads.map(lead => (
+                    <div key={lead.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="font-black text-sm">{lead.phone}</p>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase">{lead.createdAt ? new Date(lead.createdAt).toLocaleString() : 'N/A'}</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const el = document.createElement('textarea');
+                          el.value = lead.phone;
+                          document.body.appendChild(el);
+                          el.select();
+                          document.execCommand('copy');
+                          document.body.removeChild(el);
+                          alert('Phone number copied to clipboard');
+                        }}
+                        className="p-3 hover:bg-black hover:text-white border border-gray-100 rounded-full transition-all"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
 
@@ -1629,11 +1686,11 @@ interface ProductCardProps {
 const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }: { product: Product, onAddToCart: (p: Product, size?: string, color?: string) => void, onClick?: (p: Product) => void, hasCoupon?: boolean }) => (
   <Reveal y={40}>
     <div className="group relative cursor-pointer w-full" onClick={() => onClick?.(product)}>
-      <div className="relative w-full aspect-[2/3] md:aspect-[3/4] lg:aspect-auto md:h-[470px] overflow-hidden bg-gray-100 mb-4 border border-gray-50">
+      <div className="relative w-full aspect-[2/3] md:aspect-[3/4] lg:aspect-auto md:h-[470px] overflow-hidden bg-[#f9f9f9] mb-4 border border-gray-200">
         <img 
           src={product.image} 
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
         <div className="absolute top-0 left-0 flex flex-col gap-1 items-start">
@@ -1811,7 +1868,19 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
   const [altPhoneError, setAltPhoneError] = useState('');
   const [copiedStatus, setCopiedStatus] = useState<string | null>(null);
 
-  const deliveryCharge = formData.deliveryZone === 'inside' ? 90 : 160;
+  // Auto-adjust shipping logic
+  useEffect(() => {
+    const cityLower = (formData.city || '').toLowerCase();
+    if (cityLower.length > 2) {
+      if (cityLower.includes('dhaka')) {
+        setFormData(prev => ({ ...prev, deliveryZone: 'inside' }));
+      } else {
+        setFormData(prev => ({ ...prev, deliveryZone: 'outside' }));
+      }
+    }
+  }, [formData.city]);
+
+  const deliveryCharge = formData.deliveryZone === 'inside' ? 80 : 150;
   const discountAmount = totalAmount * appliedDiscount;
   const grandTotal = totalAmount + deliveryCharge - discountAmount;
 
@@ -1855,6 +1924,7 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
         deliveryCharge,
         discountAmount,
         grandTotal,
+        couponUsed: appliedDiscount > 0 ? couponCode : null,
         status: 'pending' as const, 
         paymentMethod: formData.paymentMethod, 
         createdAt: new Date().toISOString() 
@@ -1865,17 +1935,17 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
       if (formData.paymentMethod === 'WhatsApp') {
         const productSummary = totalItems.map(i => `• ${i.name} (${i.selectedColor || 'Default'}) [Size: ${i.selectedSize}] x${i.quantity}`).join('%0A');
         const message = `*NEW ORDER ALERT*%0A%0A` +
-          `*Social's Name:* ${formData.socialName}%0A` +
+          `*Customer Name:* ${formData.firstName} ${formData.lastName}%0A` +
           `*Phone Number:* ${formData.phone}%0A` +
-          `*Alternative Number:* ${formData.altPhone || 'N/A'}%0A` +
+          `*Alternative Number:* ${formData.altPhone}%0A` +
           `*Exact Delivery Address:* ${formData.address}, ${formData.city}%0A%0A` +
           `*Ordered Products:*%0A${productSummary}%0A%0A` +
           `*Customisation Details:* ${formData.designDetails || 'None'}%0A%0A` +
-          `*Payment Info (bKash/Nagad Last 4/Amount):* ${formData.paymentInfo}%0A` +
+          `*Payment Info (Last 4 / Txid):* ${formData.paymentInfo}%0A` +
           `*Order Total:* ৳${grandTotal.toLocaleString()}%0A%0A` +
           `_Authorized via Felicite Store Terminal_`;
         
-        window.open(`https://wa.me/8801805124536?text=${message}`, '_blank');
+        window.open(`https://wa.me/8801974004221?text=${message}`, '_blank');
       }
 
       onSuccess(orderData);
@@ -1994,13 +2064,17 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
                     {[ 
-                      { id: 'inside', title: 'Inside Dhaka', price: '90' }, 
-                      { id: 'outside', title: 'Outside Dhaka', price: '160' }
+                      { id: 'inside', title: 'Inside Dhaka', price: '80' }, 
+                      { id: 'outside', title: 'Outside Dhaka', price: '150' }
                     ].map((zone) => (
                       <div 
                         key={zone.id}
-                        onClick={() => setFormData({...formData, deliveryZone: zone.id as 'inside' | 'outside'})}
-                        className={`group p-6 md:p-10 border transition-all duration-700 cursor-pointer relative ${formData.deliveryZone === zone.id ? 'border-gray-900 bg-gray-50' : 'border-gray-100 hover:border-gray-300'}`}
+                        onClick={() => {
+                          if (!(formData.city || '').toLowerCase().length) {
+                            setFormData({...formData, deliveryZone: zone.id as 'inside' | 'outside'});
+                          }
+                        }}
+                        className={`group p-6 md:p-10 border transition-all duration-700 relative ${formData.deliveryZone === zone.id ? 'border-gray-900 bg-gray-50' : 'border-gray-100 hover:border-gray-300 opacity-60'} ${(formData.city || '').toLowerCase().length > 2 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <div className="flex justify-between items-start relative z-10">
                           <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] transition-colors ${formData.deliveryZone === zone.id ? 'text-gray-900' : 'text-gray-400'}`}>
@@ -2030,20 +2104,25 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
                     <div className="space-y-4">
                        <p className="text-sm md:text-lg font-black text-gray-900 uppercase tracking-widest">Order Summary & Fulfillment</p>
                        <div className="h-1 w-16 bg-gray-900" />
-                       <div className="bg-red-50 border-l-4 border-red-600 p-6 mt-8">
-                         <p className="text-[11px] md:text-[14px] font-black text-red-700 uppercase tracking-[0.1em] leading-relaxed">
-                           ⚠ ADVANCE DELIVERY CHARGE IS MANDATORY TO CONFIRM THE ORDER. 
-                           ORDERS WITHOUT SETTLEMENT AUTH WILL BE AUTO-CANCELLED.
-                         </p>
-                       </div>
+                        <div className="bg-red-50 border-l-4 border-red-600 p-6 md:p-8 mt-8 space-y-3">
+                          <p className="text-[12px] md:text-[16px] font-black text-red-700 uppercase tracking-[0.05em] leading-tight">
+                            ⚠ ADVANCE DELIVERY CHARGE IS MANDATORY TO CONFIRM THE ORDER. 
+                          </p>
+                          <p className="text-[10px] md:text-[13px] font-bold text-red-600/80 uppercase tracking-widest leading-relaxed">
+                            PLEASE SEND <span className="text-red-700 font-black underline">৳80 (INSIDE DHAKA)</span> OR <span className="text-red-700 font-black underline">৳150 (OUTSIDE DHAKA)</span> TO OUR MERCHANT/PERSONAL NUMBER <span className="text-red-900 font-black">01974004221</span> VIA BKASH, NAGAD OR ROCKET.
+                          </p>
+                          <p className="text-[9px] md:text-[11px] font-black text-red-500 uppercase tracking-[0.2em] italic">
+                            ORDERS WITHOUT SETTLEMENT AUTH WILL BE AUTO-CANCELLED.
+                          </p>
+                        </div>
                     </div>
 
                     <div className="space-y-10 md:space-y-14">
                        <div className="space-y-6 md:space-y-8">
-                         <p className="text-[10px] md:text-[12px] font-black text-gray-400 uppercase tracking-[0.5em]">Personal Treasury Node (bKash)</p>
+                         <p className="text-[10px] md:text-[12px] font-black text-gray-400 uppercase tracking-[0.5em]">Personal Treasury Node (bKash/Nagad/Rocket)</p>
                          <div className="flex items-center gap-6 md:gap-12">
-                           <h4 className="text-3xl md:text-7xl font-mono font-medium tracking-tighter text-gray-900">01805124536</h4>
-                           <button type="button" onClick={() => handleCopy('01805124536', 'pay')} className="group p-3 md:p-4 hover:bg-black transition-all border border-black/10 rounded-full">
+                           <h4 className="text-3xl md:text-7xl font-mono font-medium tracking-tighter text-gray-900">01974004221</h4>
+                           <button type="button" onClick={() => handleCopy('01974004221', 'pay')} className="group p-3 md:p-4 hover:bg-black transition-all border border-black/10 rounded-full">
                              <Copy className={`w-5 h-5 md:w-7 h-7 transition-colors ${copiedStatus === 'pay' ? 'text-green-500' : 'group-hover:text-white text-gray-300'}`} />
                            </button>
                          </div>
@@ -2107,7 +2186,7 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
                         <img 
                           src={item.image} 
                           alt={item.name} 
-                          className="w-full h-full object-cover transition-all duration-1000 grayscale group-hover:grayscale-0 group-hover:scale-105"
+                          className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
                         />
                         <div className="absolute -top-2 -right-2 md:-top-3 md:-right-3 w-6 h-6 md:w-8 md:h-8 bg-black text-white text-[8px] md:text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#f9f9f9] font-mono">
                            {item.quantity}
@@ -2134,8 +2213,8 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
                      <span className="font-bold text-gray-900 font-mono text-[10px] md:text-xs">৳{deliveryCharge}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                     <span className="text-gray-400 font-black uppercase tracking-widest text-[8px] md:text-[9px]">Duties</span>
-                     <span className="font-bold text-gray-900 font-mono text-[10px] md:text-xs">৳35.00</span>
+                     <span className="text-gray-400 font-black uppercase tracking-widest text-[8px] md:text-[9px]">Packaging Fee</span>
+                     <span className="font-bold text-gray-300 font-mono text-[10px] md:text-xs line-through italic">৳35.00</span>
                   </div>
                   
                   <div className="flex items-center justify-between pt-8 md:pt-10 border-t border-gray-900">
@@ -2183,10 +2262,13 @@ const ShopPage = ({ productsList, onAddToCart, onProductClick, activeCategory, s
   const itemsPerPage = 15;
 
   const filteredProducts = productsList.filter(product => {
+    const prodCat = (product.category || "").trim().toLowerCase();
+    const activeCat = activeCategory.trim().toLowerCase();
+
     const matchesCategory = activeCategory === "All" || 
-                            (activeCategory === "New Arrivals" ? product.isNewArrival : product.category === activeCategory);
+                            (activeCategory === "New Arrivals" ? product.isNewArrival : prodCat === activeCat);
     
-    const searchLower = searchQuery.toLowerCase();
+    const searchLower = searchQuery.toLowerCase().trim();
     const matchesSearch = product.name.toLowerCase().includes(searchLower) || 
                          (product.description && product.description.toLowerCase().includes(searchLower));
     
@@ -2782,6 +2864,7 @@ export default function App() {
   const [orders, setOrders] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<Product[]>(products);
   const [messages, setMessages] = useState<any[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
 
   // Auth State
   useEffect(() => {
@@ -2800,6 +2883,7 @@ export default function App() {
     let unsubscribeOrders = () => {};
     let unsubscribeProducts = () => {};
     let unsubscribeMessages = () => {};
+    let unsubscribeLeads = () => {};
 
     // Products are public
     const qProducts = query(collection(db, 'products'));
@@ -2808,8 +2892,8 @@ export default function App() {
         const fbProducts = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as Product[];
         setProductsList(fbProducts);
         
-        // Dynamically update categories if not already customized
-        const uniqueCats = Array.from(new Set(fbProducts.map(p => p.category)));
+        // Dynamically update categories (we'll also fetch persistent ones)
+        const uniqueCats = Array.from(new Set(fbProducts.map(p => p.category))).filter(Boolean);
         if (uniqueCats.length > 0) {
           setCategories(prev => {
             const combined = Array.from(new Set([...prev, ...uniqueCats]));
@@ -2826,6 +2910,16 @@ export default function App() {
       setProductsList(products); 
     });
 
+    // Persistent Categories fetch
+    getDoc(doc(db, 'config', 'categories')).then(docSnap => {
+      if (docSnap.exists()) {
+        const savedCats = docSnap.data().list;
+        if (Array.isArray(savedCats) && savedCats.length > 0) {
+          setCategories(savedCats);
+        }
+      }
+    });
+
     if (isAdmin) {
       const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
       unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
@@ -2840,12 +2934,18 @@ export default function App() {
       }, (error) => {
         console.error("Messages listener error:", error);
       });
+
+      const qLeads = query(collection(db, 'leads'), orderBy('createdAt', 'desc'));
+      unsubscribeLeads = onSnapshot(qLeads, (snapshot) => {
+        setLeads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
     }
 
     return () => {
       unsubscribeOrders();
       unsubscribeProducts();
       unsubscribeMessages();
+      unsubscribeLeads();
     };
   }, [isAdmin]);
 
@@ -2949,6 +3049,32 @@ export default function App() {
     setCurrentPage('product');
   };
 
+  const handleUpdateCategories = async (newCats: string[]) => {
+    setCategories(newCats);
+    if (isAdmin) {
+      try {
+        await setDoc(doc(db, 'config', 'categories'), { list: newCats });
+      } catch (err) {
+        console.error("Failed to save categories:", err);
+      }
+    }
+  };
+
+  const handleLeadCapture = async (phone: string) => {
+    try {
+      await addDoc(collection(db, 'leads'), {
+        phone,
+        createdAt: new Date().toISOString()
+      });
+      setHasUnlockedCoupon(true);
+      alert('Coupon code unlocked! The 10% discount is now active.\nCode: new10');
+      setIsCouponPopupOpen(false);
+    } catch (err) {
+      console.error("Lead capture error:", err);
+      alert('Failed to register. Please try again.');
+    }
+  };
+
   if (isAdminMode && isAdmin) {
     return (
       <AdminDashboard 
@@ -2956,12 +3082,13 @@ export default function App() {
         productsList={productsList} 
         messages={messages}
         categories={categories}
+        leads={leads}
         onUpdateStatus={updateOrderStatus} 
         onUpdateMessageStatus={updateMessageStatus}
         onDeleteOrder={deleteOrder}
         onAddProduct={addOrUpdateProduct} 
         onDeleteProduct={deleteProduct} 
-        onUpdateCategories={setCategories}
+        onUpdateCategories={handleUpdateCategories}
         onClose={() => setIsAdminMode(false)} 
       />
     );
@@ -3060,12 +3187,10 @@ export default function App() {
                     value={couponPhone}
                     onChange={e => setCouponPhone(e.target.value)}
                   />
-                    <button 
+                  <button 
                     onClick={() => {
                       if (validatePhone(couponPhone)) {
-                        setHasUnlockedCoupon(true);
-                        alert('Coupon code unlocked! The 10% discount is now active.\nCode: new10');
-                        setIsCouponPopupOpen(false);
+                        handleLeadCapture(couponPhone);
                       } else {
                         alert('Please enter a valid 11-digit phone number.');
                       }
