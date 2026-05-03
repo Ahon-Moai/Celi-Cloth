@@ -652,7 +652,8 @@ const Navbar = ({
               transition={{ duration: 1.2, ease: "easeOut" }}
               className={`text-xl md:text-3xl font-black uppercase whitespace-nowrap ${isScrolled || isShop ? "text-black" : "text-white"}`}
             >
-              Felicite<span className="text-[10px] align-top font-bold">Γäó</span>
+              Felicite
+              <span className="text-[10px] align-top font-bold">Γäó</span>
             </motion.h1>
           </div>
 
@@ -1671,15 +1672,15 @@ const AdminDashboard = ({
                           </td>
                           <td className="px-8 py-6">
                             <p className="font-black text-xs uppercase">
-                              {order.customerInfo.socialName ||
-                                order.customerInfo.fullName}
+                              {order.customerInfo?.socialName ||
+                                order.customerInfo?.fullName}
                             </p>
                             <p className="text-[10px] text-gray-500 font-bold">
-                              {order.customerInfo.phone}
+                              {order.customerInfo?.phone}
                             </p>
-                            {order.customerInfo.altPhone && (
+                            {order.customerInfo?.altPhone && (
                               <p className="text-[9px] text-gray-400">
-                                Alt: {order.customerInfo.altPhone}
+                                Alt: {order.customerInfo?.altPhone}
                               </p>
                             )}
                             {order.couponUsed && (
@@ -1696,7 +1697,7 @@ const AdminDashboard = ({
                               <p className="font-bold text-black uppercase text-[8px] mb-1">
                                 Address:
                               </p>
-                              {order.customerInfo.address}
+                              {order.customerInfo?.address}
                             </div>
                           </td>
                           <td className="px-8 py-6">
@@ -1711,18 +1712,18 @@ const AdminDashboard = ({
                                 </p>
                               ))}
                             </div>
-                            {order.customerInfo.designDetails && (
+                            {order.customerInfo?.designDetails && (
                               <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-sm">
                                 <p className="text-[8px] font-black text-blue-600 uppercase mb-1">
                                   Customization
                                 </p>
                                 <p className="text-[9px] text-blue-800 leading-tight">
-                                  {order.customerInfo.designDetails}
+                                  {order.customerInfo?.designDetails}
                                 </p>
                               </div>
                             )}
                             <p className="text-[9px] text-gray-400 font-bold uppercase mt-2">
-                              Zone: {order.customerInfo.deliveryZone}
+                              Zone: {order.customerInfo?.deliveryZone}
                             </p>
                           </td>
                           <td className="px-8 py-6">
@@ -1740,7 +1741,7 @@ const AdminDashboard = ({
                                   Payment Proof
                                 </p>
                                 <p className="text-[10px] font-bold text-blue-600 break-all max-w-[120px]">
-                                  {order.customerInfo.paymentInfo}
+                                  {order.customerInfo?.paymentInfo}
                                 </p>
                               </div>
                             </div>
@@ -1852,15 +1853,15 @@ const AdminDashboard = ({
                           Customer & Logistics
                         </p>
                         <p className="font-black text-sm uppercase">
-                          {order.customerInfo.socialName ||
-                            order.customerInfo.fullName}
+                          {order.customerInfo?.socialName ||
+                            order.customerInfo?.fullName}
                         </p>
                         <p className="text-[11px] text-gray-500 font-bold">
-                          {order.customerInfo.phone}
+                          {order.customerInfo?.phone}
                         </p>
-                        {order.customerInfo.altPhone && (
+                        {order.customerInfo?.altPhone && (
                           <p className="text-[10px] text-gray-400 font-bold tracking-tight">
-                            Alt: {order.customerInfo.altPhone}
+                            Alt: {order.customerInfo?.altPhone}
                           </p>
                         )}
                         {order.couponUsed && (
@@ -1872,7 +1873,7 @@ const AdminDashboard = ({
                           <span className="font-black text-black block mb-1">
                             STREET ADDRESS:
                           </span>
-                          {order.customerInfo.address}
+                          {order.customerInfo?.address}
                         </div>
                       </div>
                       <div>
@@ -1890,13 +1891,13 @@ const AdminDashboard = ({
                             </p>
                           ))}
                         </div>
-                        {order.customerInfo.designDetails && (
+                        {order.customerInfo?.designDetails && (
                           <div className="p-3 bg-blue-50 border border-blue-100 rounded-sm">
                             <p className="text-[8px] font-black text-blue-600 uppercase mb-1 underline">
                               Design Modification Notes
                             </p>
                             <p className="text-[10px] text-blue-800 leading-tight font-medium">
-                              {order.customerInfo.designDetails}
+                              {order.customerInfo?.designDetails}
                             </p>
                           </div>
                         )}
@@ -1919,7 +1920,7 @@ const AdminDashboard = ({
                               Verification
                             </p>
                             <p className="text-[9px] font-bold text-green-600 break-all">
-                              {order.customerInfo.paymentInfo}
+                              {order.customerInfo?.paymentInfo}
                             </p>
                           </div>
                         </div>
@@ -3069,8 +3070,8 @@ const CheckoutModal = ({
                       <div className="h-1 w-16 bg-gray-900" />
                       <div className="bg-red-50 border-l-4 border-red-600 p-6 md:p-8 mt-8 space-y-3">
                         <p className="text-[12px] md:text-[16px] font-black text-red-700 uppercase tracking-[0.05em] leading-tight">
-                          ΓÜá ADVANCE DELIVERY CHARGE IS MANDATORY TO CONFIRM THE
-                          ORDER.
+                          ΓÜá ADVANCE DELIVERY CHARGE IS MANDATORY TO CONFIRM
+                          THE ORDER.
                         </p>
                         <p className="text-[10px] md:text-[13px] font-bold text-red-600/80 uppercase tracking-widest leading-relaxed">
                           PLEASE SEND{" "}
@@ -3132,8 +3133,10 @@ const CheckoutModal = ({
                           }
                         />
                         <p className="text-[9px] md:text-[11px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest">
-                          Notice: Verification is processed manually. αñåαñ░αÑìαñƒαñ┐αñòαñ▓
-                          αñ¿αñ┐αñ░αÑìαñ«αñ╛αñú Settlement αñòαÑç αññαÑüαñ░αñéαññ αñ¼αñ╛αñª αñ╢αÑüαñ░αÑé αñ╣αÑïαññαñ╛ αñ╣αÑêαÑñ
+                          Notice: Verification is processed manually.
+                          αñåαñ░αÑìαñƒαñ┐αñòαñ▓ αñ¿αñ┐αñ░αÑìαñ«αñ╛αñú Settlement
+                          αñòαÑç αññαÑüαñ░αñéαññ αñ¼αñ╛αñª αñ╢αÑüαñ░αÑé
+                          αñ╣αÑïαññαñ╛ αñ╣αÑêαÑñ
                         </p>
                       </div>
                     </div>
