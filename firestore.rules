@@ -41,7 +41,7 @@ service cloud.firestore {
 
     // Products Collection
     match /products/{productId} {
-      allow read, list: if true;
+      allow read, list: if isAdmin();
       allow write: if isAdmin();
     }
 
@@ -54,6 +54,11 @@ service cloud.firestore {
       }
       allow create: if isValidLead(incoming());
       allow read, list, delete: if isAdmin();
+    }
+
+    // Config Collection for categories
+    match /config/{configId} {
+      allow read, write: if isAdmin();
     }
   }
 }

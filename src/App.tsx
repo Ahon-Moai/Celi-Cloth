@@ -4,11 +4,11 @@ import { Search, User, ShoppingBag, Menu, X, Facebook, Instagram, Twitter, Exter
 import { products } from './products';
 import { Product, CartItem, Order } from './types';
 import { db, auth } from './lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, doc, setDoc, deleteDoc, getDoc, limit } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyAf9pkTSkxro6cLdOvngIKPRzu8RAgTB-U" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClick, hasCoupon }: { product: Product, productsList: Product[], onAddToCart: (p: Product, size?: string, color?: string) => void, onBack: () => void, onProductClick: (p: Product) => void, hasCoupon?: boolean }) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || 'S');
@@ -2885,60 +2885,75 @@ export default function App() {
     let unsubscribeMessages = () => {};
     let unsubscribeLeads = () => {};
 
-    // Products are public
-    const qProducts = query(collection(db, 'products'));
-    unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
-      if (!snapshot.empty) {
-        const fbProducts = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as Product[];
-        setProductsList(fbProducts);
-        
-        // Dynamically update categories (we'll also fetch persistent ones)
-        const uniqueCats = Array.from(new Set(fbProducts.map(p => p.category))).filter(Boolean);
-        if (uniqueCats.length > 0) {
-          setCategories(prev => {
-            const combined = Array.from(new Set([...prev, ...uniqueCats]));
-            return combined;
-          });
-        }
-      } else {
-        setProductsList(products);
-      }
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Products listener error:", error);
-      setIsLoading(false);
-      setProductsList(products); 
-    });
-
-    // Persistent Categories fetch
-    getDoc(doc(db, 'config', 'categories')).then(docSnap => {
-      if (docSnap.exists()) {
-        const savedCats = docSnap.data().list;
-        if (Array.isArray(savedCats) && savedCats.length > 0) {
-          setCategories(savedCats);
-        }
-      }
-    });
+    // LOW-COST ARCHITECTURE:
+    // 1. Regular users only load from local products.json (initialized in state)
+    // 2. We only fetch/listen to Firestore products if the user is an ADMIN to manage them
+    // 3. Admin-only collections (orders, messages, leads) are ONLY fetched if isAdmin is true
 
     if (isAdmin) {
-      const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+      // Products for Admins (Real-time so they see changes they make)
+      const qProducts = query(collection(db, 'products'));
+      unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
+        if (!snapshot.empty) {
+          const fbProducts = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as Product[];
+          setProductsList(fbProducts);
+          
+          const uniqueCats = Array.from(new Set(fbProducts.map(p => p.category))).filter(Boolean);
+          if (uniqueCats.length > 0) {
+            setCategories(prev => Array.from(new Set([...prev, ...uniqueCats])));
+          }
+        }
+      }, (error: any) => {
+        console.error("Admin products listener error:", error);
+      });
+
+      // Orders for Admins
+      const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(100)); // Added limit
       unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
         setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      }, (error) => {
-        console.error("Orders listener error:", error);
+      }, (error: any) => {
+        if (!error.message?.includes('Quota exceeded')) {
+          console.error("Orders listener error:", error);
+        }
       });
 
-      const qMessages = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
+      // Messages for Admins
+      const qMessages = query(collection(db, 'messages'), orderBy('createdAt', 'desc'), limit(50));
       unsubscribeMessages = onSnapshot(qMessages, (snapshot) => {
         setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      }, (error) => {
-        console.error("Messages listener error:", error);
+      }, (error: any) => {
+        if (!error.message?.includes('Quota exceeded')) {
+          console.error("Messages listener error:", error);
+        }
       });
 
-      const qLeads = query(collection(db, 'leads'), orderBy('createdAt', 'desc'));
+      // Leads for Admins
+      const qLeads = query(collection(db, 'leads'), orderBy('createdAt', 'desc'), limit(50));
       unsubscribeLeads = onSnapshot(qLeads, (snapshot) => {
         setLeads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }, (error: any) => {
+        if (!error.message?.includes('Quota exceeded')) {
+          console.error("Leads listener error:", error);
+        }
       });
+
+      // Persistent Categories fetch (Safe for admins)
+      getDoc(doc(db, 'config', 'categories')).then(docSnap => {
+        if (docSnap.exists()) {
+          const savedCats = docSnap.data().list;
+          if (Array.isArray(savedCats) && savedCats.length > 0) {
+            setCategories(savedCats);
+          }
+        }
+      }).catch(err => {
+        console.error("Failed to fetch categories:", err);
+      });
+
+    } else {
+      // Regular user logic:
+      // We already initialized productsList with local JSON 'products'
+      // We'll set loading to false immediately or after a short delay
+      setIsLoading(false);
     }
 
     return () => {
