@@ -4455,6 +4455,7 @@ export default function App() {
         onAddProduct={addOrUpdateProduct}
         onDeleteProduct={deleteProduct}
         onUpdateCategories={handleUpdateCategories}
+        adminEmail={adminEmail}
         onClose={() => setIsAdminMode(false)}
       />
     );
