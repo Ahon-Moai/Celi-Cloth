@@ -1,0 +1,81 @@
+[
+  {
+    "name": "Selfmade",
+    "price": 879,
+    "category": "T-shirts",
+    "image": "https://www.image2url.com/r2/default/images/1777793213250-f6346963-42a0-4d7e-9acb-8ca5a8d52ba5.png",
+    "gallery": [],
+    "colors": [
+      "#FFFFFF"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite?\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "id": "p1"
+  },
+  {
+    "price": 879,
+    "soldOut": false,
+    "name": "Selfmade v2",
+    "image": "",
+    "category": "T-shirts",
+    "description": "Premium graphic tee with high-density print.",
+    "isNewArrival": true,
+    "colors": [
+      "#000000",
+      "#FFFFFF"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "gallery": [],
+    "id": "p2"
+  },
+  {
+    "id": "u1v8p",
+    "name": "Deeper Meaning Hoodie",
+    "price": 1850,
+    "category": "Hoodies",
+    "image": "",
+    "gallery": [],
+    "colors": [
+      "#000000"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "350 GSM Fleece fabric with puff print.",
+    "isNewArrival": true,
+    "soldOut": false
+  },
+  {
+    "id": "h2r3k",
+    "name": "Acid Wash T-shirt",
+    "price": 950,
+    "category": "T-shirts",
+    "image": "",
+    "gallery": [],
+    "colors": [
+      "#333333"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "description": "Vintage acid wash look, 100% cotton.",
+    "isNewArrival": true,
+    "soldOut": false
+  }
+]
