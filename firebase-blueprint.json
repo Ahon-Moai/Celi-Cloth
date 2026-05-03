@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Customer Order",
+      "description": "Represents a purchase made by a customer.",
+      "type": "object",
+      "properties": {
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "shipped", "delivered", "cancelled"] },
+        "customerInfo": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["items", "totalAmount", "status", "customerInfo", "createdAt"]
+    },
+    "Product": {
+      "title": "Product Entity",
+      "description": "Represents a product in the catalog.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "image": { "type": "string" },
+        "description": { "type": "string" },
+        "soldOut": { "type": "boolean" },
+        "isNewArrival": { "type": "boolean" }
+      }
+    },
+    "Message": {
+      "title": "Customer Message",
+      "description": "Represents a contact form submission.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "read", "replied"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "subject", "message", "status", "createdAt"]
+    },
+    "Lead": {
+      "title": "Coupon Lead",
+      "description": "Phone number captured for coupon generation.",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["phone", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Storage for all customer transactions."
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Storage for the product catalog."
+    },
+    "/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Storage for customer contact messages."
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Storage for collected marketing leads."
+    }
+  }
+}
