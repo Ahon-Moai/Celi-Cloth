@@ -45,6 +45,23 @@ async function startServer() {
     }
   });
 
+  // Get products from JSON
+  app.get("/api/products", (req, res) => {
+    try {
+      const productsPath = path.join(__dirname, "src", "data", "products.json");
+      if (fs.existsSync(productsPath)) {
+        const data = fs.readFileSync(productsPath, "utf8");
+        res.json(JSON.parse(data));
+      } else {
+        // Fallback to empty array if file doesn't exist
+        res.json([]);
+      }
+    } catch (err) {
+      console.error("Failed to read products:", err);
+      res.status(500).json({ error: "Failed to read products" });
+    }
+  });
+
   // Serve static files or Vite middleware
   const isProd = process.env.NODE_ENV === "production" || process.env.PROD === "true";
   

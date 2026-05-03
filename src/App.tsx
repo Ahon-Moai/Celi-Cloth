@@ -67,11 +67,15 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
                 <X className="w-5 h-5" />
               </button>
               <div className="aspect-auto max-h-[80vh] overflow-auto flex items-center justify-center bg-white p-4 md:p-8">
-                <img 
-                  src={currentSizeChart} 
-                  alt={`${product.category} Size Chart`} 
-                  className="max-w-full h-auto object-contain"
-                />
+                {currentSizeChart ? (
+                  <img 
+                    src={currentSizeChart} 
+                    alt={`${product.category} Size Chart`} 
+                    className="max-w-full h-auto object-contain"
+                  />
+                ) : (
+                  <div className="text-[10px] uppercase font-black text-gray-300">Spec Sheet Unavailable</div>
+                )}
               </div>
               <div className="p-6 bg-black text-white text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em]">{product.category} Guide Specification</p>
@@ -86,15 +90,23 @@ const ProductView = ({ product, productsList, onAddToCart, onBack, onProductClic
         <div className="w-full lg:w-[60%] bg-[#f9f9f9] relative aspect-square lg:aspect-auto lg:h-screen top-0 lg:sticky overflow-hidden border-b lg:border-b-0 lg:border-r border-gray-100">
           <div className="absolute inset-0 flex items-center justify-center p-6 md:p-12 transition-all duration-700">
             <AnimatePresence mode="wait">
-              <motion.img 
+              <motion.div 
                 key={activeImageIndex}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                src={gallery[activeImageIndex]} 
-                alt={product.name} 
-                className="w-full h-full object-contain" 
-              />
+                className="w-full h-full"
+              >
+                {gallery[activeImageIndex] ? (
+                  <img 
+                    src={gallery[activeImageIndex]} 
+                    alt={product.name} 
+                    className="w-full h-full object-contain" 
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[10px] uppercase font-black text-gray-200">No Visual Available</div>
+                )}
+              </motion.div>
             </AnimatePresence>
           </div>
           
@@ -813,7 +825,11 @@ const AdminDashboard = ({ orders, productsList, categories, onUpdateStatus, onDe
                       <div className="grid grid-cols-3 gap-3">
                         {productForm.gallery.map((url, i) => (
                           <div key={i} className="aspect-square relative group bg-gray-50 border border-gray-100">
-                            <img src={url} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
+                            {url ? (
+                              <img src={url} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[8px] font-black text-gray-200 uppercase">Void</div>
+                            )}
                             <button type="button" onClick={() => removeGalleryItem(i)} className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <X className="w-4 h-4" />
                             </button>
@@ -1210,7 +1226,11 @@ const AdminDashboard = ({ orders, productsList, categories, onUpdateStatus, onDe
               {productsList.map(product => (
                 <div key={product.id} className="bg-white border border-gray-100 p-4 md:p-6 flex flex-col group hover:shadow-2xl transition-all duration-700">
                   <div className="aspect-[4/5] bg-gray-50 mb-6 overflow-hidden relative">
-                    <img src={product.image} className={`w-full h-full object-cover transition-all duration-700 ${product.soldOut ? 'grayscale scale-105 opacity-50' : 'group-hover:scale-110'}`} alt={product.name} />
+                    {product.image ? (
+                      <img src={product.image} className={`w-full h-full object-cover transition-all duration-700 ${product.soldOut ? 'grayscale scale-105 opacity-50' : 'group-hover:scale-110'}`} alt={product.name} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-gray-200 uppercase tracking-widest">No Image</div>
+                    )}
                     {product.soldOut && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="bg-black text-white px-4 py-2 text-[10px] font-black uppercase tracking-[0.4em] -rotate-12 shadow-xl">VOID</span>
@@ -1492,12 +1512,18 @@ const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }: { product: Pr
   <Reveal y={40}>
     <div className="group relative cursor-pointer w-full" onClick={() => onClick?.(product)}>
       <div className="relative w-full aspect-[2/3] md:aspect-[3/4] lg:aspect-auto md:h-[470px] overflow-hidden bg-[#f9f9f9] mb-4 border border-gray-200">
-        <img 
-          src={product.image} 
-          alt={product.name}
-          className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
-          referrerPolicy="no-referrer"
-        />
+        {product.image ? (
+          <img 
+            src={product.image} 
+            alt={product.name}
+            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-50">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-200">No Visual</span>
+          </div>
+        )}
         <div className="absolute top-0 left-0 flex flex-col gap-1 items-start">
           {product.soldOut && (
             <div className="bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight shadow-sm z-10 text-red-500">
@@ -1589,7 +1615,11 @@ const CartDrawer = ({ isOpen, onClose, items, onRemove, onUpdateQty, onCheckout 
                 return (
                   <div key={uniqueId} className="flex gap-6">
                     <div className="w-24 h-32 bg-gray-50 flex-shrink-0">
-                      <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
+                      {item.image ? (
+                        <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-[8px] font-black uppercase text-gray-300">No Image</div>
+                      )}
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div className="space-y-1">
@@ -1988,11 +2018,15 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess, totalItems, totalAmount, on
                   {totalItems.map(item => (
                     <div key={`${item.id}-${item.selectedSize}`} className="flex gap-6 md:gap-10 group">
                       <div className="w-16 h-24 md:w-24 md:h-32 bg-white flex-shrink-0 relative overflow-hidden">
-                        <img 
-                          src={item.image} 
-                          alt={item.name} 
-                          className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
-                        />
+                        {item.image ? (
+                          <img 
+                            src={item.image} 
+                            alt={item.name} 
+                            className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[8px] font-black uppercase text-gray-300">Void</div>
+                        )}
                         <div className="absolute -top-2 -right-2 md:-top-3 md:-right-3 w-6 h-6 md:w-8 md:h-8 bg-black text-white text-[8px] md:text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#f9f9f9] font-mono">
                            {item.quantity}
                         </div>
@@ -2367,7 +2401,11 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }: { isOpen: 
                             }}
                           >
                             <div className="aspect-[4/5] bg-gray-50 overflow-hidden">
-                              <img src={p.image} alt={p.name} className="w-full h-full object-cover mix-blend-multiply group-hover:scale-110 transition-transform duration-700" />
+                              {p.image ? (
+                                <img src={p.image} alt={p.name} className="w-full h-full object-cover mix-blend-multiply group-hover:scale-110 transition-transform duration-700" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gray-100 text-[8px] font-black uppercase text-gray-300">Void</div>
+                              )}
                             </div>
                             <div className="p-3">
                               <p className="text-[9px] font-black uppercase truncate">{p.name}</p>
@@ -2700,8 +2738,16 @@ export default function App() {
       });
     }
 
-    // Always set loading to false after state is ready
-    setIsLoading(false);
+    // Load products from JSON API
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProductsList(data);
+        }
+      })
+      .catch(err => console.error("Failed to fetch products:", err))
+      .finally(() => setIsLoading(false));
 
     return () => {
       unsubscribeOrders();
