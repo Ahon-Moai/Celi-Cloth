@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "price": 879,
+    "soldOut": false,
+    "name": "Selfmade",
+    "image": "",
+    "category": "T-shirts",
+    "description": "Premium graphic tee with high-density print.",
+    "isNewArrival": true,
+    "colors": [
+      "#000000",
+      "#FFFFFF"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "gallery": [],
+    "id": "p1"
+  },
+  {
+    "price": 879,
+    "soldOut": false,
+    "name": "Selfmade v2",
+    "image": "",
+    "category": "T-shirts",
+    "description": "Premium graphic tee with high-density print.",
+    "isNewArrival": true,
+    "colors": [
+      "#000000",
+      "#FFFFFF"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "gallery": [],
+    "id": "p2"
+  },
+  {
+    "id": "u1v8p",
+    "name": "Deeper Meaning Hoodie",
+    "price": 1850,
+    "category": "Hoodies",
+    "image": "",
+    "gallery": [],
+    "colors": [
+      "#000000"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "350 GSM Fleece fabric with puff print.",
+    "isNewArrival": true,
+    "soldOut": false
+  },
+  {
+    "id": "h2r3k",
+    "name": "Acid Wash T-shirt",
+    "price": 950,
+    "category": "T-shirts",
+    "image": "",
+    "gallery": [],
+    "colors": [
+      "#333333"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "description": "Vintage acid wash look, 100% cotton.",
+    "isNewArrival": true,
+    "soldOut": false
+  }
+]

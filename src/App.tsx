@@ -619,55 +619,14 @@ const Navbar = ({ cartCount, onOpenCart, onOpenAdmin, isAdmin, setCurrentPage, c
 
 const validatePhone = (num: string) => /^\d{11}$/.test(num.replace(/\D/g, ''));
 
-const optimizeImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.8): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        } else {
-          reject(new Error('Failed to get canvas context'));
-        }
-      };
-      img.onerror = () => reject(new Error('Failed to load image'));
-      img.src = e.target?.result as string;
-    };
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsDataURL(file);
-  });
-};
-
-const AdminDashboard = ({ orders, productsList, messages, categories, leads, onUpdateStatus, onUpdateMessageStatus, onDeleteOrder, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], messages: any[], categories: string[], leads: any[], onUpdateStatus: (id: string, s: string) => void, onUpdateMessageStatus: (id: string, s: string) => void, onDeleteOrder: (id: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'messages' | 'json' | 'categories' | 'leads'>('orders');
+const AdminDashboard = ({ orders, productsList, categories, onUpdateStatus, onDeleteOrder, onAddProduct, onDeleteProduct, onUpdateCategories, onClose }: { orders: any[], productsList: Product[], categories: string[], onUpdateStatus: (id: string, s: string) => void, onDeleteOrder: (id: string) => void, onAddProduct: (p: any) => void, onDeleteProduct: (id: string) => void, onUpdateCategories: (cats: string[]) => void, onClose: () => void }) => {
+  const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'json' | 'categories'>('orders');
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [jsonInput, setJsonInput] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'confirmed' | 'shipped'>('all');
   const [newCatName, setNewCatName] = useState('');
-  const [isOptimizing, setIsOptimizing] = useState(false);
 
   const [productForm, setProductForm] = useState({
     name: '',
@@ -683,36 +642,12 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
   });
 
   const [newColor, setNewColor] = useState('#000000');
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
 
-  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setIsOptimizing(true);
-    try {
-      const optimized = await optimizeImage(file);
-      setProductForm(prev => ({ ...prev, image: optimized }));
-    } catch (err) {
-      console.error(err);
-      alert('Failed to process image');
-    } finally {
-      setIsOptimizing(false);
-    }
-  };
-
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setIsOptimizing(true);
-    try {
-      const optimized = await optimizeImage(file);
-      setProductForm(prev => ({ ...prev, gallery: [...prev.gallery, optimized] }));
-    } catch (err) {
-      console.error(err);
-      alert('Failed to process image');
-    } finally {
-      setIsOptimizing(false);
+  const handleAddGalleryUrl = () => {
+    if (newGalleryUrl.trim()) {
+      setProductForm(prev => ({ ...prev, gallery: [...prev.gallery, newGalleryUrl.trim()] }));
+      setNewGalleryUrl('');
     }
   };
 
@@ -830,40 +765,19 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Primary Visual</label>
-                      <div className="relative group">
-                        {productForm.image ? (
-                          <div className="aspect-[4/5] bg-gray-50 border border-gray-100 overflow-hidden relative">
-                            <img src={productForm.image} className="w-full h-full object-cover" alt="Product" />
-                            <button 
-                              type="button"
-                              onClick={() => setProductForm(prev => ({ ...prev, image: '' }))}
-                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <label className="flex flex-col items-center justify-center aspect-[4/5] border-2 border-dashed border-gray-200 rounded-sm hover:border-black transition-colors cursor-pointer bg-gray-50">
-                            {isOptimizing ? (
-                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                            ) : (
-                              <>
-                                <Upload className="w-6 h-6 text-gray-400 mb-2" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Select File</span>
-                              </>
-                            )}
-                            <input type="file" accept="image/*" className="hidden" onChange={handleMainImageUpload} disabled={isOptimizing} />
-                          </label>
-                        )}
-                        {productForm.image && (
-                          <label className="absolute bottom-4 right-4 p-3 bg-white shadow-xl rounded-full cursor-pointer hover:bg-gray-50 transition-colors border border-gray-100">
-                             <ImageIcon className="w-4 h-4" />
-                             <input type="file" accept="image/*" className="hidden" onChange={handleMainImageUpload} disabled={isOptimizing} />
-                          </label>
-                        )}
-                      </div>
-                      <input type="hidden" required value={productForm.image} />
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Primary Visual URL</label>
+                      <input 
+                        type="text" 
+                        placeholder="PASTE IMAGE URL HERE"
+                        className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-mono" 
+                        value={productForm.image} 
+                        onChange={e => setProductForm({...productForm, image: e.target.value})} 
+                      />
+                      {productForm.image && (
+                        <div className="aspect-[4/5] bg-gray-50 border border-gray-100 overflow-hidden relative">
+                          <img src={productForm.image} className="w-full h-full object-cover" alt="Preview" referrerPolicy="no-referrer" />
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -885,23 +799,22 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
 
                   <div className="space-y-6">
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Gallery Visuals</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Gallery Visual URLs</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="PASTE GALLERY URL"
+                          className="flex-1 border-b border-gray-100 py-2 text-xs outline-none focus:border-black font-mono uppercase"
+                          value={newGalleryUrl}
+                          onChange={e => setNewGalleryUrl(e.target.value)}
+                        />
+                        <button type="button" onClick={handleAddGalleryUrl} className="px-4 py-2 border border-black text-[9px] font-black uppercase">Add Link</button>
+                      </div>
                       <div className="grid grid-cols-3 gap-3">
-                        <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-black transition-colors cursor-pointer bg-gray-50">
-                          {isOptimizing ? (
-                             <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4 text-gray-400" />
-                              <span className="text-[8px] font-black uppercase text-gray-400 mt-1">Add</span>
-                            </>
-                          )}
-                          <input type="file" accept="image/*" className="hidden" onChange={handleGalleryUpload} disabled={isOptimizing} />
-                        </label>
                         {productForm.gallery.map((url, i) => (
                           <div key={i} className="aspect-square relative group bg-gray-50 border border-gray-100">
-                            <img src={url} className="w-full h-full object-cover" alt="" />
-                            <button onClick={() => removeGalleryItem(i)} className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <img src={url} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
+                            <button type="button" onClick={() => removeGalleryItem(i)} className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <X className="w-4 h-4" />
                             </button>
                           </div>
@@ -977,13 +890,6 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
                 INVENTORY
               </button>
               <button 
-                onClick={() => { setActiveTab('messages'); setIsSidebarOpen(false); }}
-                className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'messages' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
-              >
-                <MessageSquare className="w-4 h-4" /> 
-                MESSAGES
-              </button>
-              <button 
                 onClick={() => { setActiveTab('json'); setIsSidebarOpen(false); }}
                 className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'json' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
               >
@@ -996,13 +902,6 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
               >
                 <Layers className="w-4 h-4" /> 
                 CATEGORIES
-              </button>
-              <button 
-                onClick={() => { setActiveTab('leads'); setIsSidebarOpen(false); }}
-                className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === 'leads' ? 'border-r-4 border-white pr-4 text-white' : 'text-gray-500 hover:text-white'}`}
-              >
-                <Users className="w-4 h-4" /> 
-                COUPON LEADS
               </button>
             </nav>
           </div>
@@ -1028,7 +927,7 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
             </button>
             <div>
               <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">
-                {activeTab === 'orders' ? 'Live Orders' : activeTab === 'inventory' ? 'Inventory' : activeTab === 'messages' ? 'Communications' : activeTab === 'categories' ? 'Distinction Classes' : 'JSON Portal'}
+                {activeTab === 'orders' ? 'Live Orders' : activeTab === 'inventory' ? 'Inventory' : activeTab === 'categories' ? 'Distinction Classes' : 'JSON Portal'}
               </h1>
             </div>
           </div>
@@ -1306,60 +1205,6 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
             </>
           )}
 
-          {activeTab === 'messages' && (
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Inquiries</p>
-                    <p className="text-2xl font-black">{messages.length}</p>
-                  </div>
-                  <MessageSquare className="w-10 h-10 text-gray-50 group-hover:text-blue-50" />
-                </div>
-                <div className="bg-white p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Unread Protocol</p>
-                    <p className="text-2xl font-black text-blue-500">{messages.filter(m => m.status === 'new').length}</p>
-                  </div>
-                  <Clock className="w-10 h-10 text-gray-50 group-hover:text-blue-50" />
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-100 divide-y divide-gray-100">
-                {messages.length === 0 ? (
-                  <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">No Communications Logged</div>
-                ) : (
-                  messages.map(msg => (
-                    <div key={msg.id} className="p-8 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-8">
-                      <div className="w-full md:w-64 space-y-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">{msg.status}</p>
-                        <p className="font-black text-sm uppercase">{msg.name}</p>
-                        <p className="text-[10px] text-gray-400 font-bold">{msg.email}</p>
-                        <p className="text-[9px] text-gray-300 font-bold uppercase">{msg.createdAt ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : 'N/A'}</p>
-                      </div>
-                      <div className="flex-1 space-y-4">
-                        <h4 className="text-xs font-black uppercase tracking-widest opacity-40">Subject: {msg.subject}</h4>
-                        <p className="text-[13px] leading-relaxed font-medium text-gray-600 uppercase italic">"{msg.message}"</p>
-                      </div>
-                      <div className="w-full md:w-48 flex items-end justify-end gap-4">
-                        <select 
-                          value={msg.status} 
-                          onChange={(e) => onUpdateMessageStatus(msg.id, e.target.value)}
-                          className="bg-transparent border-b-2 border-gray-100 text-[10px] uppercase font-black p-2 outline-none focus:border-blue-500 cursor-pointer"
-                        >
-                          <option value="new">Mark New</option>
-                          <option value="read">Mark Read</option>
-                          <option value="replied">Archived (Replied)</option>
-                          <option value="trash">Trash</option>
-                        </select>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
           {activeTab === 'inventory' && (
             <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-2">
               {productsList.map(product => (
@@ -1395,46 +1240,6 @@ const AdminDashboard = ({ orders, productsList, messages, categories, leads, onU
             </div>
           )}
 
-          {activeTab === 'leads' && (
-            <div className="space-y-8">
-              <div className="bg-white p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
-                <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Collected Leads</p>
-                  <p className="text-2xl font-black">{leads.length}</p>
-                </div>
-                <Users className="w-10 h-10 text-gray-50 group-hover:text-pink-50" />
-              </div>
-
-              <div className="bg-white border border-gray-100 divide-y divide-gray-100">
-                {leads.length === 0 ? (
-                  <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">No Leads Capture Yet</div>
-                ) : (
-                  leads.map(lead => (
-                    <div key={lead.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-black text-sm">{lead.phone}</p>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase">{lead.createdAt ? new Date(lead.createdAt).toLocaleString() : 'N/A'}</p>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          const el = document.createElement('textarea');
-                          el.value = lead.phone;
-                          document.body.appendChild(el);
-                          el.select();
-                          document.execCommand('copy');
-                          document.body.removeChild(el);
-                          alert('Phone number copied to clipboard');
-                        }}
-                        className="p-3 hover:bg-black hover:text-white border border-gray-100 rounded-full transition-all"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
 
           {activeTab === 'categories' && (
             <div className="space-y-12 max-w-2xl">
@@ -2699,11 +2504,8 @@ const ContactPage = ({ onBack }: { onBack: () => void }) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'messages'), {
-        ...formData,
-        status: 'new',
-        createdAt: serverTimestamp()
-      });
+      // Logic for contact submission removed as per Firebase reduction policy
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setIsSuccess(true);
       setFormData({ name: '', email: '', subject: 'General Inquiry', message: '' });
     } catch (err) {
@@ -2863,8 +2665,6 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [productsList, setProductsList] = useState<Product[]>(products);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [leads, setLeads] = useState<any[]>([]);
 
   // Auth State
   useEffect(() => {
@@ -2881,32 +2681,14 @@ export default function App() {
   // Listen to Orders, Products, and Messages
   useEffect(() => {
     let unsubscribeOrders = () => {};
-    let unsubscribeProducts = () => {};
     let unsubscribeMessages = () => {};
     let unsubscribeLeads = () => {};
 
     // LOW-COST ARCHITECTURE:
     // 1. Regular users only load from local products.json (initialized in state)
-    // 2. We only fetch/listen to Firestore products if the user is an ADMIN to manage them
-    // 3. Admin-only collections (orders, messages, leads) are ONLY fetched if isAdmin is true
+    // 2. Admin-only collections (orders, messages, leads) are ONLY fetched if isAdmin is true
 
     if (isAdmin) {
-      // Products for Admins (Real-time so they see changes they make)
-      const qProducts = query(collection(db, 'products'));
-      unsubscribeProducts = onSnapshot(qProducts, (snapshot) => {
-        if (!snapshot.empty) {
-          const fbProducts = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as Product[];
-          setProductsList(fbProducts);
-          
-          const uniqueCats = Array.from(new Set(fbProducts.map(p => p.category))).filter(Boolean);
-          if (uniqueCats.length > 0) {
-            setCategories(prev => Array.from(new Set([...prev, ...uniqueCats])));
-          }
-        }
-      }, (error: any) => {
-        console.error("Admin products listener error:", error);
-      });
-
       // Orders for Admins
       const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(100)); // Added limit
       unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
@@ -2916,51 +2698,13 @@ export default function App() {
           console.error("Orders listener error:", error);
         }
       });
-
-      // Messages for Admins
-      const qMessages = query(collection(db, 'messages'), orderBy('createdAt', 'desc'), limit(50));
-      unsubscribeMessages = onSnapshot(qMessages, (snapshot) => {
-        setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      }, (error: any) => {
-        if (!error.message?.includes('Quota exceeded')) {
-          console.error("Messages listener error:", error);
-        }
-      });
-
-      // Leads for Admins
-      const qLeads = query(collection(db, 'leads'), orderBy('createdAt', 'desc'), limit(50));
-      unsubscribeLeads = onSnapshot(qLeads, (snapshot) => {
-        setLeads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      }, (error: any) => {
-        if (!error.message?.includes('Quota exceeded')) {
-          console.error("Leads listener error:", error);
-        }
-      });
-
-      // Persistent Categories fetch (Safe for admins)
-      getDoc(doc(db, 'config', 'categories')).then(docSnap => {
-        if (docSnap.exists()) {
-          const savedCats = docSnap.data().list;
-          if (Array.isArray(savedCats) && savedCats.length > 0) {
-            setCategories(savedCats);
-          }
-        }
-      }).catch(err => {
-        console.error("Failed to fetch categories:", err);
-      });
-
-    } else {
-      // Regular user logic:
-      // We already initialized productsList with local JSON 'products'
-      // We'll set loading to false immediately or after a short delay
-      setIsLoading(false);
     }
+
+    // Always set loading to false after state is ready
+    setIsLoading(false);
 
     return () => {
       unsubscribeOrders();
-      unsubscribeProducts();
-      unsubscribeMessages();
-      unsubscribeLeads();
     };
   }, [isAdmin]);
 
@@ -3008,44 +2752,44 @@ export default function App() {
     }
   };
 
-  const updateMessageStatus = async (messageId: string, newStatus: string) => {
+  const addOrUpdateProduct = async (p: any) => {
+    let newProducts;
+    if (p.id) {
+      newProducts = productsList.map(item => item.id === p.id ? { ...p } : item);
+    } else {
+      const newProduct = { ...p, id: Math.random().toString(36).substring(7) };
+      newProducts = [newProduct, ...productsList];
+    }
+    
+    // Update local state
+    setProductsList(newProducts);
+
+    // Persist to JSON via server API
     try {
-      await updateDoc(doc(db, 'messages', messageId), {
-        status: newStatus,
-        updatedAt: serverTimestamp()
+      await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProducts)
       });
     } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const addOrUpdateProduct = async (p: any) => {
-    try {
-      if (p.id) {
-        const { id, ...rest } = p;
-        const cleanData = Object.fromEntries(
-          Object.entries(rest).filter(([_, v]) => v !== undefined)
-        );
-        await setDoc(doc(db, 'products', id), cleanData);
-      } else {
-        const { id, ...rest } = p;
-        const cleanData = Object.fromEntries(
-          Object.entries(rest).filter(([_, v]) => v !== undefined)
-        );
-        await addDoc(collection(db, 'products'), { ...cleanData, createdAt: serverTimestamp() });
-      }
-    } catch (err) {
-      console.error(err);
+      console.error("Failed to persist products:", err);
     }
   };
 
   const deleteProduct = async (id: string) => {
     if (window.confirm('Terminate this article from inventory?')) {
+      const newProducts = productsList.filter(p => p.id !== id);
+      setProductsList(newProducts);
+
+      // Persist to JSON via server API
       try {
-        await deleteDoc(doc(db, 'products', id));
-      } catch (err: any) {
-        console.error(err);
-        alert(`Deletion failed: ${err.message || 'Unknown error'}. Ensure you are signed in with an admin account.`);
+        await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newProducts)
+        });
+      } catch (err) {
+        console.error("Failed to persist products deletion:", err);
       }
     }
   };
@@ -3064,29 +2808,17 @@ export default function App() {
     setCurrentPage('product');
   };
 
-  const handleUpdateCategories = async (newCats: string[]) => {
+  const handleUpdateCategories = (newCats: string[]) => {
     setCategories(newCats);
-    if (isAdmin) {
-      try {
-        await setDoc(doc(db, 'config', 'categories'), { list: newCats });
-      } catch (err) {
-        console.error("Failed to save categories:", err);
-      }
-    }
   };
 
-  const handleLeadCapture = async (phone: string) => {
-    try {
-      await addDoc(collection(db, 'leads'), {
-        phone,
-        createdAt: new Date().toISOString()
-      });
+  const handleLeadCapture = (phone: string) => {
+    if (phone.length >= 10) {
       setHasUnlockedCoupon(true);
       alert('Coupon code unlocked! The 10% discount is now active.\nCode: new10');
       setIsCouponPopupOpen(false);
-    } catch (err) {
-      console.error("Lead capture error:", err);
-      alert('Failed to register. Please try again.');
+    } else {
+      alert('Invalid contact digits. Protocol rejected.');
     }
   };
 
@@ -3095,11 +2827,8 @@ export default function App() {
       <AdminDashboard 
         orders={orders} 
         productsList={productsList} 
-        messages={messages}
         categories={categories}
-        leads={leads}
         onUpdateStatus={updateOrderStatus} 
-        onUpdateMessageStatus={updateMessageStatus}
         onDeleteOrder={deleteOrder}
         onAddProduct={addOrUpdateProduct} 
         onDeleteProduct={deleteProduct} 

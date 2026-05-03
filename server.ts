@@ -25,6 +25,26 @@ async function startServer() {
     });
   });
 
+  // Save products to JSON
+  app.post("/api/products", (req, res) => {
+    try {
+      const products = req.body;
+      const productsPath = path.join(__dirname, "src", "data", "products.json");
+      
+      // Ensure directory exists (though it should)
+      const dir = path.dirname(productsPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      fs.writeFileSync(productsPath, JSON.stringify(products, null, 2), "utf8");
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Failed to save products:", err);
+      res.status(500).json({ error: "Failed to save products" });
+    }
+  });
+
   // Serve static files or Vite middleware
   const isProd = process.env.NODE_ENV === "production" || process.env.PROD === "true";
   
