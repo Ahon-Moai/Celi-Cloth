@@ -238,11 +238,7 @@ const ProductView = ({
                 {product.name}
               </h1>
               <p className="text-lg md:text-2xl font-black shrink-0">
-<<<<<<< HEAD
-                ৳{product.price.toLocaleString()}
-=======
                 αº│{product.price.toLocaleString()}
->>>>>>> temp-fix
               </p>
             </div>
           </Reveal>
@@ -474,13 +470,8 @@ const Ticker = () => (
     >
       {[...Array(20)].map((_, i) => (
         <span key={i} className="mx-12 uppercase tracking-widest font-medium">
-<<<<<<< HEAD
-          Felicite™ · SPRING '26 · LIVE NOW · FELICITE CLOTHING · LIMITED
-          EDITION · ৳ 1,399 FAST SHIPPING
-=======
           FeliciteΓäó ┬╖ SPRING '26 ┬╖ LIVE NOW ┬╖ FELICITE CLOTHING ┬╖ LIMITED
           EDITION ┬╖ αº│ 1,399 FAST SHIPPING
->>>>>>> temp-fix
         </span>
       ))}
     </motion.div>
@@ -661,12 +652,8 @@ const Navbar = ({
               transition={{ duration: 1.2, ease: "easeOut" }}
               className={`text-xl md:text-3xl font-black uppercase whitespace-nowrap ${isScrolled || isShop ? "text-black" : "text-white"}`}
             >
-<<<<<<< HEAD
-              Felicite<span className="text-[10px] align-top font-bold">™</span>
-=======
               Felicite
               <span className="text-[10px] align-top font-bold">Γäó</span>
->>>>>>> temp-fix
             </motion.h1>
           </div>
 
@@ -738,11 +725,7 @@ const Navbar = ({
               <div>
                 <div className="flex items-center justify-between mb-20">
                   <span className="text-xl font-black uppercase tracking-tighter">
-<<<<<<< HEAD
-                    FELICITE<span className="text-[10px] align-top">™</span>
-=======
                     FELICITE<span className="text-[10px] align-top">Γäó</span>
->>>>>>> temp-fix
                   </span>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -839,11 +822,7 @@ const Navbar = ({
 
               <div className="space-y-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-<<<<<<< HEAD
-                  © 2026 Felicite™
-=======
                   ┬⌐ 2026 FeliciteΓäó
->>>>>>> temp-fix
                 </p>
               </div>
             </motion.div>
@@ -1107,11 +1086,7 @@ const AdminDashboard = ({
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-<<<<<<< HEAD
-                          Value (৳)
-=======
                           Value (αº│)
->>>>>>> temp-fix
                         </label>
                         <input
                           required
@@ -1624,11 +1599,7 @@ const AdminDashboard = ({
                       Net Liquidity
                     </p>
                     <p className="text-2xl md:text-3xl font-black text-green-500">
-<<<<<<< HEAD
-                      ৳{" "}
-=======
                       αº│{" "}
->>>>>>> temp-fix
                       {orders
                         .reduce(
                           (acc, o) =>
@@ -1701,17 +1672,6 @@ const AdminDashboard = ({
                           </td>
                           <td className="px-8 py-6">
                             <p className="font-black text-xs uppercase">
-<<<<<<< HEAD
-                              {order.customerInfo.socialName ||
-                                order.customerInfo.fullName}
-                            </p>
-                            <p className="text-[10px] text-gray-500 font-bold">
-                              {order.customerInfo.phone}
-                            </p>
-                            {order.customerInfo.altPhone && (
-                              <p className="text-[9px] text-gray-400">
-                                Alt: {order.customerInfo.altPhone}
-=======
                               {order.customerInfo?.socialName ||
                                 order.customerInfo?.fullName}
                             </p>
@@ -1721,7 +1681,6 @@ const AdminDashboard = ({
                             {order.customerInfo?.altPhone && (
                               <p className="text-[9px] text-gray-400">
                                 Alt: {order.customerInfo?.altPhone}
->>>>>>> temp-fix
                               </p>
                             )}
                             {order.couponUsed && (
@@ -1738,11 +1697,7 @@ const AdminDashboard = ({
                               <p className="font-bold text-black uppercase text-[8px] mb-1">
                                 Address:
                               </p>
-<<<<<<< HEAD
-                              {order.customerInfo.address}
-=======
                               {order.customerInfo?.address}
->>>>>>> temp-fix
                             </div>
                           </td>
                           <td className="px-8 py-6">
@@ -1757,60 +1712,36 @@ const AdminDashboard = ({
                                 </p>
                               ))}
                             </div>
-<<<<<<< HEAD
-                            {order.customerInfo.designDetails && (
-=======
                             {order.customerInfo?.designDetails && (
->>>>>>> temp-fix
                               <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-sm">
                                 <p className="text-[8px] font-black text-blue-600 uppercase mb-1">
                                   Customization
                                 </p>
                                 <p className="text-[9px] text-blue-800 leading-tight">
-<<<<<<< HEAD
-                                  {order.customerInfo.designDetails}
-=======
                                   {order.customerInfo?.designDetails}
->>>>>>> temp-fix
                                 </p>
                               </div>
                             )}
                             <p className="text-[9px] text-gray-400 font-bold uppercase mt-2">
-<<<<<<< HEAD
-                              Zone: {order.customerInfo.deliveryZone}
-=======
                               Zone: {order.customerInfo?.deliveryZone}
->>>>>>> temp-fix
                             </p>
                           </td>
                           <td className="px-8 py-6">
                             <div className="space-y-1">
                               <p className="font-black text-sm">
-<<<<<<< HEAD
-                                ৳
-=======
                                 αº│
->>>>>>> temp-fix
                                 {order.grandTotal?.toLocaleString() ||
                                   order.totalAmount?.toLocaleString()}
                               </p>
                               <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
-<<<<<<< HEAD
-                                Delivery: ৳{order.deliveryCharge || 0}
-=======
                                 Delivery: αº│{order.deliveryCharge || 0}
->>>>>>> temp-fix
                               </p>
                               <div className="mt-2 pt-2 border-t border-gray-100">
                                 <p className="text-[8px] font-black uppercase text-gray-400 mb-1">
                                   Payment Proof
                                 </p>
                                 <p className="text-[10px] font-bold text-blue-600 break-all max-w-[120px]">
-<<<<<<< HEAD
-                                  {order.customerInfo.paymentInfo}
-=======
                                   {order.customerInfo?.paymentInfo}
->>>>>>> temp-fix
                                 </p>
                               </div>
                             </div>
@@ -1922,17 +1853,6 @@ const AdminDashboard = ({
                           Customer & Logistics
                         </p>
                         <p className="font-black text-sm uppercase">
-<<<<<<< HEAD
-                          {order.customerInfo.socialName ||
-                            order.customerInfo.fullName}
-                        </p>
-                        <p className="text-[11px] text-gray-500 font-bold">
-                          {order.customerInfo.phone}
-                        </p>
-                        {order.customerInfo.altPhone && (
-                          <p className="text-[10px] text-gray-400 font-bold tracking-tight">
-                            Alt: {order.customerInfo.altPhone}
-=======
                           {order.customerInfo?.socialName ||
                             order.customerInfo?.fullName}
                         </p>
@@ -1942,7 +1862,6 @@ const AdminDashboard = ({
                         {order.customerInfo?.altPhone && (
                           <p className="text-[10px] text-gray-400 font-bold tracking-tight">
                             Alt: {order.customerInfo?.altPhone}
->>>>>>> temp-fix
                           </p>
                         )}
                         {order.couponUsed && (
@@ -1954,11 +1873,7 @@ const AdminDashboard = ({
                           <span className="font-black text-black block mb-1">
                             STREET ADDRESS:
                           </span>
-<<<<<<< HEAD
-                          {order.customerInfo.address}
-=======
                           {order.customerInfo?.address}
->>>>>>> temp-fix
                         </div>
                       </div>
                       <div>
@@ -1976,21 +1891,13 @@ const AdminDashboard = ({
                             </p>
                           ))}
                         </div>
-<<<<<<< HEAD
-                        {order.customerInfo.designDetails && (
-=======
                         {order.customerInfo?.designDetails && (
->>>>>>> temp-fix
                           <div className="p-3 bg-blue-50 border border-blue-100 rounded-sm">
                             <p className="text-[8px] font-black text-blue-600 uppercase mb-1 underline">
                               Design Modification Notes
                             </p>
                             <p className="text-[10px] text-blue-800 leading-tight font-medium">
-<<<<<<< HEAD
-                              {order.customerInfo.designDetails}
-=======
                               {order.customerInfo?.designDetails}
->>>>>>> temp-fix
                             </p>
                           </div>
                         )}
@@ -2001,31 +1908,19 @@ const AdminDashboard = ({
                             Capital Workflow
                           </p>
                           <p className="font-black text-lg">
-<<<<<<< HEAD
-                            ৳
-=======
                             αº│
->>>>>>> temp-fix
                             {order.grandTotal?.toLocaleString() ||
                               order.totalAmount?.toLocaleString()}
                           </p>
                           <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-2 italic">
-<<<<<<< HEAD
-                            Ship: ৳{order.deliveryCharge || 0}
-=======
                             Ship: αº│{order.deliveryCharge || 0}
->>>>>>> temp-fix
                           </p>
                           <div className="p-2 bg-green-50/50 border border-green-100 rounded-sm">
                             <p className="text-[8px] font-black text-green-700 uppercase mb-1">
                               Verification
                             </p>
                             <p className="text-[9px] font-bold text-green-600 break-all">
-<<<<<<< HEAD
-                              {order.customerInfo.paymentInfo}
-=======
                               {order.customerInfo?.paymentInfo}
->>>>>>> temp-fix
                             </p>
                           </div>
                         </div>
@@ -2110,11 +2005,7 @@ const AdminDashboard = ({
                           {product.name}
                         </h4>
                         <p className="text-[10px] font-black">
-<<<<<<< HEAD
-                          ৳{product.price.toLocaleString()}
-=======
                           αº│{product.price.toLocaleString()}
->>>>>>> temp-fix
                         </p>
                       </div>
                       <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">
@@ -2533,11 +2424,7 @@ const ProductCard = ({
             {product.name}
           </h4>
           <p className="text-[10px] md:text-[12px] font-black tracking-tighter shrink-0">
-<<<<<<< HEAD
-            ৳{product.price.toLocaleString()}
-=======
             αº│{product.price.toLocaleString()}
->>>>>>> temp-fix
           </p>
         </div>
         {product.description && (
@@ -2602,11 +2489,7 @@ const Footer = ({
       </div>
 
       <div className="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium">
-<<<<<<< HEAD
-        © 2026 - FELICITE
-=======
         ┬⌐ 2026 - FELICITE
->>>>>>> temp-fix
       </div>
     </div>
   </footer>
@@ -2719,11 +2602,7 @@ const CartDrawer = ({
                           )}
                         </div>
                         <p className="text-[11px] font-bold text-gray-500">
-<<<<<<< HEAD
-                          ৳{item.price.toLocaleString()}
-=======
                           αº│{item.price.toLocaleString()}
->>>>>>> temp-fix
                         </p>
                       </div>
                       <div className="flex items-center justify-between">
@@ -2745,11 +2624,7 @@ const CartDrawer = ({
                           </button>
                         </div>
                         <p className="text-[12px] font-black">
-<<<<<<< HEAD
-                          ৳{(item.price * item.quantity).toLocaleString()}
-=======
                           αº│{(item.price * item.quantity).toLocaleString()}
->>>>>>> temp-fix
                         </p>
                       </div>
                     </div>
@@ -2763,11 +2638,7 @@ const CartDrawer = ({
               <div className="flex justify-between text-xs font-black uppercase tracking-[0.2em]">
                 <span>Bag Total</span>
                 <span>
-<<<<<<< HEAD
-                  ৳
-=======
                   αº│
->>>>>>> temp-fix
                   {items
                     .reduce((acc, item) => acc + item.price * item.quantity, 0)
                     .toLocaleString()}
@@ -2780,11 +2651,7 @@ const CartDrawer = ({
                 Proceed to Checkout
               </button>
               <p className="text-[9px] text-center text-gray-400 uppercase tracking-widest font-bold">
-<<<<<<< HEAD
-                Free delivery on orders over ৳5,000
-=======
                 Free delivery on orders over αº│5,000
->>>>>>> temp-fix
               </p>
             </div>
           )}
@@ -2914,11 +2781,7 @@ const CheckoutModal = ({
         const productSummary = totalItems
           .map(
             (i) =>
-<<<<<<< HEAD
-              `• ${i.name} (${i.selectedColor || "Default"}) [Size: ${i.selectedSize}] x${i.quantity}`,
-=======
               `ΓÇó ${i.name} (${i.selectedColor || "Default"}) [Size: ${i.selectedSize}] x${i.quantity}`,
->>>>>>> temp-fix
           )
           .join("%0A");
         const message =
@@ -2930,11 +2793,7 @@ const CheckoutModal = ({
           `*Ordered Products:*%0A${productSummary}%0A%0A` +
           `*Customisation Details:* ${formData.designDetails || "None"}%0A%0A` +
           `*Payment Info (Last 4 / Txid):* ${formData.paymentInfo}%0A` +
-<<<<<<< HEAD
-          `*Order Total:* ৳${grandTotal.toLocaleString()}%0A%0A` +
-=======
           `*Order Total:* αº│${grandTotal.toLocaleString()}%0A%0A` +
->>>>>>> temp-fix
           `_Authorized via Felicite Store Terminal_`;
 
         window.open(`https://wa.me/8801974004221?text=${message}`, "_blank");
@@ -2982,11 +2841,7 @@ const CheckoutModal = ({
                 </h2>
                 <div className="h-0.5 md:h-1 w-16 md:w-20 bg-gray-900 mb-6 md:mb-8"></div>
                 <p className="text-[8px] md:text-[10px] font-black text-gray-300 uppercase tracking-[0.4em]">
-<<<<<<< HEAD
-                  Secure Terminal Protocol · Release Authoritative
-=======
                   Secure Terminal Protocol ┬╖ Release Authoritative
->>>>>>> temp-fix
                 </p>
               </header>
 
@@ -3215,30 +3070,17 @@ const CheckoutModal = ({
                       <div className="h-1 w-16 bg-gray-900" />
                       <div className="bg-red-50 border-l-4 border-red-600 p-6 md:p-8 mt-8 space-y-3">
                         <p className="text-[12px] md:text-[16px] font-black text-red-700 uppercase tracking-[0.05em] leading-tight">
-<<<<<<< HEAD
-                          ⚠ ADVANCE DELIVERY CHARGE IS MANDATORY TO CONFIRM THE
-                          ORDER.
-=======
                           ΓÜá ADVANCE DELIVERY CHARGE IS MANDATORY TO CONFIRM
                           THE ORDER.
->>>>>>> temp-fix
                         </p>
                         <p className="text-[10px] md:text-[13px] font-bold text-red-600/80 uppercase tracking-widest leading-relaxed">
                           PLEASE SEND{" "}
                           <span className="text-red-700 font-black underline">
-<<<<<<< HEAD
-                            ৳80 (INSIDE DHAKA)
-                          </span>{" "}
-                          OR{" "}
-                          <span className="text-red-700 font-black underline">
-                            ৳150 (OUTSIDE DHAKA)
-=======
                             αº│80 (INSIDE DHAKA)
                           </span>{" "}
                           OR{" "}
                           <span className="text-red-700 font-black underline">
                             αº│150 (OUTSIDE DHAKA)
->>>>>>> temp-fix
                           </span>{" "}
                           TO OUR MERCHANT/PERSONAL NUMBER{" "}
                           <span className="text-red-900 font-black">
@@ -3291,15 +3133,10 @@ const CheckoutModal = ({
                           }
                         />
                         <p className="text-[9px] md:text-[11px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest">
-<<<<<<< HEAD
-                          Notice: Verification is processed manually. आर्टिकल
-                          निर्माण Settlement के तुरंत बाद शुरू होता है।
-=======
                           Notice: Verification is processed manually.
                           αñåαñ░αÑìαñƒαñ┐αñòαñ▓ αñ¿αñ┐αñ░αÑìαñ«αñ╛αñú Settlement
                           αñòαÑç αññαÑüαñ░αñéαññ αñ¼αñ╛αñª αñ╢αÑüαñ░αÑé
                           αñ╣αÑïαññαñ╛ αñ╣αÑêαÑñ
->>>>>>> temp-fix
                         </p>
                       </div>
                     </div>
@@ -3386,11 +3223,7 @@ const CheckoutModal = ({
                           </p>
                         </div>
                         <p className="text-[12px] md:text-[14px] font-black text-gray-900 font-mono">
-<<<<<<< HEAD
-                          ৳{item.price.toLocaleString()}
-=======
                           αº│{item.price.toLocaleString()}
->>>>>>> temp-fix
                         </p>
                       </div>
                     </div>
@@ -3403,11 +3236,7 @@ const CheckoutModal = ({
                       Sub-Valuation
                     </span>
                     <span className="font-bold text-gray-900 font-mono text-[10px] md:text-xs">
-<<<<<<< HEAD
-                      ৳{totalAmount.toLocaleString()}
-=======
                       αº│{totalAmount.toLocaleString()}
->>>>>>> temp-fix
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -3415,11 +3244,7 @@ const CheckoutModal = ({
                       Logistic Fees
                     </span>
                     <span className="font-bold text-gray-900 font-mono text-[10px] md:text-xs">
-<<<<<<< HEAD
-                      ৳{deliveryCharge}
-=======
                       αº│{deliveryCharge}
->>>>>>> temp-fix
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -3427,11 +3252,7 @@ const CheckoutModal = ({
                       Packaging Fee
                     </span>
                     <span className="font-bold text-gray-300 font-mono text-[10px] md:text-xs line-through italic">
-<<<<<<< HEAD
-                      ৳35.00
-=======
                       αº│35.00
->>>>>>> temp-fix
                     </span>
                   </div>
 
@@ -3440,11 +3261,7 @@ const CheckoutModal = ({
                       Total
                     </span>
                     <span className="text-gray-900 font-mono text-2xl md:text-4xl font-medium tracking-tighter">
-<<<<<<< HEAD
-                      ৳{grandTotal.toLocaleString()}
-=======
                       αº│{grandTotal.toLocaleString()}
->>>>>>> temp-fix
                     </span>
                   </div>
 
@@ -3470,11 +3287,7 @@ const CheckoutModal = ({
                 <div className="pt-10 md:pt-16 pb-6 md:pb-0 flex items-center gap-4 md:gap-6 opacity-20">
                   <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                   <p className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] leading-relaxed">
-<<<<<<< HEAD
-                    Authorized Settlement Protocol · Status: Operational
-=======
                     Authorized Settlement Protocol ┬╖ Status: Operational
->>>>>>> temp-fix
                   </p>
                 </div>
               </div>
@@ -3683,11 +3496,7 @@ const StylistModule = ({
       setMessages([
         {
           type: "ai",
-<<<<<<< HEAD
-          text: "WELCOME TO FELICITE™ INTELLIGENCE. I AM YOUR PERSONAL STYLIST. DESCRIBE THE VIBE YOU WANT TO ARCHIVE TODAY.",
-=======
           text: "WELCOME TO FELICITEΓäó INTELLIGENCE. I AM YOUR PERSONAL STYLIST. DESCRIBE THE VIBE YOU WANT TO ARCHIVE TODAY.",
->>>>>>> temp-fix
         },
       ]);
     }
@@ -3715,11 +3524,7 @@ const StylistModule = ({
             role: "user",
             parts: [
               {
-<<<<<<< HEAD
-                text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear.
-=======
                 text: `You are the "FELICITEΓäó AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear.
->>>>>>> temp-fix
               Your goal is to provide fashion styling advice based on the user's prompt and our current inventory.
               
               Our Inventory: ${JSON.stringify(products.map((p) => ({ id: p.id, name: p.name, category: p.category, price: p.price })))}
@@ -3893,11 +3698,7 @@ const StylistModule = ({
                                 {p.name}
                               </p>
                               <p className="text-[8px] text-gray-400 font-bold">
-<<<<<<< HEAD
-                                ৳{p.price.toLocaleString()}
-=======
                                 αº│{p.price.toLocaleString()}
->>>>>>> temp-fix
                               </p>
                             </div>
                           </div>
@@ -4434,11 +4235,7 @@ export default function App() {
             })),
           );
         } else {
-<<<<<<< HEAD
-          // No products in DB yet — fall back to local JSON so the store isn't empty
-=======
           // No products in DB yet ΓÇö fall back to local JSON so the store isn't empty
->>>>>>> temp-fix
           fetch("/api/products")
             .then((res) => res.json())
             .then((localData) => {
@@ -4514,11 +4311,7 @@ export default function App() {
       if (error) {
         alert("Error: " + error.message);
       } else {
-<<<<<<< HEAD
-        alert("Check your email — a login link has been sent!");
-=======
         alert("Check your email ΓÇö a login link has been sent!");
->>>>>>> temp-fix
       }
     } else {
       setIsAdminMode(true);
@@ -4551,11 +4344,7 @@ export default function App() {
   };
 
   const addOrUpdateProduct = async (p: any) => {
-<<<<<<< HEAD
-    // Map camelCase Product fields → snake_case DB columns
-=======
     // Map camelCase Product fields ΓåÆ snake_case DB columns
->>>>>>> temp-fix
     const dbRow = {
       name: p.name,
       price: p.price,
@@ -4597,11 +4386,7 @@ export default function App() {
     try {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
-<<<<<<< HEAD
-      // Realtime will sync — also optimistic local update
-=======
       // Realtime will sync ΓÇö also optimistic local update
->>>>>>> temp-fix
       setProductsList((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
       console.error("Product delete error:", err);
@@ -4710,21 +4495,13 @@ export default function App() {
               </div>
             </div>
 
-<<<<<<< HEAD
-            {orderSuccess.customerInfo.designDetails && (
-=======
             {orderSuccess.customerInfo?.designDetails && (
->>>>>>> temp-fix
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">
                   Customisation
                 </p>
                 <p className="text-[11px] md:text-[12px] font-medium text-gray-600 italic">
-<<<<<<< HEAD
-                  "{orderSuccess.customerInfo.designDetails}"
-=======
                   "{orderSuccess.customerInfo?.designDetails}"
->>>>>>> temp-fix
                 </p>
               </div>
             )}
@@ -4735,19 +4512,11 @@ export default function App() {
                   Shipping To
                 </p>
                 <p className="text-[11px] md:text-[12px] font-black">
-<<<<<<< HEAD
-                  {orderSuccess.customerInfo.socialName ||
-                    `${orderSuccess.customerInfo.firstName} ${orderSuccess.customerInfo.lastName}`}
-                </p>
-                <p className="text-[10px] md:text-[11px] text-gray-500 line-clamp-2">
-                  {orderSuccess.customerInfo.address}
-=======
                   {orderSuccess.customerInfo?.socialName ||
                     `${orderSuccess.customerInfo?.firstName} ${orderSuccess.customerInfo?.lastName}`}
                 </p>
                 <p className="text-[10px] md:text-[11px] text-gray-500 line-clamp-2">
                   {orderSuccess.customerInfo?.address}
->>>>>>> temp-fix
                 </p>
               </div>
               <div className="text-left sm:text-right">
@@ -4755,11 +4524,7 @@ export default function App() {
                   Financials
                 </p>
                 <p className="text-[16px] md:text-[18px] font-black">
-<<<<<<< HEAD
-                  ৳{orderSuccess.grandTotal?.toLocaleString()}
-=======
                   αº│{orderSuccess.grandTotal?.toLocaleString()}
->>>>>>> temp-fix
                 </p>
                 <p className="text-[8px] text-gray-400 uppercase font-bold">
                   Incl. Shipping
@@ -4844,11 +4609,7 @@ export default function App() {
                   </button>
                 </div>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">
-<<<<<<< HEAD
-                  Limited Time Offer • felicite™
-=======
                   Limited Time Offer ΓÇó feliciteΓäó
->>>>>>> temp-fix
                 </p>
               </div>
             </motion.div>
@@ -4972,11 +4733,7 @@ Your data is encrypted and handled according to global standards.`}
           <InfoPage
             title="Privacy Protocol"
             onBack={() => setCurrentPage("home")}
-<<<<<<< HEAD
-            content={`FELICITE™ prioritizes individual data sovereignty.
-=======
             content={`FELICITEΓäó prioritizes individual data sovereignty.
->>>>>>> temp-fix
 
 Data Collection:
 We collect identity information solely for the purpose of shipment fulfillment and communication.
@@ -4992,21 +4749,13 @@ You may request the deletion of your customer profile at any time via the contac
             title="Terms of Service"
             onBack={() => setCurrentPage("home")}
             content={`Agreement of Use:
-<<<<<<< HEAD
-By accessing FELICITE™, you agree to abide by our collection protocols and ethical standards.
-=======
 By accessing FELICITEΓäó, you agree to abide by our collection protocols and ethical standards.
->>>>>>> temp-fix
 
 Orders:
 We reserve the right to cancel orders that appear fraudulent or violate our terms.
 
 Intellectual Property:
-<<<<<<< HEAD
-All designs, visual assets, and trademarks are the sole property of FELICITE™.
-=======
 All designs, visual assets, and trademarks are the sole property of FELICITEΓäó.
->>>>>>> temp-fix
 
 Governing Law:
 Usage of this platform is governed by the laws of Bangladesh.`}
