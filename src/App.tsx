@@ -4495,13 +4495,13 @@ export default function App() {
               </div>
             </div>
 
-            {orderSuccess.customerInfo.designDetails && (
+            {orderSuccess.customerInfo?.designDetails && (
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">
                   Customisation
                 </p>
                 <p className="text-[11px] md:text-[12px] font-medium text-gray-600 italic">
-                  "{orderSuccess.customerInfo.designDetails}"
+                  "{orderSuccess.customerInfo?.designDetails}"
                 </p>
               </div>
             )}
@@ -4512,11 +4512,11 @@ export default function App() {
                   Shipping To
                 </p>
                 <p className="text-[11px] md:text-[12px] font-black">
-                  {orderSuccess.customerInfo.socialName ||
-                    `${orderSuccess.customerInfo.firstName} ${orderSuccess.customerInfo.lastName}`}
+                  {orderSuccess.customerInfo?.socialName ||
+                    `${orderSuccess.customerInfo?.firstName} ${orderSuccess.customerInfo?.lastName}`}
                 </p>
                 <p className="text-[10px] md:text-[11px] text-gray-500 line-clamp-2">
-                  {orderSuccess.customerInfo.address}
+                  {orderSuccess.customerInfo?.address}
                 </p>
               </div>
               <div className="text-left sm:text-right">
