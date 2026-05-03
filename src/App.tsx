@@ -838,6 +838,7 @@ const AdminDashboard = ({
   orders,
   productsList,
   categories,
+  adminEmail,
   onUpdateStatus,
   onDeleteOrder,
   onAddProduct,
@@ -848,6 +849,7 @@ const AdminDashboard = ({
   orders: any[];
   productsList: Product[];
   categories: string[];
+  adminEmail: string;
   onUpdateStatus: (id: string, s: string) => void;
   onDeleteOrder: (id: string) => void;
   onAddProduct: (p: any) => void;
