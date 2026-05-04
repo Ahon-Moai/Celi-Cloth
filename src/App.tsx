@@ -2709,6 +2709,11 @@ const CheckoutModal = ({
   });
   const [couponCode, setCouponCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+  const [altPhoneError, setAltPhoneError] = useState("");
+  const [copiedStatus, setCopiedStatus] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
 
   useEffect(() => {
     if (hasCoupon && appliedDiscount === 0) {
@@ -2717,20 +2722,13 @@ const CheckoutModal = ({
     }
   }, [hasCoupon, appliedDiscount]);
 
-  const [loading, setLoading] = useState(false);
-  const [phoneError, setPhoneError] = useState("");
-  const [altPhoneError, setAltPhoneError] = useState("");
-  const [copiedStatus, setCopiedStatus] = useState<string | null>(null);
-
-  // Auto-adjust shipping logic
   useEffect(() => {
     const cityLower = (formData.city || "").toLowerCase();
     if (cityLower.length > 2) {
-      if (cityLower.includes("dhaka")) {
-        setFormData((prev) => ({ ...prev, deliveryZone: "inside" }));
-      } else {
-        setFormData((prev) => ({ ...prev, deliveryZone: "outside" }));
-      }
+      setFormData((prev) => ({
+        ...prev,
+        deliveryZone: cityLower.includes("dhaka") ? "inside" : "outside",
+      }));
     }
   }, [formData.city]);
 
@@ -2741,7 +2739,7 @@ const CheckoutModal = ({
   const handleApplyCoupon = () => {
     if (couponCode.toLowerCase() === "new10") {
       setAppliedDiscount(0.1);
-      alert('Coupon code "new10" applied successfully!');
+      alert('Coupon "new10" applied! 10% off.');
     } else {
       alert("Invalid coupon code.");
     }
@@ -2759,19 +2757,14 @@ const CheckoutModal = ({
   ) => {
     if (e) e.preventDefault();
     let hasError = false;
-
     if (!validatePhone(formData.phone)) {
-      setPhoneError("Primary phone must be exactly 11 digits");
+      setPhoneError("Must be 11 digits");
       hasError = true;
     }
-
     if (!formData.altPhone || !validatePhone(formData.altPhone)) {
-      setAltPhoneError(
-        "Alternative mobile number is mandatory and must be 11 digits",
-      );
+      setAltPhoneError("Must be 11 digits");
       hasError = true;
     }
-
     if (hasError) return;
 
     setLoading(true);
@@ -2803,16 +2796,14 @@ const CheckoutModal = ({
           .join("%0A");
         const message =
           `*NEW ORDER ALERT*%0A%0A` +
-          `*Customer Name:* ${formData.firstName} ${formData.lastName}%0A` +
-          `*Phone Number:* ${formData.phone}%0A` +
-          `*Alternative Number:* ${formData.altPhone}%0A` +
-          `*Exact Delivery Address:* ${formData.address}, ${formData.city}%0A%0A` +
-          `*Ordered Products:*%0A${productSummary}%0A%0A` +
-          `*Customisation Details:* ${formData.designDetails || "None"}%0A%0A` +
-          `*Payment Info (Last 4 / Txid):* ${formData.paymentInfo}%0A` +
-          `*Order Total:* ৳${grandTotal.toLocaleString()}%0A%0A` +
-          `_Authorized via Felicite Store Terminal_`;
-
+          `*Customer:* ${formData.firstName} ${formData.lastName}%0A` +
+          `*Phone:* ${formData.phone}%0A` +
+          `*Alt:* ${formData.altPhone}%0A` +
+          `*Address:* ${formData.address}, ${formData.city}%0A%0A` +
+          `*Items:*%0A${productSummary}%0A%0A` +
+          `*Custom:* ${formData.designDetails || "None"}%0A` +
+          `*Payment Ref:* ${formData.paymentInfo}%0A` +
+          `*Total:* ৳${grandTotal.toLocaleString()}`;
         window.open(`https://wa.me/8801974004221?text=${message}`, "_blank");
       }
 
@@ -2828,176 +2819,231 @@ const CheckoutModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-0 md:p-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-white/95 backdrop-blur-sm"
-          />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            className="relative w-full max-w-[1240px] h-full md:h-auto md:max-h-[92vh] bg-white md:rounded-2xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row border border-gray-100"
-          >
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[500] bg-white overflow-y-auto"
+        >
+          {/* Header */}
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 md:px-12 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-black uppercase tracking-widest">
+                Checkout
+              </span>
+              <span className="text-[10px] text-gray-400 font-bold">
+                — {totalItems.length} item{totalItems.length > 1 ? "s" : ""}
+              </span>
+            </div>
             <button
               onClick={onClose}
-              className="fixed md:absolute right-4 top-4 md:right-10 md:top-10 z-[100] p-3 bg-white/80 backdrop-blur-md md:bg-transparent hover:bg-gray-100 rounded-full transition-all group shadow-sm md:shadow-none"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <X className="w-5 h-5 md:w-6 md:h-6 text-gray-400 md:text-gray-300 group-hover:text-gray-900 transition-colors" />
+              <X className="w-5 h-5" />
             </button>
+          </div>
 
-            {/* Left Column: Form (Top on Mobile) */}
-            <div className="w-full md:flex-1 md:overflow-y-auto px-5 py-12 md:px-16 lg:px-20 md:py-24 bg-white order-1 md:order-1 scrollbar-hide">
-              <header className="mb-12 md:mb-20">
-                <h2 className="text-3xl md:text-6xl font-serif text-gray-900 italic tracking-tight mb-4">
-                  Checkout
-                </h2>
-                <div className="h-0.5 md:h-1 w-16 md:w-20 bg-gray-900 mb-6 md:mb-8"></div>
-                <p className="text-[8px] md:text-[10px] font-black text-gray-300 uppercase tracking-[0.4em]">
-                  Secure Terminal Protocol · Release Authoritative
-                </p>
-              </header>
+          <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 md:py-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+              {/* LEFT: Form */}
+              <div className="space-y-10">
+                {/* Order Summary — visible on mobile at top */}
+                <div className="lg:hidden bg-gray-50 rounded-2xl p-5 space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    Your Order
+                  </p>
+                  {totalItems.map((item) => (
+                    <div
+                      key={`${item.id}-${item.selectedSize}`}
+                      className="flex gap-3 items-center"
+                    >
+                      <div className="w-12 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            className="w-full h-full object-cover"
+                            alt={item.name}
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-black uppercase truncate">
+                          {item.name}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-bold">
+                          Size: {item.selectedSize} · x{item.quantity}
+                        </p>
+                      </div>
+                      <p className="text-[12px] font-black flex-shrink-0">
+                        ৳{(item.price * item.quantity).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                  <div className="border-t border-gray-200 pt-4 space-y-2">
+                    <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+                      <span>Subtotal</span>
+                      <span>৳{totalAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+                      <span>Delivery</span>
+                      <span>৳{deliveryCharge}</span>
+                    </div>
+                    {appliedDiscount > 0 && (
+                      <div className="flex justify-between text-[10px] font-bold text-green-600 uppercase">
+                        <span>Discount</span>
+                        <span>-৳{discountAmount.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-sm font-black pt-2 border-t border-gray-200">
+                      <span>Total</span>
+                      <span>৳{grandTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  {/* Coupon */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Coupon code"
+                      className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-[11px] font-bold uppercase outline-none focus:border-black"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      className="px-4 py-2 bg-black text-white text-[10px] font-black rounded-lg"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
 
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-16 md:space-y-24"
-              >
-                {/* Step 1: Logistics */}
-                <section>
-                  <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12">
-                    <span className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-gray-900 flex items-center justify-center text-[8px] md:text-[10px] font-black">
-                      01
-                    </span>
-                    <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-gray-900">
+                {/* Shipping */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black">
+                      1
+                    </div>
+                    <h3 className="text-[11px] font-black uppercase tracking-widest">
                       Shipping Details
                     </h3>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-10 md:gap-y-12 gap-x-8 md:gap-x-10">
-                    <div className="col-span-1 border-b-2 border-gray-100 pb-3 focus-within:border-gray-900 transition-all">
-                      <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="First Name"
-                        className="w-full bg-transparent outline-none text-base md:text-lg font-bold placeholder:text-gray-200"
-                        value={formData.firstName}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            firstName: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="col-span-1 border-b-2 border-gray-100 pb-3 focus-within:border-gray-900 transition-all">
-                      <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Last Name"
-                        className="w-full bg-transparent outline-none text-base md:text-lg font-bold placeholder:text-gray-200"
-                        value={formData.lastName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, lastName: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="col-span-1 sm:col-span-2 border-b-2 border-gray-100 pb-3 focus-within:border-gray-900 transition-all">
-                      <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      {
+                        label: "First Name",
+                        key: "firstName",
+                        placeholder: "First Name",
+                        col: 1,
+                      },
+                      {
+                        label: "Last Name",
+                        key: "lastName",
+                        placeholder: "Last Name",
+                        col: 1,
+                      },
+                    ].map((f) => (
+                      <div key={f.key} className="space-y-1">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                          {f.label}
+                        </label>
+                        <input
+                          required
+                          type="text"
+                          placeholder={f.placeholder}
+                          className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent transition-colors"
+                          value={(formData as any)[f.key]}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              [f.key]: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+                    <div className="col-span-2 space-y-1">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
                         Street Address
                       </label>
                       <input
-                        type="text"
                         required
-                        placeholder="House No, Road Name, Area Details"
-                        className="w-full bg-transparent outline-none text-base md:text-lg font-bold placeholder:text-gray-200"
+                        type="text"
+                        placeholder="House No, Road, Area"
+                        className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent transition-colors"
                         value={formData.address}
                         onChange={(e) =>
                           setFormData({ ...formData, address: e.target.value })
                         }
                       />
                     </div>
-                    <div className="col-span-1 border-b-2 border-gray-100 pb-3 focus-within:border-gray-900 transition-all">
-                      <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
                         City
                       </label>
                       <input
-                        type="text"
                         required
+                        type="text"
                         placeholder="City / District"
-                        className="w-full bg-transparent outline-none text-base md:text-lg font-bold placeholder:text-gray-200"
+                        className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent transition-colors"
                         value={formData.city}
                         onChange={(e) =>
                           setFormData({ ...formData, city: e.target.value })
                         }
                       />
                     </div>
-                    <div className="col-span-1 border-b-2 border-gray-100 pb-3 focus-within:border-gray-900 transition-all">
-                      <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2">
-                        Mobile Number (11 Digits)
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                        Phone (11 digits)
                       </label>
-                      <div className="relative">
-                        <input
-                          type="tel"
-                          required
-                          placeholder="01XXXXXXXXX"
-                          className={`w-full bg-transparent outline-none text-base md:text-lg font-bold placeholder:text-gray-200 ${phoneError ? "text-red-600" : ""}`}
-                          value={formData.phone}
-                          onChange={(e) => {
-                            setFormData({ ...formData, phone: e.target.value });
-                            setPhoneError("");
-                          }}
-                        />
-                        {phoneError && (
-                          <p className="absolute top-0 right-0 text-red-600 text-[8px] font-black uppercase tracking-widest italic">
-                            {phoneError}
-                          </p>
-                        )}
-                      </div>
+                      <input
+                        required
+                        type="tel"
+                        placeholder="01XXXXXXXXX"
+                        className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent transition-colors ${phoneError ? "border-red-400 text-red-600" : "border-gray-100 focus:border-black"}`}
+                        value={formData.phone}
+                        onChange={(e) => {
+                          setFormData({ ...formData, phone: e.target.value });
+                          setPhoneError("");
+                        }}
+                      />
+                      {phoneError && (
+                        <p className="text-[9px] text-red-500 font-bold">
+                          {phoneError}
+                        </p>
+                      )}
                     </div>
-                    <div className="col-span-1 border-b-2 border-gray-100 pb-3 focus-within:border-gray-900 transition-all">
-                      <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2">
+                    <div className="col-span-2 space-y-1">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
                         Alternative Number (Mandatory)
                       </label>
-                      <div className="relative">
-                        <input
-                          type="tel"
-                          required
-                          placeholder="01XXXXXXXXX"
-                          className={`w-full bg-transparent outline-none text-base md:text-lg font-bold placeholder:text-gray-200 ${altPhoneError ? "text-red-600" : ""}`}
-                          value={formData.altPhone}
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              altPhone: e.target.value,
-                            });
-                            setAltPhoneError("");
-                          }}
-                        />
-                        {altPhoneError && (
-                          <p className="absolute top-0 right-0 text-red-600 text-[8px] font-black uppercase tracking-widest italic">
-                            {altPhoneError}
-                          </p>
-                        )}
-                      </div>
+                      <input
+                        required
+                        type="tel"
+                        placeholder="01XXXXXXXXX"
+                        className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent transition-colors ${altPhoneError ? "border-red-400 text-red-600" : "border-gray-100 focus:border-black"}`}
+                        value={formData.altPhone}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            altPhone: e.target.value,
+                          });
+                          setAltPhoneError("");
+                        }}
+                      />
+                      {altPhoneError && (
+                        <p className="text-[9px] text-red-500 font-bold">
+                          {altPhoneError}
+                        </p>
+                      )}
                     </div>
-                    <div className="col-span-1 sm:col-span-2 border-b-2 border-gray-100 pb-3 focus-within:border-gray-900 transition-all">
-                      <label className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-2">
-                        Design / Customisation Details
+                    <div className="col-span-2 space-y-1">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                        Customisation Notes
                       </label>
                       <input
                         type="text"
-                        placeholder="Short & clear details for your custom article..."
-                        className="w-full bg-transparent outline-none text-base md:text-lg font-bold placeholder:text-gray-200"
+                        placeholder="Any custom details for your order..."
+                        className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent transition-colors"
                         value={formData.designDetails}
                         onChange={(e) =>
                           setFormData({
@@ -3008,303 +3054,232 @@ const CheckoutModal = ({
                       />
                     </div>
                   </div>
-                </section>
+                </div>
 
-                {/* Step 2: Distribution */}
-                <section>
-                  <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-10">
-                    <span className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-gray-900 flex items-center justify-center text-[8px] md:text-[10px] font-black">
-                      02
-                    </span>
-                    <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-gray-900">
-                      Shipping model
+                {/* Delivery Zone */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black">
+                      2
+                    </div>
+                    <h3 className="text-[11px] font-black uppercase tracking-widest">
+                      Delivery Zone
                     </h3>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
+                  <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: "inside", title: "Inside Dhaka", price: "80" },
-                      { id: "outside", title: "Outside Dhaka", price: "150" },
+                      { id: "inside", title: "Inside Dhaka", price: "৳80" },
+                      { id: "outside", title: "Outside Dhaka", price: "৳150" },
                     ].map((zone) => (
-                      <div
+                      <button
                         key={zone.id}
-                        onClick={() => {
-                          if (!(formData.city || "").toLowerCase().length) {
-                            setFormData({
-                              ...formData,
-                              deliveryZone: zone.id as "inside" | "outside",
-                            });
-                          }
-                        }}
-                        className={`group p-6 md:p-10 border transition-all duration-700 relative ${formData.deliveryZone === zone.id ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-300 opacity-60"} ${(formData.city || "").toLowerCase().length > 2 ? "cursor-not-allowed" : "cursor-pointer"}`}
+                        type="button"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            deliveryZone: zone.id as any,
+                          })
+                        }
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${formData.deliveryZone === zone.id ? "border-black bg-black text-white" : "border-gray-100 hover:border-gray-300"}`}
                       >
-                        <div className="flex justify-between items-start relative z-10">
-                          <p
-                            className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] transition-colors ${formData.deliveryZone === zone.id ? "text-gray-900" : "text-gray-400"}`}
-                          >
-                            Mode: {zone.id.toUpperCase()}
-                          </p>
-                          <div
-                            className={`w-3 h-3 md:w-4 md:h-4 rounded-full border border-gray-900 flex items-center justify-center`}
-                          >
-                            {formData.deliveryZone === zone.id && (
-                              <motion.div
-                                layoutId="dot"
-                                className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gray-900"
-                              />
-                            )}
+                        <p
+                          className={`text-[10px] font-black uppercase tracking-widest mb-1 ${formData.deliveryZone === zone.id ? "text-white/60" : "text-gray-400"}`}
+                        >
+                          {zone.id}
+                        </p>
+                        <p className="text-xs font-black uppercase">
+                          {zone.title}
+                        </p>
+                        <p
+                          className={`text-[11px] font-bold mt-1 ${formData.deliveryZone === zone.id ? "text-white/80" : "text-gray-500"}`}
+                        >
+                          {zone.price}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Payment */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black">
+                      3
+                    </div>
+                    <h3 className="text-[11px] font-black uppercase tracking-widest">
+                      Payment
+                    </h3>
+                  </div>
+                  <div className="bg-red-50 border border-red-100 rounded-xl p-4 space-y-2">
+                    <p className="text-[11px] font-black text-red-700 uppercase leading-tight">
+                      ⚠ Advance delivery charge is mandatory to confirm order.
+                    </p>
+                    <p className="text-[10px] font-bold text-red-600 leading-relaxed">
+                      Send <strong>৳80</strong> (Inside Dhaka) or{" "}
+                      <strong>৳150</strong> (Outside Dhaka) to{" "}
+                      <strong>01974004221</strong> via bKash / Nagad / Rocket.
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      Send to (bKash/Nagad/Rocket)
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-mono font-black">
+                        01974004221
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy("01974004221", "pay")}
+                        className="p-2 bg-white rounded-lg border border-gray-200 hover:border-black transition-colors"
+                      >
+                        <Copy
+                          className={`w-4 h-4 ${copiedStatus === "pay" ? "text-green-500" : "text-gray-400"}`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                      Transaction ID / Last 4 digits
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. 8821 or TXN123456"
+                      className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent font-mono transition-colors uppercase"
+                      value={formData.paymentInfo}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          paymentInfo: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Buttons */}
+                <div className="space-y-3 pb-8">
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handleSubmit(null, "COD")}
+                    className="w-full py-5 bg-black text-white font-black text-[11px] uppercase tracking-[0.4em] rounded-xl flex items-center justify-center gap-3 hover:bg-gray-900 transition-all disabled:opacity-40"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="w-5 h-5" />
+                    )}
+                    Confirm Order
+                  </button>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handleSubmit(null, "WhatsApp")}
+                    className="w-full py-4 bg-white border-2 border-black text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all disabled:opacity-40"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    Order via WhatsApp
+                  </button>
+                </div>
+              </div>
+
+              {/* RIGHT: Order Summary — desktop only */}
+              <div className="hidden lg:block">
+                <div className="sticky top-24 bg-gray-50 rounded-2xl p-8 space-y-6">
+                  <h3 className="text-xl font-serif italic text-gray-900">
+                    Inventory
+                  </h3>
+                  <div className="space-y-5">
+                    {totalItems.map((item) => (
+                      <div
+                        key={`${item.id}-${item.selectedSize}`}
+                        className="flex gap-4 items-center"
+                      >
+                        <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100 relative">
+                          {item.image && (
+                            <img
+                              src={item.image}
+                              className="w-full h-full object-cover"
+                              alt={item.name}
+                            />
+                          )}
+                          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black text-white text-[9px] font-black flex items-center justify-center rounded-full">
+                            {item.quantity}
                           </div>
                         </div>
-                        <div className="mt-6 md:mt-10 relative z-10">
-                          <p className="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900">
-                            {zone.title}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-black uppercase truncate">
+                            {item.name}
                           </p>
-                          <p className="text-[10px] md:text-[11px] font-bold text-gray-400 mt-1 md:mt-2 uppercase tracking-tighter font-mono">
-                            BDT {zone.price}.00
+                          <p className="text-[10px] text-gray-400 font-bold mt-0.5">
+                            Size: {item.selectedSize}
+                          </p>
+                          <p className="text-[12px] font-black mt-1">
+                            ৳{item.price.toLocaleString()}
                           </p>
                         </div>
                       </div>
                     ))}
                   </div>
-                </section>
 
-                {/* Step 3: Settlement */}
-                <section>
-                  <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-10">
-                    <span className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-gray-900 flex items-center justify-center text-[8px] md:text-[10px] font-black">
-                      03
-                    </span>
-                    <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-gray-900">
-                      Order Details
-                    </h3>
-                  </div>
-
-                  <div className="bg-[#fbfbfb] border border-black/5 p-6 md:p-14 space-y-12 md:space-y-16">
-                    <div className="space-y-4">
-                      <p className="text-sm md:text-lg font-black text-gray-900 uppercase tracking-widest">
-                        Order Summary & Fulfillment
-                      </p>
-                      <div className="h-1 w-16 bg-gray-900" />
-                      <div className="bg-red-50 border-l-4 border-red-600 p-6 md:p-8 mt-8 space-y-3">
-                        <p className="text-[12px] md:text-[16px] font-black text-red-700 uppercase tracking-[0.05em] leading-tight">
-                          ⚠ ADVANCE DELIVERY CHARGE IS MANDATORY TO CONFIRM THE
-                          ORDER.
-                        </p>
-                        <p className="text-[10px] md:text-[13px] font-bold text-red-600/80 uppercase tracking-widest leading-relaxed">
-                          PLEASE SEND{" "}
-                          <span className="text-red-700 font-black underline">
-                            ৳80 (INSIDE DHAKA)
-                          </span>{" "}
-                          OR{" "}
-                          <span className="text-red-700 font-black underline">
-                            ৳150 (OUTSIDE DHAKA)
-                          </span>{" "}
-                          TO OUR MERCHANT/PERSONAL NUMBER{" "}
-                          <span className="text-red-900 font-black">
-                            01974004221
-                          </span>{" "}
-                          VIA BKASH, NAGAD OR ROCKET.
-                        </p>
-                        <p className="text-[9px] md:text-[11px] font-black text-red-500 uppercase tracking-[0.2em] italic">
-                          ORDERS WITHOUT SETTLEMENT AUTH WILL BE AUTO-CANCELLED.
-                        </p>
-                      </div>
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    <div className="flex justify-between text-[11px] font-bold text-gray-400 uppercase">
+                      <span>Subtotal</span>
+                      <span>৳{totalAmount.toLocaleString()}</span>
                     </div>
-
-                    <div className="space-y-10 md:space-y-14">
-                      <div className="space-y-6 md:space-y-8">
-                        <p className="text-[10px] md:text-[12px] font-black text-gray-400 uppercase tracking-[0.5em]">
-                          Personal Treasury Node (bKash/Nagad/Rocket)
-                        </p>
-                        <div className="flex items-center gap-6 md:gap-12">
-                          <h4 className="text-3xl md:text-7xl font-mono font-medium tracking-tighter text-gray-900">
-                            01974004221
-                          </h4>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy("01974004221", "pay")}
-                            className="group p-3 md:p-4 hover:bg-black transition-all border border-black/10 rounded-full"
-                          >
-                            <Copy
-                              className={`w-5 h-5 md:w-7 h-7 transition-colors ${copiedStatus === "pay" ? "text-green-500" : "group-hover:text-white text-gray-300"}`}
-                            />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6 md:space-y-10 pt-6">
-                        <label className="text-[11px] md:text-[13px] font-black text-gray-950 uppercase tracking-[0.2em] block">
-                          Settlement Auth (Last 4 Digits / Transaction ID)
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="LAST 4 DIGITS / TRANSACTION ID"
-                          className="w-full py-4 md:py-8 px-0 bg-transparent border-b-4 border-gray-200 outline-none focus:border-gray-900 transition-all font-mono text-lg md:text-2xl font-bold tracking-[0.1em] uppercase placeholder:text-gray-200"
-                          value={formData.paymentInfo}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              paymentInfo: e.target.value,
-                            })
-                          }
-                        />
-                        <p className="text-[9px] md:text-[11px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest">
-                          Notice: Verification is processed manually. आर्टिकल
-                          निर्माण Settlement के तुरंत बाद शुरू होता है।
-                        </p>
-                      </div>
+                    <div className="flex justify-between text-[11px] font-bold text-gray-400 uppercase">
+                      <span>Delivery</span>
+                      <span>৳{deliveryCharge}</span>
                     </div>
-                  </div>
-                </section>
-
-                <div className="pt-8 md:pt-12 mb-10 md:mb-20 space-y-4 md:space-y-6">
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => handleSubmit(null, "COD")}
-                    className="w-full py-6 md:py-10 bg-gray-900 text-white font-black flex items-center justify-center gap-4 md:gap-6 hover:bg-black transition-all shadow-[0_20px_40px_-5px_rgba(0,0,0,0.3)] active:scale-[0.99] disabled:bg-gray-400"
-                  >
-                    {loading ? (
-                      <Loader2 className="w-5 h-5 md:w-7 md:h-7 animate-spin" />
-                    ) : (
-                      <ShieldCheck className="w-5 h-5 md:w-7 md:h-7" />
+                    <div className="flex justify-between text-[11px] font-bold text-gray-400 uppercase line-through">
+                      <span>Packaging</span>
+                      <span>৳35</span>
+                    </div>
+                    {appliedDiscount > 0 && (
+                      <div className="flex justify-between text-[11px] font-bold text-green-600 uppercase">
+                        <span>Discount (10%)</span>
+                        <span>-৳{discountAmount.toLocaleString()}</span>
+                      </div>
                     )}
-                    <span className="text-[10px] md:text-xs tracking-[0.3em] md:tracking-[0.5em] uppercase">
-                      Confirm Order
-                    </span>
-                  </button>
+                    <div className="flex justify-between items-center pt-3 border-t border-gray-300">
+                      <span className="text-lg font-serif italic">Total</span>
+                      <span className="text-2xl font-black font-mono">
+                        ৳{grandTotal.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
 
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => handleSubmit(null, "WhatsApp")}
-                    className="w-full py-6 md:py-8 bg-white border-2 border-gray-900 text-gray-900 font-black flex items-center justify-center gap-4 md:gap-6 hover:bg-gray-50 transition-all active:scale-[0.99] disabled:opacity-50"
-                  >
-                    <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
-                    <span className="text-[10px] md:text-xs tracking-[0.3em] uppercase">
-                      Order via WhatsApp
-                    </span>
-                  </button>
-
-                  <p className="text-center text-[7px] md:text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] mt-6 md:mt-10">
-                    Auth Reference: {formData.deliveryZone.toUpperCase()}X-
-                    {Math.random().toString(36).substring(7).toUpperCase()}
-                  </p>
-                </div>
-              </form>
-            </div>
-
-            {/* Right Column: Inventory Summary (Bottom on Mobile) */}
-            <div className="w-full md:w-[440px] lg:w-[500px] bg-[#f9f9f9] px-6 py-12 md:p-12 lg:p-20 flex flex-col border-t md:border-t-0 md:border-l border-gray-100 order-2 md:order-2 md:overflow-y-auto overflow-x-hidden scrollbar-hide">
-              <div className="md:sticky md:top-0 md:h-full flex flex-col">
-                <h3 className="text-2xl md:text-3xl font-serif text-gray-900 italic tracking-tight mb-10 md:mb-20">
-                  Inventory
-                </h3>
-
-                <div className="space-y-8 md:space-y-12 flex-1 scrollbar-hide mb-10 md:mb-16">
-                  {totalItems.map((item) => (
-                    <div
-                      key={`${item.id}-${item.selectedSize}`}
-                      className="flex gap-6 md:gap-10 group"
+                  {/* Coupon */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Voucher code"
+                      className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-[11px] font-bold uppercase outline-none focus:border-black transition-colors"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      className="px-4 py-2 bg-black text-white text-[10px] font-black rounded-lg hover:bg-gray-800 transition-colors"
                     >
-                      <div className="w-16 h-24 md:w-24 md:h-32 bg-white flex-shrink-0 relative overflow-hidden">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[8px] font-black uppercase text-gray-300">
-                            Void
-                          </div>
-                        )}
-                        <div className="absolute -top-2 -right-2 md:-top-3 md:-right-3 w-6 h-6 md:w-8 md:h-8 bg-black text-white text-[8px] md:text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#f9f9f9] font-mono">
-                          {item.quantity}
-                        </div>
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between py-1 md:py-2">
-                        <div>
-                          <h4 className="text-[10px] md:text-[11px] font-black text-gray-900 uppercase tracking-[0.15em] md:tracking-[0.2em] leading-tight group-hover:tracking-[0.25em] transition-all">
-                            {item.name}
-                          </h4>
-                          <p className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em] md:tracking-[0.2em] mt-1 md:mt-2">
-                            Ref: {item.selectedSize} / ARCHIVE
-                          </p>
-                        </div>
-                        <p className="text-[12px] md:text-[14px] font-black text-gray-900 font-mono">
-                          ৳{item.price.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-8 md:pt-12 border-t border-gray-200 space-y-4 md:space-y-5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 font-black uppercase tracking-widest text-[8px] md:text-[9px]">
-                      Sub-Valuation
-                    </span>
-                    <span className="font-bold text-gray-900 font-mono text-[10px] md:text-xs">
-                      ৳{totalAmount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 font-black uppercase tracking-widest text-[8px] md:text-[9px]">
-                      Logistic Fees
-                    </span>
-                    <span className="font-bold text-gray-900 font-mono text-[10px] md:text-xs">
-                      ৳{deliveryCharge}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 font-black uppercase tracking-widest text-[8px] md:text-[9px]">
-                      Packaging Fee
-                    </span>
-                    <span className="font-bold text-gray-300 font-mono text-[10px] md:text-xs line-through italic">
-                      ৳35.00
-                    </span>
+                      Apply
+                    </button>
                   </div>
 
-                  <div className="flex items-center justify-between pt-8 md:pt-10 border-t border-gray-900">
-                    <span className="text-gray-900 font-serif text-xl md:text-2xl italic font-medium">
-                      Total
-                    </span>
-                    <span className="text-gray-900 font-mono text-2xl md:text-4xl font-medium tracking-tighter">
-                      ৳{grandTotal.toLocaleString()}
-                    </span>
+                  <div className="flex items-center gap-2 opacity-30 pt-2">
+                    <ShieldCheck className="w-4 h-4" />
+                    <p className="text-[9px] font-black uppercase tracking-widest">
+                      Secure Checkout Protocol
+                    </p>
                   </div>
-
-                  <div className="mt-8 md:mt-12">
-                    <div className="flex gap-1 p-1 bg-white border border-gray-100 focus-within:border-gray-900 transition-all">
-                      <input
-                        type="text"
-                        placeholder="VOUCHER"
-                        className="flex-1 px-3 md:px-5 py-3 md:py-4 bg-transparent text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] outline-none placeholder:text-gray-200 font-mono"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                      />
-                      <button
-                        onClick={handleApplyCoupon}
-                        className="px-6 md:px-10 py-3 md:py-4 bg-gray-50 text-gray-900 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] hover:bg-black hover:text-white transition-all"
-                      >
-                        Unlock
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-10 md:pt-16 pb-6 md:pb-0 flex items-center gap-4 md:gap-6 opacity-20">
-                  <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
-                  <p className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] leading-relaxed">
-                    Authorized Settlement Protocol · Status: Operational
-                  </p>
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
