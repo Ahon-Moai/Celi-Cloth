@@ -156,7 +156,7 @@ const ProductView = ({
 
       <div className="flex flex-col lg:flex-row">
         {/* Left: Image Gallery */}
-        <div className="w-full lg:w-[60%] bg-[#f9f9f9] relative aspect-square lg:aspect-auto lg:h-screen top-0 lg:sticky overflow-hidden border-b lg:border-b-0 lg:border-r border-gray-100">
+        <div className="w-full lg:w-[60%] bg-[#f9f9f9] relative aspect-[4/5] lg:aspect-auto lg:h-screen top-0 lg:sticky overflow-hidden border-b lg:border-b-0 lg:border-r border-gray-100">
           <div className="absolute inset-0 flex items-center justify-center p-6 md:p-12 transition-all duration-700">
             <AnimatePresence mode="wait">
               <motion.div
