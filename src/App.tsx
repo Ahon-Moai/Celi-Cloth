@@ -2312,7 +2312,7 @@ const Categories = ({
       <div className="absolute inset-0 bg-black/30 transition-colors duration-500" />
       <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 text-white">
         <h3 className="text-2xl md:text-3xl font-black tracking-widest uppercase">
-          Boxt Fit T-shirts
+          Boxy Fit T-shirts
         </h3>
       </div>
     </motion.div>
