@@ -4334,14 +4334,18 @@ export default function App() {
 
   const toggleAdmin = async () => {
     if (!isAdmin) {
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: { redirectTo: window.location.origin },
+      const email = prompt("Admin email:");
+      const password = prompt("Password:");
+      if (email && password) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        if (error) throw error;
-      } catch (err) {
-        console.error(err);
+        if (error) {
+          alert("Login failed: " + error.message);
+        } else {
+          setIsAdminMode(true); // ← open admin dashboard immediately after login
+        }
       }
     } else {
       setIsAdminMode(true);
