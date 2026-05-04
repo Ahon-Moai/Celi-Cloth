@@ -2303,38 +2303,41 @@ const Categories = ({
       }}
     >
       <img
-        src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1000"
+        src="https://i.ibb.co.com/5hTh1Cp5/image.png"
         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
         alt="T-shirts"
       />
-      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
+      <div className="absolute inset-0 bg-black/30 transition-colors duration-500" />
       <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 text-white">
         <h3 className="text-2xl md:text-3xl font-black tracking-widest uppercase">
-          T-shirts
+          Boxt Fit T-shirts
         </h3>
       </div>
     </motion.div>
+
     <motion.div
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ delay: 0.1 }}
-      className="relative group overflow-hidden cursor-pointer border-x border-white/5 bg-[#14261d]"
+      className="relative group overflow-hidden cursor-pointer"
       onClick={() => {
         onCategorySelect("Hoodies");
         setCurrentPage("shop");
       }}
     >
       <img
-        src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1000"
-        className="w-full h-full object-cover opacity-60 mix-blend-overlay transition-transform duration-1000 group-hover:scale-105"
+        src="https://i.ibb.co.com/5Wm1g5rJ/Whats-App-Image-2026-05-04-at-1-30-09-AM.jpg"
+        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
         alt="Hoodies"
       />
+      <div className="absolute inset-0 bg-black/30 transition-colors duration-500" />
       <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 text-white">
         <h3 className="text-2xl md:text-3xl font-black tracking-widest uppercase">
           Hoodies
         </h3>
       </div>
     </motion.div>
+
     <motion.div
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
@@ -2346,11 +2349,11 @@ const Categories = ({
       }}
     >
       <img
-        src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000"
+        src="https://i.ibb.co.com/GvFytRJR/image.png"
         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
         alt="Shirts"
       />
-      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors duration-500" />
+      <div className="absolute inset-0 bg-black/30 transition-colors duration-500" />
       <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 text-white">
         <h3 className="text-2xl md:text-3xl font-black tracking-widest uppercase">
           Shirts
@@ -4079,17 +4082,40 @@ const LoadingScreen = () => {
 // --- App Component ---
 
 export default function App() {
-  const [categories, setCategories] = useState([
-    "T-shirts",
-    "Shirts",
-    "Hoodies",
-    "Pants",
-    "Denims",
-    "Sweaters",
-    "Jackets",
-    "Shackets",
-    "Beanies",
-  ]);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // Load categories from Supabase
+  useEffect(() => {
+    supabase
+      .from("categories")
+      .select("name")
+      .order("sort_order", { ascending: true })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setCategories(data.map((c) => c.name));
+        }
+      });
+
+    // Real-time sync
+    const channel = supabase
+      .channel("categories-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "categories" },
+        () => {
+          supabase
+            .from("categories")
+            .select("name")
+            .order("sort_order", { ascending: true })
+            .then(({ data }) => {
+              if (data) setCategories(data.map((c) => c.name));
+            });
+        },
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, []);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<
     | "home"
@@ -4430,10 +4456,17 @@ export default function App() {
     setCurrentPage("product");
   };
 
-  const handleUpdateCategories = (newCats: string[]) => {
-    setCategories(newCats);
+  const handleUpdateCategories = async (newCats: string[]) => {
+    // Delete all, re-insert in new order
+    await supabase.from("categories").delete().neq("id", 0);
+    const rows = newCats.map((name, i) => ({ name, sort_order: i }));
+    const { error } = await supabase.from("categories").insert(rows);
+    if (error) {
+      console.error("Category save error:", error);
+      alert("Failed to save categories.");
+    }
+    // Realtime will update state automatically
   };
-
   const handleLeadCapture = (phone: string) => {
     if (phone.length >= 10) {
       setHasUnlockedCoupon(true);
