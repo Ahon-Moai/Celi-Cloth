@@ -1,0 +1,1153 @@
+[
+  {
+    "id": "dedcf5ec-803f-49b7-9a0e-255ff0b9e641",
+    "name": "Prestige Club",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://i.ibb.co.com/PGxpW45q/image.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821391094-6yw8396eyk.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821391095-h8gwqzlqrx6.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "f7ee889f-34ba-4fdd-bdc8-77aee12ee307",
+    "name": "Selfmade",
+    "price": 879,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777803184356-a8o9v79tb1n.jpg",
+    "gallery": [],
+    "colors": ["#e8e7e2"],
+    "sizes": ["S", "M", "L"],
+    "description": "",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "206311b6-eefd-49cf-bb68-e2d34bfe04ab",
+    "name": "Narrow Eyes",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777821326123-q8divzduo5.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821336963-d1u09mo44pr.png"
+    ],
+    "colors": ["#fafaf9"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "83de622c-a7b2-4f5f-8f48-ee7eebd92237",
+    "name": "25 Guns",
+    "price": 879,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777820758579-zj0yltfkgzm.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777836792759-j3dmv5r4ee.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777836802730-f3opmj3jr29.png"
+    ],
+    "colors": ["#f4f0f0", "#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "e0b87feb-5a00-4d2e-aa99-3051a01ac42f",
+    "name": "Cactus Jack",
+    "price": 879,
+    "currency": "BDT",
+    "category": "Boxyfit T-shirts",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777822704870-knovcy6ca5.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822714975-ilbz3achs0g.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822714975-lrzc8pp23z.png"
+    ],
+    "colors": ["#000000", "#fbf9f9"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "70688bef-da40-4d83-80a7-079538236af9",
+    "name": "Acid Ateroid",
+    "price": 959,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777927185038-ejjw27ura4.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777927191886-9t69p4y4ko7.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "8680bca9-7b93-4eb3-9fd7-1a67fa8e92bb",
+    "name": "Acid Kendrick",
+    "price": 979,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777927247492-vbob0ev41e.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777927255013-m4rn2m0shh.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "0d4a11d8-e4bd-497e-8d43-25b983f6e969",
+    "name": "Grand Prix",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777822555960-w3pa8g9l9cg.png",
+    "gallery": [],
+    "colors": ["#f3f2ec"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "f05bc603-fafc-4267-830c-c4fc623d1845",
+    "name": "Athleisure Club",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777821679211-m9ysbd4f7q.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821684234-xsw3w0jrsfq.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821684234-knyp7u4prc7.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "2XL", "XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "660e6e0c-596e-4581-b603-487b23953fd9",
+    "name": "Strange",
+    "price": 889,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777822494719-ta6p513h73.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822502635-jtuewcglglr.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822502635-0c2pkwoq2ag.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "967ad6b6-ca61-409d-88b4-83fb46852ad6",
+    "name": "Victory",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777822605752-462rm1p9rok.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822614553-hr67n10z6w5.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822614553-n12etezjkdh.png"
+    ],
+    "colors": ["#f3f2ec"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "e694bb35-2dfd-47cd-b887-eee7b858cea7",
+    "name": "bengal memento mori",
+    "price": 949,
+    "currency": "BDT",
+    "category": "Boxyfit T-shirts",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777822882707-gfabfs91dw.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777823065172-vlhqjz6l2ls.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777823065172-qfwjigzbzu.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "5752aa62-76aa-4d90-96ae-d2f753d3321a",
+    "name": "Cactus jJack",
+    "price": 879,
+    "currency": "BDT",
+    "category": "Boxyfit T-shirts",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777822656843-3c6q2ldogyq.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822676077-ebybzddmjnu.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822679325-irfugcwhhjb.png"
+    ],
+    "colors": ["#f3f2ec", "#000000"],
+    "sizes": ["S", "M", "L", "XS", "3XL", "2XL", "XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "5b55875d-f77d-44d0-bd24-92389296a832",
+    "name": "Asteroid",
+    "price": 879,
+    "currency": "BDT",
+    "category": "Boxyfit T-shirts",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777823194595-iybwurx5qz8.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777823214990-qfftyjvkbqr.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "08089e1b-afff-43e4-996a-c105c09f3d7a",
+    "name": "Asteroid",
+    "price": 879,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777826277820-srr3tgsir5e.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826284048-bseg9tkgm56.png"
+    ],
+    "colors": ["#ebe9e4"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "f1ced5aa-7a0c-4e17-b2f9-6008aee04b31",
+    "name": "Bland Void",
+    "price": 929,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777826429294-i0ncjx8ap2k.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826435209-vbzcnxcr2n.png"
+    ],
+    "colors": ["#f4f3f0"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "20f33207-7f36-4264-b497-f83c95ab51e4",
+    "name": "Gallery of Sorrow",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827137979-mft79xqzbr.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827145848-giyiofks315.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827145848-k2ncynkbbsq.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "c754b026-c59d-48a3-bbc5-1378bdebba01",
+    "name": "Divine",
+    "price": 889,
+    "currency": "BDT",
+    "category": "boxyfit T-shirts",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777826730011-hydiz6of3ja.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826740655-t2swe0dka6.png"
+    ],
+    "colors": ["#eeede7"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": false,
+    "soldOut": true,
+    "stock": null
+  },
+  {
+    "id": "8e6d1f44-ab21-4352-88c3-c55bdcbba0f7",
+    "name": "Fear of Memento Mori",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777826952117-ws2gb98j6w.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826959995-k37ubdtc7cp.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826959996-o05prcxnqi.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "01e8327f-3740-4b67-ae50-cc09d3f2d851",
+    "name": "Good Father",
+    "price": 929,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827293813-muoznekxk9a.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827303907-hvlhmnj3hd.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827303907-r95blmf5a1.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "8fe6fcf2-826f-4217-b7fa-cfe7edcabf3e",
+    "name": "Fear",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827066301-n5mggklr8ei.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827072834-424z8pb0dao.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827072834-d1c40s4d5np.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943289365-w68qc5lyc5h.jpeg"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "213daae1-f04a-406d-be2a-e811b400aab8",
+    "name": "Lost My Way",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827782622-t93mvkveccr.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827790873-myc3vvxujyj.png"
+    ],
+    "colors": ["#f7f6f3"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "ca69da1a-0ed7-448f-a14e-6b646e22f864",
+    "name": "Hesitation",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827578062-2vm7yxvynv8.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827585656-nc4z4lzbb.png"
+    ],
+    "colors": ["#f1efe9"],
+    "sizes": ["S", "M", "L", "XS", "2XL", "XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "105d38c9-86ca-47af-89b6-678b449d284c",
+    "name": "How to Love",
+    "price": 879,
+    "currency": "BDT",
+    "category": "boxyfit T-shirts",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827647301-ttsh5fscb0k.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827654809-epj4a0y4qbp.png"
+    ],
+    "colors": ["#f1efe9"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "e53aa454-1d71-4105-aa0f-90bb33afc4a2",
+    "name": "HellBound",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827498197-so03bzhzvh.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827505884-awcz913i1zs.png"
+    ],
+    "colors": ["#f1efe9"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "225e6920-8128-45b8-8b7d-ba483e2d224f",
+    "name": "Story of Love & Pain",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827918045-ajvgs1nno35.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827927415-hru76n12dc5.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827927415-0rynpnpk5lv.png"
+    ],
+    "colors": ["#030303"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "3ddc7238-f3fb-4ab2-9fad-8ee12688fd5e",
+    "name": "Grasp",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827384489-xvqzt69q9rr.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827404561-d3kuc5km2tg.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943174988-pa60uf6if3c.jpeg"
+    ],
+    "colors": ["#f1efe9"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "266c7555-0ed8-448c-a209-f611f412b3c4",
+    "name": "Palestine",
+    "price": 949,
+    "currency": "BDT",
+    "category": "Palestine Merch",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777828950326-9u5440beuf.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777829012919-v5tcgwevrd.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777829012919-orxxq6rh7mc.png"
+    ],
+    "colors": ["#050505"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "fdbf7d43-324b-4b02-b3b9-5c7d73f7e0e6",
+    "name": "The Felicite Club",
+    "price": 920,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777828145627-6ask73z9oho.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828190601-3sc9ysk1p1d.png"
+    ],
+    "colors": ["#050505"],
+    "sizes": ["S", "M", "L", "XL", "3XL", "2XL", "XS"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "7ca6cb06-2f3b-4cfb-861e-e79be9de794f",
+    "name": "Love Like Chess",
+    "price": 879,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777828044648-ovylthkarii.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828050476-fhq3sijwic.png"
+    ],
+    "colors": ["#f4f6ee"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "18f0a84e-04ee-4882-8d17-b4f899f0b573",
+    "name": "Over Whelmed",
+    "price": 929,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777828600018-axh94pniblc.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828606273-mgi3mposs2.png"
+    ],
+    "colors": ["#050505"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "cbd54f22-659e-43a8-8840-4134ea67ec3b",
+    "name": "Resist & Return",
+    "price": 949,
+    "currency": "BDT",
+    "category": "Palestine Merch",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777829076264-fbpa6138648.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777829082958-smjgzlkdqt.png"
+    ],
+    "colors": ["#f1efe9"],
+    "sizes": ["S", "M", "L", "XL", "3XL", "2XL", "XS"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "6ad341f1-ab7e-4dbd-8c43-bf17df81ec89",
+    "name": "Palestine",
+    "price": 949,
+    "currency": "BDT",
+    "category": "Palestine Merch",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777828846845-w3mg3dok60e.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828861945-8w6rfbzy2v9.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828861945-759ha40wj79.png"
+    ],
+    "colors": ["#050505"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "7384bb07-ff4a-415c-89e2-d3723a758c46",
+    "name": "Voices for palestine",
+    "price": 949,
+    "currency": "BDT",
+    "category": "Palestine Merch",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777925500811-byxegpb2eea.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777925517046-gi6pkebqxic.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777925522819-o0ofg05k6f.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "cc4977be-2829-4aa8-80f7-3588dc82f930",
+    "name": "Peace",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777925612305-ult4taxgdx.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777925626966-127m4gd1bm1.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777925626966-fwk5vnpqwcw.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "2f17ee3b-d2a2-4465-89c1-59eb17f70d74",
+    "name": "Palestine Rebel",
+    "price": 949,
+    "currency": "BDT",
+    "category": "Palestine Merch",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777925568652-wzh7x25wlh.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777925583053-60zydi6p6ec.png"
+    ],
+    "colors": ["#f0efef"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "31123f4a-c5f4-4775-a175-d6928c6f8272",
+    "name": "Acid Punk",
+    "price": 979,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777927305609-2hyjghotgl6.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777927311396-s7bnoqpujo.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "4648cd9c-aaa1-4dd7-a53f-51f94535eb2e",
+    "name": "Moscow",
+    "price": 879,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777828531314-ey9mq0rn68.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828535613-kytv0ns72jo.png"
+    ],
+    "colors": ["#050505"],
+    "sizes": ["S", "M", "L", "XS", "XL", "3XL", "2XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "6b5f8ac9-d54b-40f3-ac6c-3c78f7c976dc",
+    "name": "Acid Feel",
+    "price": 979,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777927218287-t2ymsaodt2.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777927224312-bxsuskbkzvu.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943356530-dw798mfat9.jpeg"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "be4f28f9-026f-44fe-aaf6-2da96faf27b4",
+    "name": "Demon Slayer",
+    "price": 879,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777825972308-5n7h9ew6o3k.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777825981338-12f3cftm3xq.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777925757369-vkeyft6hb8r.png"
+    ],
+    "colors": ["#000000", "#ffffff"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "199854f1-100b-4c17-aed2-308818c055fc",
+    "name": "Turkish Carpet",
+    "price": 979,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777926412764-v9pu5imn9in.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926424281-rfgj9ep1t.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926424281-m89bbfy7fa.png"
+    ],
+    "colors": ["#27272b"],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "4fe88f55-3f7c-4995-9814-fb1ffaf075ae",
+    "name": "Stone Felicite",
+    "price": 959,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777926654013-jq3pmoz75u.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926659961-lnoeipa2o69.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "f334fdc4-3e0e-4c6a-b374-d401d67fede7",
+    "name": "Hubb- The Love",
+    "price": 959,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777926795511-jd5jw8zi23g.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926802987-73zwc3ry3lq.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926802987-8vhlp9s9t6e.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "eb1aac5b-ae96-432c-9bbd-5887f05c4763",
+    "name": "Maktub",
+    "price": 959,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777926842627-ahgp78tv1v8.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926847743-doovp3powk5.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926847743-v8ogf2104ji.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "eea05720-d51b-4ef8-a7ad-6fc88bc1b864",
+    "name": "Stone Butterfly Memento mori ",
+    "price": 979,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777926566797-msg5f1awolk.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926575156-c8ung2rd35w.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926575156-5pxs4fu1udp.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "87f689c1-e602-47e9-860c-6ff554252251",
+    "name": "Gul- The Bagh",
+    "price": 979,
+    "currency": "BDT",
+    "category": "Premium Stone wash Tee",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777926697850-jayj582faw.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926706085-oitg394xgc.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777926706085-ixqiznexluh.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "300 GSM premium cotton with a stone wash finish for a worn-in look and soft feel. Holds its shape while getting better over time. Each piece is made after order — fresh, QC checked, and tailored to your size. Finished with high-density DTF print that won’t fade or crack.\n\nWhy Felicite\n\n• 300 GSM stone-washed interlock cotton\n• Unique washed texture (no two same)\n• 20–24\" high-density DTF print\n• Soft, structured, sweat-resistant\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "b1d0cbec-8202-479c-a587-8f29a721f6b8",
+    "name": "Believers Club",
+    "price": 920,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777820966049-rq2paa4edkp.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777820971488-f87krgsgw6i.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777820971488-8nby7asv8ju.png"
+    ],
+    "colors": [],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "b59a2265-8343-4337-a299-09640bf98e2e",
+    "name": "royal flush",
+    "price": 889,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777821536284-r9rs6e34vmk.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821545076-aruaaptr6r.png"
+    ],
+    "colors": ["#f6f4ef"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "af48a3de-4804-49a6-934e-01619f288328",
+    "name": "Butterfly Mementomori",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777822806911-izkxx90p59c.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822815492-1ie8c31ptct.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777822815492-b2h011yf7of.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "61cc640c-a353-4fca-8cca-3dc88c5f9243",
+    "name": "Boredom",
+    "price": 949,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777826590930-7pvriqu7l75.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826605584-py42zv13zhs.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826605584-gm682accoq.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XL", "3XL", "2XL", "XS"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "e2a31f4a-819f-45b1-9792-6be25cd26bcd",
+    "name": "Fauces",
+    "price": 920,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777826848132-skgtfpnx18n.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826856812-k00p32oouw.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777826856812-fym3vljwbr5.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "c0da6874-1106-460c-aa73-9214cbe2a83f",
+    "name": "Football Heritage",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777821250554-00gesogzm5oo.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821259248-jdig9bq76cf.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821259248-uvzsjptkygl.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "b926b508-b63a-41f9-8b39-d93a62bf5af7",
+    "name": "Felicite Club Reflective",
+    "price": 1649,
+    "currency": "BDT",
+    "category": "Reflective Boxyfits",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777928669967-nyqvxo5m9q8.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928675453-dg03qzclqvh.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928675453-kkor27no55.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built from heavyweight 320 GSM interlock cotton for a solid, structured feel that doesn’t lose shape. Clean in daylight — but the moment light hits, the reflective print comes alive, hitting hard with a sharp, luminous glow.\n\nEach piece is made only after you order — freshly produced, precisely checked, and tailored to your size.\n\nFinished with high-intensity reflective printing designed to stand out at night without fading or cracking over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• High-intensity reflective print (lights up in flash/night)\n• Day-to-night transformation look\n• Sweat-resistant, structured fabric\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "f40c7c77-20e5-4bea-b849-dcdc718608de",
+    "name": "Reflective Skeleton",
+    "price": 1649,
+    "currency": "BDT",
+    "category": "Reflective Boxyfits",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777928844687-0od3swcqdtxg.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928849948-axv1744wsq.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928849948-0bg6w7of2iq.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built from heavyweight 320 GSM interlock cotton for a solid, structured feel that doesn’t lose shape. Clean in daylight — but the moment light hits, the reflective print comes alive, hitting hard with a sharp, luminous glow.\n\nEach piece is made only after you order — freshly produced, precisely checked, and tailored to your size.\n\nFinished with high-intensity reflective printing designed to stand out at night without fading or cracking over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• High-intensity reflective print (lights up in flash/night)\n• Day-to-night transformation look\n• Sweat-resistant, structured fabric\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "770a3e50-d9e7-407e-8264-b7b2dab1ba2e",
+    "name": "Reflective Wingset 2",
+    "price": 1649,
+    "currency": "BDT",
+    "category": "Reflective Boxyfits",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777929024933-78c64ou69x.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929028704-7c7668hsv6g.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929028704-wkkq0gtq68e.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built from heavyweight 320 GSM interlock cotton for a solid, structured feel that doesn’t lose shape. Clean in daylight — but the moment light hits, the reflective print comes alive, hitting hard with a sharp, luminous glow.\n\nEach piece is made only after you order — freshly produced, precisely checked, and tailored to your size.\n\nFinished with high-intensity reflective printing designed to stand out at night without fading or cracking over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• High-intensity reflective print (lights up in flash/night)\n• Day-to-night transformation look\n• Sweat-resistant, structured fabric\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "f3999e2f-37ff-4e73-81a3-a6e4be938487",
+    "name": "Reflective Naruto",
+    "price": 1649,
+    "currency": "BDT",
+    "category": "Reflective Boxyfits",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777928799239-3v4bu5vosul.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928805723-b3q96nl5pnm.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928805723-uwz1zx7yqo.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928805723-lridwuqlja8.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943402748-zttpacgsmh.jpeg"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "3XL", "2XL", "XL"],
+    "description": "Built from heavyweight 320 GSM interlock cotton for a solid, structured feel that doesn’t lose shape. Clean in daylight — but the moment light hits, the reflective print comes alive, hitting hard with a sharp, luminous glow.\n\nEach piece is made only after you order — freshly produced, precisely checked, and tailored to your size.\n\nFinished with high-intensity reflective printing designed to stand out at night without fading or cracking over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• High-intensity reflective print (lights up in flash/night)\n• Day-to-night transformation look\n• Sweat-resistant, structured fabric\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "efbebf2c-4ee7-4138-bc60-279b8d004394",
+    "name": "Stone Wash Hoodie",
+    "price": 1499,
+    "currency": "BDT",
+    "category": "Hoodies",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777929105644-mppl9dewwcd.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929117820-t6o3mex8yq.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929117820-cdz2194b0at.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929117820-pm56osbftk.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929117820-cjw2jajhsno.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929117820-gyqk3o07t5q.png"
+    ],
+    "colors": [],
+    "sizes": ["M", "L", "XL"],
+    "description": "Crafted from heavyweight 450 GSM cotton, finished with a refined acid wash for a rich, worn-in character and depth. The fabric feels dense yet comfortable, holding a structured drape with a naturally aged look.\n\nDesigned in an oversized boxy silhouette that sits clean and balanced.\n\nEach piece is made after order — freshly produced, carefully inspected, and tailored to your size.\n\nWhy Felicite\n\n• 450 GSM premium acid-washed cotton\n• Rich, unique washed finish (no two identical)\n• Heavyweight, structured feel\n• Oversized boxy fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "1e3009f0-67f0-4e0c-9344-868a24cd619f",
+    "name": "Athleisure Club",
+    "price": 1449,
+    "currency": "BDT",
+    "category": "Hoodies",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777929257991-e38v6u2fto.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929271431-dj5h0vrish.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929271431-rgo75xpkfhm.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929271431-4pk9092r6kb.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929271431-jkywaq2uzjp.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929271431-e8q7graeheh.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929271431-1s2y305abfz.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929271431-p8hidb3kgdt.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["M", "L", "XL", "2XL", "3XL"],
+    "description": "Crafted from heavyweight 450 GSM cotton, finished with a refined acid wash for a rich, worn-in character and depth. The fabric feels dense yet comfortable, holding a structured drape with a naturally aged look.\n\nDesigned in an oversized boxy silhouette that sits clean and balanced.\n\nEach piece is made after order — freshly produced, carefully inspected, and tailored to your size.\n\nWhy Felicite\n\n• 450 GSM premium acid-washed cotton\n• Rich, unique washed finish (no two identical)\n• Heavyweight, structured feel\n• Oversized boxy fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "7e4b82eb-2fa1-4998-9561-fb30cf5ecba0",
+    "name": "Slitted Straight Cut Pants",
+    "price": 1049,
+    "currency": "BDT",
+    "category": "Bottoms",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777930215853-ncmap7xwpal.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777930227922-zb23qb5134.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777930227922-jhsiz04ab1q.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777930227922-s1zhgtzrnqd.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777930227922-ldyzaz6pnm.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777930227922-mbypte5rya.png"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["M", "L", "XL"],
+    "description": "",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "4688aa41-f88d-4485-ae3c-bb20427a3540",
+    "name": "Reflective Wingset",
+    "price": 1649,
+    "currency": "BDT",
+    "category": "Reflective Boxyfits",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777928982992-ai8qhhg7lt5.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929012793-atmiiwkqf8k.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777929012793-oe5rm12ok1i.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943025369-2013k91if96.jpeg",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943025370-r4rivjw62is.jpeg",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943025370-cg6dace72r.jpeg",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943025370-eoinml91avv.jpeg"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built from heavyweight 320 GSM interlock cotton for a solid, structured feel that doesn’t lose shape. Clean in daylight — but the moment light hits, the reflective print comes alive, hitting hard with a sharp, luminous glow.\n\nEach piece is made only after you order — freshly produced, precisely checked, and tailored to your size.\n\nFinished with high-intensity reflective printing designed to stand out at night without fading or cracking over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• High-intensity reflective print (lights up in flash/night)\n• Day-to-night transformation look\n• Sweat-resistant, structured fabric\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "74710596-79c4-4cc6-ba15-3aa1e328f0ba",
+    "name": "Reflective Spine",
+    "price": 1649,
+    "currency": "BDT",
+    "category": "Reflective Boxyfits",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777928938006-wxlgkw06do.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928943661-ejosle3nhus.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928943661-pcf51xzc2d.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777928943661-zfhrzd6fnyq.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943064077-4swglhfwqj2.jpeg"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built from heavyweight 320 GSM interlock cotton for a solid, structured feel that doesn’t lose shape. Clean in daylight — but the moment light hits, the reflective print comes alive, hitting hard with a sharp, luminous glow.\n\nEach piece is made only after you order — freshly produced, precisely checked, and tailored to your size.\n\nFinished with high-intensity reflective printing designed to stand out at night without fading or cracking over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• High-intensity reflective print (lights up in flash/night)\n• Day-to-night transformation look\n• Sweat-resistant, structured fabric\n• Boxy waist-length oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "9a97ab51-83e2-4be3-8c55-b9ca007fcd18",
+    "name": "Fauces",
+    "price": 919,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777821179515-sn40m2ucnyp.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821200049-dib4vb9ttfe.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821207080-6r8fvcu2z3k.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777821207080-1b58rp8ptsw.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943121436-bnbc93f1ejd.jpeg"
+    ],
+    "colors": ["#e8e7e2", "#000000"],
+    "sizes": ["S", "M", "L", "XS", "XL", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "c15dce6f-5104-435d-b4df-a1692f3a32ff",
+    "name": "Memories",
+    "price": 920,
+    "currency": "BDT",
+    "category": "BOXY FIT T-SHIRTS",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777828313314-vh9jhmhqpuq.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828321712-mm94sn9a48h.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777828321712-4jvumou6mal.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943201976-klzjp0mddq9.jpeg"
+    ],
+    "colors": ["#050505", "#5e7d7a"],
+    "sizes": ["S", "M", "L", "XS", "2XL", "3XL", "XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  },
+  {
+    "id": "dd69804e-cae1-47a2-9587-700f5cf1a64c",
+    "name": "The Last Seen",
+    "price": 949,
+    "currency": "BDT",
+    "category": "boxyfit T-shirts",
+    "image": "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/primary/1777827711706-r7jderhfux.png",
+    "gallery": [
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827719170-8t6x2kwmv2l.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777827719170-5549k78s10q.png",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943253371-n3pnlv8vp1.jpeg",
+      "https://iwndirvcgkzgqpmjehuq.supabase.co/storage/v1/object/public/product-images/gallery/1777943253371-mplyclpc6y.jpeg"
+    ],
+    "colors": ["#000000"],
+    "sizes": ["S", "M", "L", "XL", "XS", "2XL", "3XL"],
+    "description": "Built with premium 320 GSM interlock cotton, giving it a clean, heavyweight feel that holds its shape. Each piece is made only after you order — freshly produced and tailored to your size, not taken from ready stock.\n\nFinished with high-density vinyl DTF printing for a bold look that won’t fade or crack over time.\n\nWhy Felicite\n\n• 320 GSM premium interlock cotton\n• Large 20–24\" high-density DTF print\n• Sweat-resistant, structured fabric\n• Waist-length boxy oversized fit\n• Made-to-order, QC checked",
+    "isNewArrival": true,
+    "soldOut": false,
+    "stock": null
+  }
+]
