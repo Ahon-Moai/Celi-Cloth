@@ -1770,16 +1770,6 @@ const AdminDashboard = ({
                           className="group hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-8 py-6">
-                            <p className="font-mono text-blue-600 font-black mb-1">
-                              #{order.id?.slice(0, 8).toUpperCase()}
-                            </p>
-                            <p className="text-[10px] font-bold text-gray-300">
-                              {order.created_at
-                                ? new Date(order.created_at).toLocaleString()
-                                : "N/A"}
-                            </p>
-                          </td>
-                          <td className="px-8 py-6">
                             <p className="font-black text-xs uppercase">
                               {order.customer_info?.firstName}{" "}
                               {order.customer_info?.lastName}
@@ -1787,10 +1777,25 @@ const AdminDashboard = ({
                             <p className="text-[10px] text-gray-500 font-bold mt-1">
                               📱 {order.customer_info?.phone}
                             </p>
+                            {order.customer_info?.altPhone && (
+                              <p className="text-[10px] text-gray-400 font-bold mt-0.5">
+                                📱 Alt: {order.customer_info.altPhone}
+                              </p>
+                            )}
                             <div className="mt-2 text-[9px] text-gray-400 font-medium max-w-[200px]">
                               {order.customer_info?.address},{" "}
                               {order.customer_info?.city}
                             </div>
+                            {order.customer_info?.designDetails && (
+                              <div className="mt-2 px-2 py-1 bg-yellow-50 border border-yellow-100 text-[9px] font-bold text-yellow-700 max-w-[200px]">
+                                ✏ {order.customer_info.designDetails}
+                              </div>
+                            )}
+                            {order.customer_info?.paymentInfo && (
+                              <div className="mt-1 px-2 py-1 bg-blue-50 border border-blue-100 text-[9px] font-black text-blue-700 font-mono uppercase">
+                                TXN: {order.customer_info.paymentInfo}
+                              </div>
+                            )}
                           </td>
                           <td className="px-8 py-6">
                             <div className="space-y-1">
@@ -1915,8 +1920,23 @@ const AdminDashboard = ({
                         {order.customer_info?.lastName}
                       </p>
                       <p className="text-[10px] text-gray-500">
-                        {order.customer_info?.phone}
+                        📱 {order.customer_info?.phone}
                       </p>
+                      {order.customer_info?.altPhone && (
+                        <p className="text-[10px] text-gray-400">
+                          📱 Alt: {order.customer_info.altPhone}
+                        </p>
+                      )}
+                      {order.customer_info?.paymentInfo && (
+                        <p className="text-[10px] font-black font-mono text-blue-600 mt-1">
+                          TXN: {order.customer_info.paymentInfo}
+                        </p>
+                      )}
+                      {order.customer_info?.designDetails && (
+                        <p className="text-[10px] text-yellow-700 bg-yellow-50 px-2 py-0.5 mt-1">
+                          ✏ {order.customer_info.designDetails}
+                        </p>
+                      )}
                     </div>
                     <p className="font-black text-lg">
                       ৳
