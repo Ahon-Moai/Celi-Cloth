@@ -1927,6 +1927,10 @@ const AdminDashboard = ({
                           📱 Alt: {order.customer_info.altPhone}
                         </p>
                       )}
+                      <div className="mt-2 text-[9px] text-gray-400 font-medium max-w-[200px]">
+                        {order.customer_info?.address},{" "}
+                        {order.customer_info?.city}
+                      </div>
                       {order.customer_info?.paymentInfo && (
                         <p className="text-[10px] font-black font-mono text-blue-600 mt-1">
                           TXN: {order.customer_info.paymentInfo}
