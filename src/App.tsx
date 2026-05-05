@@ -2253,7 +2253,7 @@ const Categories = ({
   <section className="grid grid-cols-1 md:grid-cols-3 w-full h-[90vh] md:h-[100vh]">
     {[
       {
-        cat: "T-shirts",
+        cat: "BOXY FIT T-SHIRTS",
         src: "https://i.ibb.co.com/5hTh1Cp5/image.png",
         label: "Boxy Fit T-shirts",
       },
