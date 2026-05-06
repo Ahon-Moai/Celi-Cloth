@@ -2163,59 +2163,35 @@ const Hero = ({
   setCurrentPage: (page: string) => void;
 }) => {
   const slides = [
-    { src: "/banner_1.png" },
     { src: "/banner_2.png" },
+    { src: "/banner_1.png" },
     { src: "/banner_3.png" },
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setDirection(1);
       setActiveIndex((prev) => (prev + 1) % slides.length);
     }, 4500);
     return () => clearInterval(interval);
   }, []);
 
-  const variants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? "100%" : "-100%",
-      opacity: 0,
-      scale: 1.04,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 1.1,
-        ease: [0.16, 1, 0.3, 1],
-      },
-    },
-    exit: (dir: number) => ({
-      x: dir > 0 ? "-8%" : "8%",
-      opacity: 0,
-      scale: 0.97,
-      transition: {
-        duration: 0.9,
-        ease: [0.16, 1, 0.3, 1],
-      },
-    }),
-  };
-
   return (
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
-      {/* Carousel slides */}
-      <AnimatePresence initial={false} custom={direction} mode="popLayout">
+      {/* Carousel slides — crossfade only, no slide/scale */}
+      <AnimatePresence initial={false}>
         <motion.div
           key={activeIndex}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: 1,
+            transition: { duration: 1.2, ease: "easeInOut" },
+          }}
+          exit={{
+            opacity: 0,
+            transition: { duration: 1.0, ease: "easeInOut" },
+          }}
           className="absolute inset-0 w-full h-full"
         >
           <img
@@ -2228,13 +2204,16 @@ const Hero = ({
         </motion.div>
       </AnimatePresence>
 
-      {/* Progress bars */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+      {/* Progress indicators */}
+      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 hidden md:flex gap-2 z-20">
         {slides.map((_, i) => (
           <div
             key={i}
             className="relative h-[2px] bg-white/30 overflow-hidden"
-            style={{ width: i === activeIndex ? "48px" : "24px", transition: "width 0.6s ease" }}
+            style={{
+              width: i === activeIndex ? "48px" : "24px",
+              transition: "width 0.6s ease",
+            }}
           >
             {i === activeIndex && (
               <motion.div
@@ -2248,33 +2227,15 @@ const Hero = ({
         ))}
       </div>
 
-      {/* Hero text overlay */}
-      <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20 pointer-events-none">
-        <motion.p
-          key={`label-${activeIndex}`}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-sm md:text-lg font-bold uppercase tracking-tight"
-        >
+      {/* Static hero text — no animation */}
+      <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20">
+        <p className="text-sm md:text-lg font-bold uppercase tracking-tight">
           SPRING'26
-        </motion.p>
-        <motion.h2
-          key={`title-${activeIndex}`}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight uppercase leading-[0.9]"
-        >
+        </p>
+        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight uppercase leading-[0.9]">
           COLLECTION IS LIVE
-        </motion.h2>
-        <motion.div
-          key={`cta-${activeIndex}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-6 md:gap-10 text-[14px] md:text-xl font-bold tracking-tight uppercase pointer-events-auto mt-4"
-        >
+        </h2>
+        <div className="flex flex-col sm:flex-row gap-6 md:gap-10 text-[14px] md:text-xl font-bold tracking-tight uppercase mt-4">
           <button
             onClick={() => setCurrentPage("shop")}
             className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all cursor-pointer"
@@ -2287,99 +2248,12 @@ const Hero = ({
           >
             Shop Now
           </button>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 };
 
-  return (
-    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
-      {/* Carousel slides */}
-      <AnimatePresence initial={false} custom={direction} mode="popLayout">
-        <motion.div
-          key={activeIndex}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          className="absolute inset-0 w-full h-full"
-        >
-          <img
-            src={slides[activeIndex].src}
-            alt={`Felicite Collection ${activeIndex + 1}`}
-            className="w-full h-full object-cover select-none pointer-events-none"
-            draggable={false}
-          />
-          <div className="absolute inset-0 bg-black/25" />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Progress bars */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        {slides.map((_, i) => (
-          <div
-            key={i}
-            className="relative h-[2px] bg-white/30 overflow-hidden"
-            style={{ width: i === activeIndex ? "48px" : "24px", transition: "width 0.6s ease" }}
-          >
-            {i === activeIndex && (
-              <motion.div
-                className="absolute inset-y-0 left-0 bg-white"
-                initial={{ width: "0%" }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 4.5, ease: "linear" }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Hero text overlay */}
-      <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20 pointer-events-none">
-        <motion.p
-          key={`label-${activeIndex}`}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-sm md:text-lg font-bold uppercase tracking-tight"
-        >
-          SPRING'26
-        </motion.p>
-        <motion.h2
-          key={`title-${activeIndex}`}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight uppercase leading-[0.9]"
-        >
-          COLLECTION IS LIVE
-        </motion.h2>
-        <motion.div
-          key={`cta-${activeIndex}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-6 md:gap-10 text-[14px] md:text-xl font-bold tracking-tight uppercase pointer-events-auto mt-4"
-        >
-          <button
-            onClick={() => setCurrentPage("shop")}
-            className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all cursor-pointer"
-          >
-            Surf Spring'26
-          </button>
-          <button
-            onClick={() => setCurrentPage("shop")}
-            className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all cursor-pointer"
-          >
-            Shop Now
-          </button>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
 // ─────────────────────────────────────────────
 // Categories
 // ─────────────────────────────────────────────
