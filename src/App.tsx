@@ -2169,6 +2169,21 @@ const Hero = ({
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [loaded, setLoaded] = useState<boolean[]>([false, false, false]);
+
+  // Preload all images immediately on mount
+  useEffect(() => {
+    slides.forEach((slide, i) => {
+      const img = new Image();
+      img.src = slide.src;
+      img.onload = () =>
+        setLoaded((prev) => {
+          const next = [...prev];
+          next[i] = true;
+          return next;
+        });
+    });
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -2179,7 +2194,6 @@ const Hero = ({
 
   return (
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
-      {/* Carousel slides — crossfade only, no slide/scale */}
       <AnimatePresence initial={false}>
         <motion.div
           key={activeIndex}
@@ -2199,12 +2213,15 @@ const Hero = ({
             alt={`Felicite Collection ${activeIndex + 1}`}
             className="w-full h-full object-cover select-none pointer-events-none"
             draggable={false}
+            // Tells browser this is the most important image
+            fetchPriority={activeIndex === 0 ? "high" : "auto"}
+            decoding="async"
           />
           <div className="absolute inset-0 bg-black/25" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Progress indicators */}
+      {/* Progress indicators — hidden on mobile */}
       <div className="absolute bottom-24 left-1/2 -translate-x-1/2 hidden md:flex gap-2 z-20">
         {slides.map((_, i) => (
           <div
@@ -2227,7 +2244,7 @@ const Hero = ({
         ))}
       </div>
 
-      {/* Static hero text — no animation */}
+      {/* Static hero text */}
       <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20">
         <p className="text-sm md:text-lg font-bold uppercase tracking-tight">
           SPRING'26
