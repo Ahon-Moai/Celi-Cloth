@@ -32,8 +32,10 @@ import {
   Copy,
   ShieldCheck,
   Trash2,
+  Gift,
+  Heart,
+  Star,
 } from "lucide-react";
-// ✅ FIX 1: Import products from static JSON — zero Supabase DB hits
 import productsData from "./data/products.json";
 import { Product, CartItem, Order } from "./types";
 import { supabase } from "./lib/supabase";
@@ -46,6 +48,32 @@ const ai = new GoogleGenAI({
 });
 
 // ─────────────────────────────────────────────
+// Gift Add-On Definitions (shared reference)
+// ─────────────────────────────────────────────
+const GIFT_ADDONS = [
+  {
+    id: "premium_packaging",
+    label: "Premium Gift Packaging",
+    sublabel: "Luxury matte-black box, gold-foil seal, satin ribbon",
+    price: 100,
+    emoji: "🎁",
+    color: "from-amber-950 to-yellow-900",
+    accent: "#d4a017",
+    tag: "BESTSELLER",
+  },
+  {
+    id: "rose_bouquet",
+    label: "Rose Bouquet + Wish Letter",
+    sublabel: "Hand-tied fresh roses & a personally printed note",
+    price: 80,
+    emoji: "🌹",
+    color: "from-rose-950 to-pink-900",
+    accent: "#f43f5e",
+    tag: "ROMANTIC",
+  },
+];
+
+// ─────────────────────────────────────────────
 // ProductView
 // ─────────────────────────────────────────────
 const ProductView = ({
@@ -55,34 +83,24 @@ const ProductView = ({
   onBack,
   onProductClick,
   hasCoupon,
-}: {
-  product: Product;
-  productsList: Product[];
-  onAddToCart: (p: Product, size?: string, color?: string) => void;
-  onBack: () => void;
-  onProductClick: (p: Product) => void;
-  hasCoupon?: boolean;
 }) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "S");
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || "");
   const [activeTab, setActiveTab] = useState("Recommended");
-  const [activeAccordion, setActiveAccordion] = useState<string | null>(
-    "details",
-  );
+  const [activeAccordion, setActiveAccordion] = useState("details");
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // ✅ FIX 3: Touch/swipe refs for mobile gallery
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
   const isDragging = useRef(false);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     isDragging.current = false;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = (e) => {
     touchEndX.current = e.touches[0].clientX;
     if (Math.abs(touchStartX.current - touchEndX.current) > 10) {
       isDragging.current = true;
@@ -94,12 +112,10 @@ const ProductView = ({
     const diff = touchStartX.current - touchEndX.current;
     if (Math.abs(diff) > 50) {
       if (diff > 0) {
-        // swipe left → next image
         setActiveImageIndex((prev) =>
           prev === gallery.length - 1 ? 0 : prev + 1,
         );
       } else {
-        // swipe right → previous image
         setActiveImageIndex((prev) =>
           prev === 0 ? gallery.length - 1 : prev - 1,
         );
@@ -114,7 +130,7 @@ const ProductView = ({
       ? product.gallery
       : [product.image];
 
-  const sizeChartImages: Record<string, string> = {
+  const sizeChartImages = {
     Hoodies:
       "https://www.image2url.com/r2/default/images/1777270928450-aa406a06-2c71-4548-ab42-a148066f4b25.jpeg",
     Shirts:
@@ -184,7 +200,6 @@ const ProductView = ({
       </AnimatePresence>
 
       <div className="flex flex-col lg:flex-row">
-        {/* ── Left: Image Gallery with Swipe ── */}
         <div
           className="w-full lg:w-[60%] bg-[#f9f9f9] relative aspect-[4/5] lg:aspect-auto lg:h-screen top-0 lg:sticky overflow-hidden border-b lg:border-b-0 lg:border-r border-gray-100 select-none"
           onTouchStart={handleTouchStart}
@@ -228,7 +243,6 @@ const ProductView = ({
               <div className="absolute bottom-12 left-12 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
                 {activeImageIndex + 1} / {gallery.length}
               </div>
-              {/* Prev button */}
               <div className="absolute top-1/2 -translate-y-1/2 left-8 group z-20">
                 <button
                   onClick={() =>
@@ -241,7 +255,6 @@ const ProductView = ({
                   <ChevronLeft className="w-8 h-8 text-gray-300 group-hover:text-white transition-colors" />
                 </button>
               </div>
-              {/* Next button */}
               <div className="absolute top-1/2 -translate-y-1/2 right-8 group z-20">
                 <button
                   onClick={() =>
@@ -254,7 +267,6 @@ const ProductView = ({
                   <ChevronRight className="w-8 h-8 text-gray-300 group-hover:text-white transition-colors" />
                 </button>
               </div>
-              {/* Dot indicators */}
               <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
                 {gallery.map((_, i) => (
                   <button
@@ -266,7 +278,6 @@ const ProductView = ({
                   />
                 ))}
               </div>
-              {/* Swipe hint — mobile only, fades after a moment */}
               <div className="absolute bottom-20 left-1/2 -translate-x-1/2 lg:hidden pointer-events-none">
                 <motion.p
                   initial={{ opacity: 0.6 }}
@@ -281,7 +292,6 @@ const ProductView = ({
           )}
         </div>
 
-        {/* ── Right: Product Info ── */}
         <div className="w-full lg:w-[40%] p-6 md:p-12 space-y-8 md:space-y-12">
           <Reveal>
             <div className="flex justify-between items-start gap-4 md:gap-8">
@@ -466,7 +476,6 @@ const ProductView = ({
         </div>
       </div>
 
-      {/* Recommended Section */}
       <div className="bg-white py-40 border-t border-gray-100">
         <div className="text-center mb-24 space-y-12">
           <h2 className="text-[11px] font-black uppercase tracking-[0.6em] text-gray-300">
@@ -511,15 +520,7 @@ const ProductView = ({
 // ─────────────────────────────────────────────
 // Reveal animation wrapper
 // ─────────────────────────────────────────────
-const Reveal = ({
-  children,
-  delay = 0,
-  y = 20,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  y?: number;
-}) => (
+const Reveal = ({ children, delay = 0, y = 20 }) => (
   <motion.div
     initial={{ opacity: 0, y }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -566,19 +567,6 @@ const Navbar = ({
   searchQuery,
   setSearchQuery,
   onOpenStylist,
-}: {
-  cartCount: number;
-  onOpenCart: () => void;
-  onOpenAdmin: () => void;
-  isAdmin: boolean;
-  setCurrentPage: (page: string) => void;
-  currentPage: string;
-  categories: string[];
-  onCategorySelect: (cat: string) => void;
-  selectedCategory: string;
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  onOpenStylist: () => void;
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -640,7 +628,6 @@ const Navbar = ({
             )}
           </AnimatePresence>
 
-          {/* Mobile Menu Toggle */}
           <div className="md:hidden flex items-center -ml-2">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -652,7 +639,6 @@ const Navbar = ({
             </button>
           </div>
 
-          {/* Desktop Links */}
           <div className="hidden md:flex gap-10 text-[11px] font-bold tracking-[0.2em] uppercase">
             <button
               onClick={() => {
@@ -727,7 +713,6 @@ const Navbar = ({
             </button>
           </div>
 
-          {/* Logo */}
           <div
             className="absolute left-1/2 -translate-x-1/2 cursor-pointer"
             onClick={() => {
@@ -749,7 +734,6 @@ const Navbar = ({
             </motion.h1>
           </div>
 
-          {/* Right icons */}
           <div className="flex items-center gap-3 md:gap-6">
             <button
               onClick={onOpenStylist}
@@ -815,7 +799,6 @@ const Navbar = ({
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -940,10 +923,10 @@ const Navbar = ({
   );
 };
 
-const validatePhone = (num: string) => /^\d{11}$/.test(num.replace(/\D/g, ""));
+const validatePhone = (num) => /^\d{11}$/.test(num.replace(/\D/g, ""));
 
 // ─────────────────────────────────────────────
-// AdminDashboard (unchanged from original)
+// AdminDashboard
 // ─────────────────────────────────────────────
 const AdminDashboard = ({
   orders,
@@ -956,40 +939,25 @@ const AdminDashboard = ({
   onDeleteProduct,
   onUpdateCategories,
   onClose,
-}: {
-  orders: any[];
-  productsList: Product[];
-  categories: string[];
-  adminEmail: string;
-  onUpdateStatus: (id: string, s: string) => void;
-  onDeleteOrder: (id: string) => void;
-  onAddProduct: (p: any) => void;
-  onDeleteProduct: (id: string) => void;
-  onUpdateCategories: (cats: string[]) => void;
-  onClose: () => void;
 }) => {
-  const [activeTab, setActiveTab] = useState<
-    "orders" | "inventory" | "json" | "categories"
-  >("orders");
+  const [activeTab, setActiveTab] = useState("orders");
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [jsonInput, setJsonInput] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [orderFilter, setOrderFilter] = useState<
-    "all" | "pending" | "confirmed" | "shipped"
-  >("all");
+  const [orderFilter, setOrderFilter] = useState("all");
   const [newCatName, setNewCatName] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<string>("");
+  const [uploadProgress, setUploadProgress] = useState("");
 
   const [productForm, setProductForm] = useState({
     name: "",
     price: 0,
     category: categories[0] || "T-shirts",
     image: "",
-    gallery: [] as string[],
-    colors: [] as string[],
-    sizes: ["S", "M", "L"] as string[],
+    gallery: [],
+    colors: [],
+    sizes: ["S", "M", "L"],
     description: "",
     isNewArrival: true,
     soldOut: false,
@@ -998,10 +966,7 @@ const AdminDashboard = ({
   const [newColor, setNewColor] = useState("#000000");
   const [newGalleryUrl, setNewGalleryUrl] = useState("");
 
-  const uploadImage = async (
-    file: File,
-    folder: "primary" | "gallery",
-  ): Promise<string | null> => {
+  const uploadImage = async (file, folder) => {
     const ext = file.name.split(".").pop();
     const fileName = `${folder}/${Date.now()}-${Math.random()
       .toString(36)
@@ -1019,9 +984,7 @@ const AdminDashboard = ({
     return urlData.publicUrl;
   };
 
-  const handlePrimaryImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handlePrimaryImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsUploading(true);
@@ -1032,15 +995,13 @@ const AdminDashboard = ({
     setUploadProgress("");
   };
 
-  const handleGalleryImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleGalleryImageUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setIsUploading(true);
     setUploadProgress(`Uploading ${files.length} image(s)...`);
     const urls = await Promise.all(files.map((f) => uploadImage(f, "gallery")));
-    const validUrls = urls.filter(Boolean) as string[];
+    const validUrls = urls.filter(Boolean);
     setProductForm((prev) => ({
       ...prev,
       gallery: [...prev.gallery, ...validUrls],
@@ -1076,7 +1037,7 @@ const AdminDashboard = ({
     setIsProductModalOpen(true);
   };
 
-  const handleOpenEditModal = (p: Product) => {
+  const handleOpenEditModal = (p) => {
     setEditingProduct(p);
     setProductForm({
       name: p.name,
@@ -1093,7 +1054,7 @@ const AdminDashboard = ({
     setIsProductModalOpen(true);
   };
 
-  const handleSubmitProduct = (e: React.FormEvent) => {
+  const handleSubmitProduct = (e) => {
     e.preventDefault();
     onAddProduct({ ...productForm, id: editingProduct?.id });
     setIsProductModalOpen(false);
@@ -1119,7 +1080,7 @@ const AdminDashboard = ({
 
   const availableSizes = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
 
-  const toggleSize = (size: string) => {
+  const toggleSize = (size) => {
     setProductForm((prev) => ({
       ...prev,
       sizes: prev.sizes.includes(size)
@@ -1128,7 +1089,7 @@ const AdminDashboard = ({
     }));
   };
 
-  const removeGalleryItem = (index: number) => {
+  const removeGalleryItem = (index) => {
     setProductForm((prev) => ({
       ...prev,
       gallery: prev.gallery.filter((_, i) => i !== index),
@@ -1139,7 +1100,7 @@ const AdminDashboard = ({
     setProductForm((prev) => ({ ...prev, colors: [...prev.colors, newColor] }));
   };
 
-  const removeColor = (index: number) => {
+  const removeColor = (index) => {
     setProductForm((prev) => ({
       ...prev,
       colors: prev.colors.filter((_, i) => i !== index),
@@ -1547,9 +1508,7 @@ const AdminDashboard = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-[450] w-72 bg-black text-white p-8 flex flex-col justify-between transition-transform duration-300 transform md:relative md:translate-x-0 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-[450] w-72 bg-black text-white p-8 flex flex-col justify-between transition-transform duration-300 transform md:relative md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="space-y-12">
           <div className="flex items-center justify-between">
@@ -1566,41 +1525,35 @@ const AdminDashboard = ({
               Management
             </div>
             <nav className="space-y-4">
-              {(
-                [
-                  {
-                    id: "orders",
-                    label: "ORDERS",
-                    icon: <Package className="w-4 h-4" />,
-                  },
-                  {
-                    id: "inventory",
-                    label: "INVENTORY",
-                    icon: <ShoppingBag className="w-4 h-4" />,
-                  },
-                  {
-                    id: "json",
-                    label: "JSON PORTAL",
-                    icon: <ExternalLink className="w-4 h-4" />,
-                  },
-                  {
-                    id: "categories",
-                    label: "CATEGORIES",
-                    icon: <Layers className="w-4 h-4" />,
-                  },
-                ] as const
-              ).map((item) => (
+              {[
+                {
+                  id: "orders",
+                  label: "ORDERS",
+                  icon: <Package className="w-4 h-4" />,
+                },
+                {
+                  id: "inventory",
+                  label: "INVENTORY",
+                  icon: <ShoppingBag className="w-4 h-4" />,
+                },
+                {
+                  id: "json",
+                  label: "JSON PORTAL",
+                  icon: <ExternalLink className="w-4 h-4" />,
+                },
+                {
+                  id: "categories",
+                  label: "CATEGORIES",
+                  icon: <Layers className="w-4 h-4" />,
+                },
+              ].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${
-                    activeTab === item.id
-                      ? "border-r-4 border-white pr-4 text-white"
-                      : "text-gray-500 hover:text-white"
-                  }`}
+                  className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === item.id ? "border-r-4 border-white pr-4 text-white" : "text-gray-500 hover:text-white"}`}
                 >
                   {item.icon}
                   {item.label}
@@ -1699,15 +1652,7 @@ const AdminDashboard = ({
                   },
                   {
                     label: "Net Liquidity",
-                    value: `৳ ${orders
-                      .reduce(
-                        (acc, o) =>
-                          o.status !== "cancelled"
-                            ? acc + (o.grand_total || o.total_amount || 0)
-                            : acc,
-                        0,
-                      )
-                      .toLocaleString()}`,
+                    value: `৳ ${orders.reduce((acc, o) => (o.status !== "cancelled" ? acc + (o.grand_total || o.total_amount || 0) : acc), 0).toLocaleString()}`,
                     icon: (
                       <CheckCircle className="w-8 h-8 md:w-10 md:h-10 text-gray-50" />
                     ),
@@ -1740,12 +1685,8 @@ const AdminDashboard = ({
                     {["all", "pending", "confirmed", "shipped"].map((f) => (
                       <button
                         key={f}
-                        onClick={() => setOrderFilter(f as any)}
-                        className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${
-                          orderFilter === f
-                            ? "bg-black text-white border-black"
-                            : "text-gray-400 border-gray-100 hover:border-black hover:text-black"
-                        }`}
+                        onClick={() => setOrderFilter(f)}
+                        className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${orderFilter === f ? "bg-black text-white border-black" : "text-gray-400 border-gray-100 hover:border-black hover:text-black"}`}
                       >
                         {f}
                       </button>
@@ -1799,7 +1740,7 @@ const AdminDashboard = ({
                           </td>
                           <td className="px-8 py-6">
                             <div className="space-y-1">
-                              {order.items?.map((item: any, idx: number) => (
+                              {order.items?.map((item, idx) => (
                                 <p
                                   key={idx}
                                   className="text-[10px] font-bold text-gray-600"
@@ -1809,6 +1750,32 @@ const AdminDashboard = ({
                                 </p>
                               ))}
                             </div>
+                            {/* ── Gift Add-Ons display in admin ── */}
+                            {order.add_ons && order.add_ons.length > 0 && (
+                              <div className="mt-3 space-y-1">
+                                <p className="text-[8px] font-black uppercase tracking-widest text-purple-400 mb-1">
+                                  🎁 Gift Add-Ons
+                                </p>
+                                {order.add_ons.map((addon, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-2 px-2 py-1 bg-purple-50 border border-purple-100 rounded"
+                                  >
+                                    <span className="text-sm">
+                                      {addon.emoji}
+                                    </span>
+                                    <div>
+                                      <p className="text-[9px] font-black text-purple-700 uppercase">
+                                        {addon.label}
+                                      </p>
+                                      <p className="text-[8px] text-purple-500 font-bold">
+                                        +৳{addon.price}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </td>
                           <td className="px-8 py-6">
                             <p className="font-black text-sm">
@@ -1819,6 +1786,17 @@ const AdminDashboard = ({
                             <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">
                               Delivery: ৳{order.delivery_charge || 0}
                             </p>
+                            {order.add_ons_total > 0 && (
+                              <p className="text-[9px] text-purple-500 font-bold uppercase mt-0.5">
+                                Gift Extras: +৳{order.add_ons_total}
+                              </p>
+                            )}
+                            {order.discount_amount > 0 && (
+                              <p className="text-[9px] text-green-500 font-bold uppercase mt-0.5">
+                                Discount: -৳
+                                {order.discount_amount?.toLocaleString()}
+                              </p>
+                            )}
                           </td>
                           <td className="px-8 py-6">
                             <div className="flex items-center gap-4">
@@ -1849,9 +1827,7 @@ const AdminDashboard = ({
                                 onClick={() => {
                                   if (
                                     window.confirm(
-                                      `DELETE ORDER #${order.id
-                                        ?.slice(0, 8)
-                                        .toUpperCase()}?`,
+                                      `DELETE ORDER #${order.id?.slice(0, 8).toUpperCase()}?`,
                                     )
                                   )
                                     onDeleteOrder(order.id);
@@ -1880,12 +1856,8 @@ const AdminDashboard = ({
                   {["all", "pending", "confirmed", "shipped"].map((f) => (
                     <button
                       key={f}
-                      onClick={() => setOrderFilter(f as any)}
-                      className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border whitespace-nowrap transition-all ${
-                        orderFilter === f
-                          ? "bg-black text-white border-black"
-                          : "text-gray-400 border-gray-100 bg-white"
-                      }`}
+                      onClick={() => setOrderFilter(f)}
+                      className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border whitespace-nowrap transition-all ${orderFilter === f ? "bg-black text-white border-black" : "text-gray-400 border-gray-100 bg-white"}`}
                     >
                       {f}
                     </button>
@@ -1927,7 +1899,7 @@ const AdminDashboard = ({
                           📱 Alt: {order.customer_info.altPhone}
                         </p>
                       )}
-                      <div className="mt-2 text-[9px] text-gray-400 font-medium max-w-[200px]">
+                      <div className="mt-2 text-[9px] text-gray-400 font-medium">
                         {order.customer_info?.address},{" "}
                         {order.customer_info?.city}
                       </div>
@@ -1942,11 +1914,35 @@ const AdminDashboard = ({
                         </p>
                       )}
                     </div>
-                    <p className="font-black text-lg">
-                      ৳
-                      {order.grand_total?.toLocaleString() ||
-                        order.total_amount?.toLocaleString()}
-                    </p>
+                    {/* Gift add-ons on mobile */}
+                    {order.add_ons && order.add_ons.length > 0 && (
+                      <div className="space-y-1">
+                        {order.add_ons.map((addon, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 px-2 py-1 bg-purple-50 border border-purple-100 rounded text-[9px] font-black text-purple-700"
+                          >
+                            <span>{addon.emoji}</span>
+                            {addon.label}{" "}
+                            <span className="text-purple-400">
+                              +৳{addon.price}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex justify-between items-end">
+                      <p className="font-black text-lg">
+                        ৳
+                        {order.grand_total?.toLocaleString() ||
+                          order.total_amount?.toLocaleString()}
+                      </p>
+                      {order.add_ons_total > 0 && (
+                        <p className="text-[9px] text-purple-500 font-bold">
+                          incl. ৳{order.add_ons_total} gifts
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1964,11 +1960,7 @@ const AdminDashboard = ({
                     {product.image ? (
                       <img
                         src={product.image}
-                        className={`w-full h-full object-cover transition-all duration-700 ${
-                          product.soldOut
-                            ? "grayscale scale-105 opacity-50"
-                            : "group-hover:scale-110"
-                        }`}
+                        className={`w-full h-full object-cover transition-all duration-700 ${product.soldOut ? "grayscale scale-105 opacity-50" : "group-hover:scale-110"}`}
                         alt={product.name}
                       />
                     ) : (
@@ -2000,9 +1992,7 @@ const AdminDashboard = ({
                     </div>
                     <div className="pt-6 border-t border-gray-50 flex items-center justify-between gap-4">
                       <span
-                        className={`text-[9px] font-black uppercase ${
-                          product.soldOut ? "text-red-500" : "text-green-500"
-                        }`}
+                        className={`text-[9px] font-black uppercase ${product.soldOut ? "text-red-500" : "text-green-500"}`}
                       >
                         {product.soldOut ? "Depleted" : "Active"}
                       </span>
@@ -2157,11 +2147,7 @@ const AdminDashboard = ({
 // ─────────────────────────────────────────────
 // Hero
 // ─────────────────────────────────────────────
-const Hero = ({
-  setCurrentPage,
-}: {
-  setCurrentPage: (page: string) => void;
-}) => {
+const Hero = ({ setCurrentPage }) => {
   const slides = [
     { src: "/banner_2.png" },
     { src: "/banner_1.png" },
@@ -2169,9 +2155,8 @@ const Hero = ({
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [loaded, setLoaded] = useState<boolean[]>([false, false, false]);
+  const [loaded, setLoaded] = useState([false, false, false]);
 
-  // Preload all images immediately on mount
   useEffect(() => {
     slides.forEach((slide, i) => {
       const img = new Image();
@@ -2213,7 +2198,6 @@ const Hero = ({
             alt={`Felicite Collection ${activeIndex + 1}`}
             className="w-full h-full object-cover select-none pointer-events-none"
             draggable={false}
-            // Tells browser this is the most important image
             fetchPriority={activeIndex === 0 ? "high" : "auto"}
             decoding="async"
           />
@@ -2221,7 +2205,6 @@ const Hero = ({
         </motion.div>
       </AnimatePresence>
 
-      {/* Progress indicators — hidden on mobile */}
       <div className="absolute bottom-24 left-1/2 -translate-x-1/2 hidden md:flex gap-2 z-20">
         {slides.map((_, i) => (
           <div
@@ -2244,7 +2227,6 @@ const Hero = ({
         ))}
       </div>
 
-      {/* Static hero text */}
       <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20">
         <p className="text-sm md:text-lg font-bold uppercase tracking-tight">
           SPRING'26
@@ -2274,13 +2256,7 @@ const Hero = ({
 // ─────────────────────────────────────────────
 // Categories
 // ─────────────────────────────────────────────
-const Categories = ({
-  onCategorySelect,
-  setCurrentPage,
-}: {
-  onCategorySelect: (cat: string) => void;
-  setCurrentPage: (page: string) => void;
-}) => (
+const Categories = ({ onCategorySelect, setCurrentPage }) => (
   <section className="grid grid-cols-1 md:grid-cols-3 w-full h-[90vh] md:h-[100vh]">
     {[
       {
@@ -2327,89 +2303,118 @@ const Categories = ({
 );
 
 // ─────────────────────────────────────────────
-// ProductCard
+// ProductCard — with gallery hover effect
 // ─────────────────────────────────────────────
-const ProductCard = ({
-  product,
-  onAddToCart,
-  onClick,
-  hasCoupon,
-}: {
-  product: Product;
-  onAddToCart: (p: Product, size?: string, color?: string) => void;
-  onClick?: (p: Product) => void;
-  hasCoupon?: boolean;
-}) => (
-  <Reveal y={40}>
-    <div
-      className="group relative cursor-pointer w-full"
-      onClick={() => onClick?.(product)}
-    >
-      <div className="relative w-full aspect-[2/3] md:aspect-[3/4] lg:aspect-auto md:h-[470px] overflow-hidden bg-[#f9f9f9] mb-4 border border-gray-200">
-        {product.image ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-50">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-200">
-              No Visual
-            </span>
+const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const hasSecondImage = product.gallery && product.gallery.length > 1;
+
+  return (
+    <Reveal y={40}>
+      <div
+        className="group relative cursor-pointer w-full"
+        onClick={() => onClick?.(product)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="relative w-full aspect-[2/3] md:aspect-[3/4] lg:aspect-auto md:h-[470px] overflow-hidden bg-[#f9f9f9] mb-4 border border-gray-200">
+          {product.image ? (
+            <>
+              {/* Primary image */}
+              <img
+                src={product.image}
+                alt={product.name}
+                className={`w-full h-full object-contain absolute inset-0 transition-all duration-700 ${
+                  isHovered && hasSecondImage
+                    ? "opacity-0 scale-105"
+                    : "opacity-100 scale-100 group-hover:scale-105"
+                }`}
+                referrerPolicy="no-referrer"
+              />
+              {/* Secondary hover image */}
+              {hasSecondImage && (
+                <img
+                  src={product.gallery[1]}
+                  alt={`${product.name} alt view`}
+                  className={`w-full h-full object-contain absolute inset-0 transition-all duration-700 ${
+                    isHovered
+                      ? "opacity-100 scale-100"
+                      : "opacity-0 scale-[1.03]"
+                  }`}
+                  referrerPolicy="no-referrer"
+                />
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-50">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-200">
+                No Visual
+              </span>
+            </div>
+          )}
+
+          <div className="absolute top-0 left-0 flex flex-col gap-1 items-start z-10">
+            {product.soldOut && (
+              <div className="bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight text-red-500">
+                Sold Out
+              </div>
+            )}
+            {product.isNewArrival && (
+              <div className="bg-black text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap">
+                Manifesto Peak
+              </div>
+            )}
+            {hasCoupon && (
+              <div className="bg-[#024941] text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap flex items-center gap-1">
+                <Zap className="w-2.5 h-2.5" />
+                10% OFF
+              </div>
+            )}
           </div>
-        )}
-        <div className="absolute top-0 left-0 flex flex-col gap-1 items-start">
-          {product.soldOut && (
-            <div className="bg-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight text-red-500">
-              Sold Out
+
+          {/* Gallery indicator dots */}
+          {hasSecondImage && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              <div
+                className={`h-1 rounded-full transition-all duration-500 ${isHovered ? "w-3 bg-gray-400" : "w-5 bg-black"}`}
+              />
+              <div
+                className={`h-1 rounded-full transition-all duration-500 ${isHovered ? "w-5 bg-black" : "w-3 bg-gray-300"}`}
+              />
             </div>
           )}
-          {product.isNewArrival && (
-            <div className="bg-black text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap">
-              Manifesto Peak
-            </div>
-          )}
-          {hasCoupon && (
-            <div className="bg-[#024941] text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap flex items-center gap-1">
-              <Zap className="w-2.5 h-2.5" />
-              10% OFF
-            </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!product.soldOut)
+                onAddToCart(product, product.sizes?.[0], product.colors?.[0]);
+            }}
+            disabled={product.soldOut}
+            className={`absolute bottom-4 left-4 right-4 py-4 bg-black text-white text-[9px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${product.soldOut ? "hidden" : ""} shadow-2xl`}
+          >
+            Add to Bag
+          </button>
+        </div>
+        <div className="space-y-1.5 px-3 md:px-4 pb-4">
+          <div className="flex justify-between items-baseline gap-1 md:gap-2">
+            <h4 className="text-[10px] md:text-[11px] font-black tracking-tight leading-tight uppercase truncate flex-1">
+              {product.name}
+            </h4>
+            <p className="text-[10px] md:text-[12px] font-black tracking-tighter shrink-0">
+              ৳{product.price.toLocaleString()}
+            </p>
+          </div>
+          {product.colors && (
+            <p className="text-[8px] text-gray-400 font-bold tracking-[0.2em] uppercase">
+              {product.colors.length} In Colors
+            </p>
           )}
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!product.soldOut)
-              onAddToCart(product, product.sizes?.[0], product.colors?.[0]);
-          }}
-          disabled={product.soldOut}
-          className={`absolute bottom-4 left-4 right-4 py-4 bg-black text-white text-[9px] uppercase font-bold tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 ${
-            product.soldOut ? "hidden" : ""
-          } shadow-2xl`}
-        >
-          Add to Bag
-        </button>
       </div>
-      <div className="space-y-1.5 px-3 md:px-4 pb-4">
-        <div className="flex justify-between items-baseline gap-1 md:gap-2">
-          <h4 className="text-[10px] md:text-[11px] font-black tracking-tight leading-tight uppercase truncate flex-1">
-            {product.name}
-          </h4>
-          <p className="text-[10px] md:text-[12px] font-black tracking-tighter shrink-0">
-            ৳{product.price.toLocaleString()}
-          </p>
-        </div>
-        {product.colors && (
-          <p className="text-[8px] text-gray-400 font-bold tracking-[0.2em] uppercase">
-            {product.colors.length} In Colors
-          </p>
-        )}
-      </div>
-    </div>
-  </Reveal>
-);
+    </Reveal>
+  );
+};
 
 // ─────────────────────────────────────────────
 // ShopPage
@@ -2424,16 +2429,6 @@ const ShopPage = ({
   setSearchQuery,
   categoriesList,
   hasCoupon,
-}: {
-  productsList: Product[];
-  onAddToCart: (p: Product, size?: string, color?: string) => void;
-  onProductClick: (p: Product) => void;
-  activeCategory: string;
-  setActiveCategory: (cat: string) => void;
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  categoriesList: string[];
-  hasCoupon?: boolean;
 }) => {
   const categories = ["All", "New Arrivals", ...categoriesList];
   const [currentPageNum, setCurrentPageNum] = useState(1);
@@ -2494,11 +2489,7 @@ const ShopPage = ({
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all cursor-pointer whitespace-nowrap pb-2 ${
-                    activeCategory === cat
-                      ? "text-black border-b-2 border-black"
-                      : "text-gray-300 hover:text-black"
-                  }`}
+                  className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all cursor-pointer whitespace-nowrap pb-2 ${activeCategory === cat ? "text-black border-b-2 border-black" : "text-gray-300 hover:text-black"}`}
                 >
                   {cat}
                 </button>
@@ -2555,11 +2546,7 @@ const ShopPage = ({
                       setCurrentPageNum(i + 1);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className={`text-[11px] font-black pb-1 transition-all ${
-                      currentPageNum === i + 1
-                        ? "border-b-2 border-black"
-                        : "text-gray-300 hover:text-black"
-                    }`}
+                    className={`text-[11px] font-black pb-1 transition-all ${currentPageNum === i + 1 ? "border-b-2 border-black" : "text-gray-300 hover:text-black"}`}
                   >
                     {(i + 1).toString().padStart(2, "0")}
                   </button>
@@ -2583,13 +2570,6 @@ const CartDrawer = ({
   onRemove,
   onUpdateQty,
   onCheckout,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  items: CartItem[];
-  onRemove: (uid: string) => void;
-  onUpdateQty: (uid: string, delta: number) => void;
-  onCheckout: () => void;
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -2723,7 +2703,7 @@ const CartDrawer = ({
 );
 
 // ─────────────────────────────────────────────
-// CheckoutModal (full, unchanged logic)
+// CheckoutModal — with Gift Add-Ons section
 // ─────────────────────────────────────────────
 const CheckoutModal = ({
   isOpen,
@@ -2733,14 +2713,6 @@ const CheckoutModal = ({
   totalAmount,
   onUpdateItem,
   hasCoupon,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: (data: any) => void;
-  totalItems: CartItem[];
-  totalAmount: number;
-  onUpdateItem: (uid: string, updates: Partial<CartItem>) => void;
-  hasCoupon?: boolean;
 }) => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -2751,14 +2723,15 @@ const CheckoutModal = ({
     city: "",
     paymentInfo: "",
     designDetails: "",
-    deliveryZone: "inside" as "inside" | "outside",
+    deliveryZone: "inside",
   });
   const [couponCode, setCouponCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [selectedAddOns, setSelectedAddOns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [altPhoneError, setAltPhoneError] = useState("");
-  const [copiedStatus, setCopiedStatus] = useState<string | null>(null);
+  const [copiedStatus, setCopiedStatus] = useState(null);
 
   useEffect(() => {
     if (hasCoupon && appliedDiscount === 0) {
@@ -2779,7 +2752,16 @@ const CheckoutModal = ({
 
   const deliveryCharge = formData.deliveryZone === "inside" ? 80 : 150;
   const discountAmount = totalAmount * appliedDiscount;
-  const grandTotal = totalAmount + deliveryCharge - discountAmount;
+  const addOnTotal = GIFT_ADDONS.filter((a) =>
+    selectedAddOns.includes(a.id),
+  ).reduce((acc, a) => acc + a.price, 0);
+  const grandTotal = totalAmount + deliveryCharge - discountAmount + addOnTotal;
+
+  const toggleAddOn = (id) => {
+    setSelectedAddOns((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
 
   const handleApplyCoupon = () => {
     if (couponCode.toLowerCase() === "new10") {
@@ -2790,13 +2772,13 @@ const CheckoutModal = ({
     }
   };
 
-  const handleCopy = (text: string, type: string) => {
+  const handleCopy = (text, type) => {
     navigator.clipboard.writeText(text);
     setCopiedStatus(type);
     setTimeout(() => setCopiedStatus(null), 2000);
   };
 
-  const handleSubmit = async (method: "COD" | "WhatsApp" = "COD") => {
+  const handleSubmit = async (method = "COD") => {
     let hasError = false;
     if (!validatePhone(formData.phone)) {
       setPhoneError("Must be 11 digits");
@@ -2809,15 +2791,20 @@ const CheckoutModal = ({
     if (hasError) return;
     setLoading(true);
     try {
+      const selectedAddOnDetails = GIFT_ADDONS.filter((a) =>
+        selectedAddOns.includes(a.id),
+      );
       const orderData = {
         customer_info: formData,
         items: totalItems,
         total_amount: totalAmount,
         delivery_charge: deliveryCharge,
         discount_amount: discountAmount,
+        add_ons: selectedAddOnDetails,
+        add_ons_total: addOnTotal,
         grand_total: grandTotal,
         coupon_used: appliedDiscount > 0 ? couponCode : null,
-        status: "pending" as const,
+        status: "pending",
         payment_method: method,
         created_at: new Date().toISOString(),
       };
@@ -2832,13 +2819,17 @@ const CheckoutModal = ({
               `• ${i.name} (${i.selectedColor || "Default"}) [Size: ${i.selectedSize}] x${i.quantity}`,
           )
           .join("%0A");
+        const addOnSummary =
+          selectedAddOnDetails.length > 0
+            ? `%0A*Gift Add-Ons:*%0A${selectedAddOnDetails.map((a) => `• ${a.label} +৳${a.price}`).join("%0A")}`
+            : "";
         const message =
           `*NEW ORDER ALERT*%0A%0A` +
           `*Customer:* ${formData.firstName} ${formData.lastName}%0A` +
           `*Phone:* ${formData.phone}%0A` +
           `*Alt:* ${formData.altPhone}%0A` +
           `*Address:* ${formData.address}, ${formData.city}%0A%0A` +
-          `*Items:*%0A${productSummary}%0A%0A` +
+          `*Items:*%0A${productSummary}${addOnSummary}%0A%0A` +
           `*Custom:* ${formData.designDetails || "None"}%0A` +
           `*Payment Ref:* ${formData.paymentInfo}%0A` +
           `*Total:* ৳${grandTotal.toLocaleString()}`;
@@ -2965,11 +2956,7 @@ const CheckoutModal = ({
                         required
                         type="tel"
                         placeholder="01XXXXXXXXX"
-                        className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent ${
-                          phoneError
-                            ? "border-red-400 text-red-600"
-                            : "border-gray-100 focus:border-black"
-                        }`}
+                        className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent ${phoneError ? "border-red-400 text-red-600" : "border-gray-100 focus:border-black"}`}
                         value={formData.phone}
                         onChange={(e) => {
                           setFormData({ ...formData, phone: e.target.value });
@@ -2990,11 +2977,7 @@ const CheckoutModal = ({
                         required
                         type="tel"
                         placeholder="01XXXXXXXXX"
-                        className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent ${
-                          altPhoneError
-                            ? "border-red-400 text-red-600"
-                            : "border-gray-100 focus:border-black"
-                        }`}
+                        className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent ${altPhoneError ? "border-red-400 text-red-600" : "border-gray-100 focus:border-black"}`}
                         value={formData.altPhone}
                         onChange={(e) => {
                           setFormData({
@@ -3049,23 +3032,12 @@ const CheckoutModal = ({
                         key={zone.id}
                         type="button"
                         onClick={() =>
-                          setFormData({
-                            ...formData,
-                            deliveryZone: zone.id as any,
-                          })
+                          setFormData({ ...formData, deliveryZone: zone.id })
                         }
-                        className={`p-4 rounded-xl border-2 text-left transition-all ${
-                          formData.deliveryZone === zone.id
-                            ? "border-black bg-black text-white"
-                            : "border-gray-100 hover:border-gray-300"
-                        }`}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${formData.deliveryZone === zone.id ? "border-black bg-black text-white" : "border-gray-100 hover:border-gray-300"}`}
                       >
                         <p
-                          className={`text-[10px] font-black uppercase tracking-widest mb-1 ${
-                            formData.deliveryZone === zone.id
-                              ? "text-white/60"
-                              : "text-gray-400"
-                          }`}
+                          className={`text-[10px] font-black uppercase tracking-widest mb-1 ${formData.deliveryZone === zone.id ? "text-white/60" : "text-gray-400"}`}
                         >
                           {zone.id}
                         </p>
@@ -3073,11 +3045,7 @@ const CheckoutModal = ({
                           {zone.title}
                         </p>
                         <p
-                          className={`text-[11px] font-bold mt-1 ${
-                            formData.deliveryZone === zone.id
-                              ? "text-white/80"
-                              : "text-gray-500"
-                          }`}
+                          className={`text-[11px] font-bold mt-1 ${formData.deliveryZone === zone.id ? "text-white/80" : "text-gray-500"}`}
                         >
                           {zone.price}
                         </p>
@@ -3086,11 +3054,164 @@ const CheckoutModal = ({
                   </div>
                 </div>
 
+                {/* ── Gift & Premium Add-Ons ── */}
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black">
+                      3
+                    </div>
+                    <div>
+                      <h3 className="text-[11px] font-black uppercase tracking-widest">
+                        Gift & Premium Extras
+                      </h3>
+                      <p className="text-[9px] text-gray-400 font-bold mt-0.5">
+                        Make someone feel extraordinary
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {GIFT_ADDONS.map((addon) => {
+                      const isSelected = selectedAddOns.includes(addon.id);
+                      return (
+                        <motion.button
+                          key={addon.id}
+                          type="button"
+                          onClick={() => toggleAddOn(addon.id)}
+                          whileTap={{ scale: 0.98 }}
+                          className={`w-full relative overflow-hidden rounded-2xl border-2 transition-all duration-300 text-left ${
+                            isSelected
+                              ? "border-transparent shadow-xl shadow-black/10"
+                              : "border-gray-100 hover:border-gray-200"
+                          }`}
+                        >
+                          {/* Dark gradient background when selected */}
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-r ${addon.color} transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-0"}`}
+                          />
+
+                          <div className="relative flex items-center gap-4 p-4">
+                            {/* Emoji in styled bubble */}
+                            <div
+                              className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 transition-all duration-300 ${isSelected ? "bg-white/15 shadow-inner" : "bg-gray-50"}`}
+                            >
+                              {addon.emoji}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <p
+                                  className={`text-[11px] font-black uppercase tracking-tight transition-colors ${isSelected ? "text-white" : "text-gray-900"}`}
+                                >
+                                  {addon.label}
+                                </p>
+                                <span
+                                  className={`text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${isSelected ? "bg-white/20 text-white/80" : "bg-gray-100 text-gray-400"}`}
+                                >
+                                  {addon.tag}
+                                </span>
+                              </div>
+                              <p
+                                className={`text-[10px] font-medium leading-relaxed transition-colors ${isSelected ? "text-white/70" : "text-gray-400"}`}
+                              >
+                                {addon.sublabel}
+                              </p>
+                            </div>
+
+                            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                              <p
+                                className={`text-sm font-black transition-colors ${isSelected ? "text-white" : "text-gray-800"}`}
+                              >
+                                +৳{addon.price}
+                              </p>
+                              {/* Custom checkbox */}
+                              <div
+                                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected ? "bg-white border-white" : "border-gray-200 bg-white"}`}
+                              >
+                                <motion.div
+                                  initial={false}
+                                  animate={{
+                                    scale: isSelected ? 1 : 0,
+                                    opacity: isSelected ? 1 : 0,
+                                  }}
+                                  transition={{
+                                    type: "spring",
+                                    stiffness: 500,
+                                    damping: 30,
+                                  }}
+                                  className="w-3 h-3 rounded-full"
+                                  style={{
+                                    backgroundColor: isSelected
+                                      ? addon.accent
+                                      : "transparent",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Animated shimmer on selected */}
+                          {isSelected && (
+                            <motion.div
+                              className="absolute inset-0 pointer-events-none"
+                              initial={{ x: "-100%" }}
+                              animate={{ x: "200%" }}
+                              transition={{ duration: 1.2, ease: "easeInOut" }}
+                              style={{
+                                background:
+                                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+                              }}
+                            />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Live preview of selected add-ons */}
+                  <AnimatePresence>
+                    {selectedAddOns.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">
+                              {selectedAddOns
+                                .map(
+                                  (id) =>
+                                    GIFT_ADDONS.find((a) => a.id === id)?.emoji,
+                                )
+                                .join(" ")}
+                            </span>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-purple-700">
+                                Gift package active
+                              </p>
+                              <p className="text-[9px] text-purple-400 font-bold">
+                                {selectedAddOns.length} extra
+                                {selectedAddOns.length > 1 ? "s" : ""} added to
+                                your order
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-sm font-black text-purple-700">
+                            +৳{addOnTotal}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 {/* Payment */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black">
-                      3
+                      4
                     </div>
                     <h3 className="text-[11px] font-black uppercase tracking-widest">
                       Payment
@@ -3120,11 +3241,7 @@ const CheckoutModal = ({
                         className="p-2 bg-white rounded-lg border border-gray-200 hover:border-black"
                       >
                         <Copy
-                          className={`w-4 h-4 ${
-                            copiedStatus === "pay"
-                              ? "text-green-500"
-                              : "text-gray-400"
-                          }`}
+                          className={`w-4 h-4 ${copiedStatus === "pay" ? "text-green-500" : "text-gray-400"}`}
                         />
                       </button>
                     </div>
@@ -3214,6 +3331,37 @@ const CheckoutModal = ({
                       </div>
                     ))}
                   </div>
+
+                  {/* Gift add-ons summary in order panel */}
+                  {selectedAddOns.length > 0 && (
+                    <div className="border-t border-gray-200 pt-4 space-y-2">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
+                        Gift Extras
+                      </p>
+                      {GIFT_ADDONS.filter((a) =>
+                        selectedAddOns.includes(a.id),
+                      ).map((addon) => (
+                        <div
+                          key={addon.id}
+                          className="flex items-center gap-3 bg-gradient-to-r from-gray-100 to-gray-50 rounded-xl p-3"
+                        >
+                          <span className="text-xl">{addon.emoji}</span>
+                          <div className="flex-1">
+                            <p className="text-[10px] font-black uppercase">
+                              {addon.label}
+                            </p>
+                            <p className="text-[9px] text-gray-400 font-medium">
+                              {addon.sublabel}
+                            </p>
+                          </div>
+                          <p className="text-[11px] font-black text-gray-700">
+                            +৳{addon.price}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="border-t border-gray-200 pt-5 space-y-3">
                     <div className="flex justify-between text-[11px] font-bold text-gray-400 uppercase">
                       <span>Subtotal</span>
@@ -3223,6 +3371,12 @@ const CheckoutModal = ({
                       <span>Delivery</span>
                       <span>৳{deliveryCharge}</span>
                     </div>
+                    {addOnTotal > 0 && (
+                      <div className="flex justify-between text-[11px] font-bold text-purple-600 uppercase">
+                        <span>Gift Extras</span>
+                        <span>+৳{addOnTotal}</span>
+                      </div>
+                    )}
                     {appliedDiscount > 0 && (
                       <div className="flex justify-between text-[11px] font-bold text-green-600 uppercase">
                         <span>Discount (10%)</span>
@@ -3264,23 +3418,11 @@ const CheckoutModal = ({
 // ─────────────────────────────────────────────
 // StylistModule
 // ─────────────────────────────────────────────
-const StylistModule = ({
-  isOpen,
-  onClose,
-  products,
-  onProductClick,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  products: Product[];
-  onProductClick: (p: Product) => void;
-}) => {
-  const [messages, setMessages] = useState<
-    { type: "user" | "ai"; text: string; products?: Product[] }[]
-  >([]);
+const StylistModule = ({ isOpen, onClose, products, onProductClick }) => {
+  const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -3312,27 +3454,7 @@ const StylistModule = ({
             role: "user",
             parts: [
               {
-                text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear.
-              Your goal is to provide fashion styling advice based on the user's prompt and our current inventory.
-              Our Inventory: ${JSON.stringify(
-                products.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  category: p.category,
-                  price: p.price,
-                })),
-              )}
-              Rules:
-              1. Be professional, chic, and encouraging.
-              2. Recommend 2-4 products from the provided inventory.
-              3. Return ONLY a valid JSON object.
-              4. JSON Structure:
-              {
-                "analysis": "short vibe analysis",
-                "recommended_ids": ["string array of product IDs"],
-                "chat_output": "the message to the user"
-              }
-              User Request: ${userText}`,
+                text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear. Your goal is to provide fashion styling advice based on the user's prompt and our current inventory. Our Inventory: ${JSON.stringify(products.map((p) => ({ id: p.id, name: p.name, category: p.category, price: p.price })))} Rules: 1. Be professional, chic, and encouraging. 2. Recommend 2-4 products from the provided inventory. 3. Return ONLY a valid JSON object. 4. JSON Structure: { "analysis": "short vibe analysis", "recommended_ids": ["string array of product IDs"], "chat_output": "the message to the user" } User Request: ${userText}`,
               },
             ],
           },
@@ -3420,11 +3542,7 @@ const StylistModule = ({
                 >
                   <div className="max-w-[85%] space-y-4">
                     <div
-                      className={`p-5 rounded-2xl text-[11px] font-medium tracking-wide leading-relaxed ${
-                        m.type === "user"
-                          ? "bg-black text-white rounded-tr-none"
-                          : "bg-gray-100 text-gray-800 rounded-tl-none"
-                      }`}
+                      className={`p-5 rounded-2xl text-[11px] font-medium tracking-wide leading-relaxed ${m.type === "user" ? "bg-black text-white rounded-tr-none" : "bg-gray-100 text-gray-800 rounded-tl-none"}`}
                     >
                       {m.text}
                     </div>
@@ -3500,13 +3618,9 @@ const StylistModule = ({
 };
 
 // ─────────────────────────────────────────────
-// Footer + info pages (unchanged)
+// Footer
 // ─────────────────────────────────────────────
-const Footer = ({
-  setCurrentPage,
-}: {
-  setCurrentPage: (page: string) => void;
-}) => (
+const Footer = ({ setCurrentPage }) => (
   <footer className="bg-black text-white pt-20 md:pt-32 pb-12 px-6 mt-20 md:mt-32">
     <div className="max-w-7xl mx-auto flex flex-col items-center">
       <div className="flex gap-8 md:gap-10 mb-12 md:mb-16">
@@ -3532,15 +3646,7 @@ const Footer = ({
   </footer>
 );
 
-const InfoPage = ({
-  title,
-  content,
-  onBack,
-}: {
-  title: string;
-  content: string;
-  onBack: () => void;
-}) => (
+const InfoPage = ({ title, content, onBack }) => (
   <div className="bg-white min-h-screen pt-32 pb-40 px-8">
     <div className="max-w-3xl mx-auto space-y-16">
       <Reveal>
@@ -3612,51 +3718,37 @@ const LoadingScreen = () => (
 // App
 // ─────────────────────────────────────────────
 export default function App() {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState("home");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [terminalOpen, setTerminalOpen] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [hasUnlockedCoupon, setHasUnlockedCoupon] = useState(false);
   const [isCouponPopupOpen, setIsCouponPopupOpen] = useState(false);
   const [couponPhone, setCouponPhone] = useState("");
   const [hasShownCoupon, setHasShownCoupon] = useState(false);
-  const [orderSuccess, setOrderSuccess] = useState<any>(null);
+  const [orderSuccess, setOrderSuccess] = useState(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [adminEmail, setAdminEmail] = useState<string>("");
-
-  // ✅ FIX 1: Static JSON — products load instantly, zero DB hits
-  const [productsList, setProductsList] = useState<Product[]>(
-    productsData as Product[],
-  );
-
-  // ✅ FIX 2: Browser back button — navigate within the app instead of closing
-  // We track a simple page history stack
-  const pageHistoryRef = useRef<string[]>(["home"]);
+  const [orders, setOrders] = useState([]);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [productsList, setProductsList] = useState(productsData);
+  const pageHistoryRef = useRef(["home"]);
 
   useEffect(() => {
-    // Push a dummy state so we can intercept the back button
     window.history.pushState({ felicite: true }, "");
-
     const handlePopState = () => {
-      // Always push a new state to keep the browser "stuck" on our SPA
       window.history.pushState({ felicite: true }, "");
-
-      // Pop our own history stack
       const history = pageHistoryRef.current;
       if (history.length > 1) {
         const newHistory = history.slice(0, -1);
         pageHistoryRef.current = newHistory;
         const prevPage = newHistory[newHistory.length - 1];
-
-        // Restore page state
         if (prevPage === "home") {
           setCurrentPage("home");
           setSelectedProduct(null);
@@ -3668,28 +3760,22 @@ export default function App() {
           setSelectedProduct(null);
         }
       } else {
-        // Already at root — go home
         pageHistoryRef.current = ["home"];
         setCurrentPage("home");
         setSelectedProduct(null);
       }
-
-      // Close any open overlays
       setIsCheckoutOpen(false);
       setIsCartOpen(false);
     };
-
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Wrapper to navigate and record history
-  const navigateTo = (page: string) => {
+  const navigateTo = (page) => {
     pageHistoryRef.current = [...pageHistoryRef.current, page];
     setCurrentPage(page);
   };
 
-  // Load categories from Supabase
   useEffect(() => {
     supabase
       .from("categories")
@@ -3698,7 +3784,6 @@ export default function App() {
       .then(({ data, error }) => {
         if (!error && data) setCategories(data.map((c) => c.name));
       });
-
     const channel = supabase
       .channel("categories-changes")
       .on(
@@ -3715,11 +3800,9 @@ export default function App() {
         },
       )
       .subscribe();
-
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // Coupon popup timer
   useEffect(() => {
     if (!hasShownCoupon) {
       const timer = setTimeout(() => {
@@ -3730,7 +3813,6 @@ export default function App() {
     }
   }, [hasShownCoupon]);
 
-  // Auth state
   useEffect(() => {
     const authorizedEmails = [
       "mimpy124ahon124@gmail.com",
@@ -3755,10 +3837,8 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Orders (admin only) — products no longer fetched from Supabase
   useEffect(() => {
-    let ordersChannel: ReturnType<typeof supabase.channel> | null = null;
-
+    let ordersChannel = null;
     if (isAdmin) {
       supabase
         .from("orders")
@@ -3768,7 +3848,6 @@ export default function App() {
         .then(({ data, error }) => {
           if (!error) setOrders(data || []);
         });
-
       ordersChannel = supabase
         .channel("orders-changes")
         .on(
@@ -3785,22 +3864,17 @@ export default function App() {
         )
         .subscribe();
     }
-
-    // ✅ Products now load from static JSON — no Supabase fetch needed
     setIsLoading(false);
-
     return () => {
       if (ordersChannel) supabase.removeChannel(ordersChannel);
     };
   }, [isAdmin]);
 
-  // Loading fallback
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1800);
     return () => clearTimeout(timer);
   }, []);
 
-  // Scroll to top on page change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [currentPage, selectedProduct]);
@@ -3822,19 +3896,19 @@ export default function App() {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (orderId, newStatus) => {
     await supabase
       .from("orders")
       .update({ status: newStatus, updated_at: new Date().toISOString() })
       .eq("id", orderId);
   };
 
-  const deleteOrder = async (orderId: string) => {
+  const deleteOrder = async (orderId) => {
     await supabase.from("orders").delete().eq("id", orderId);
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
   };
 
-  const addOrUpdateProduct = async (p: any) => {
+  const addOrUpdateProduct = async (p) => {
     const dbRow = {
       name: p.name,
       price: p.price,
@@ -3862,17 +3936,13 @@ export default function App() {
     }
   };
 
-  const deleteProduct = async (id: string) => {
+  const deleteProduct = async (id) => {
     if (!window.confirm("Delete this product?")) return;
     await supabase.from("products").delete().eq("id", id);
     setProductsList((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const addToCart = (
-    product: Product,
-    selectedSize?: string,
-    selectedColor?: string,
-  ) => {
+  const addToCart = (product, selectedSize, selectedColor) => {
     setCart((prev) => {
       const existing = prev.find(
         (i) =>
@@ -3896,19 +3966,19 @@ export default function App() {
     setIsCartOpen(true);
   };
 
-  const handleProductClick = (p: Product) => {
+  const handleProductClick = (p) => {
     setSelectedProduct(p);
     navigateTo("product");
   };
 
-  const handleUpdateCategories = async (newCats: string[]) => {
+  const handleUpdateCategories = async (newCats) => {
     await supabase.from("categories").delete().neq("id", 0);
     const rows = newCats.map((name, i) => ({ name, sort_order: i }));
     const { error } = await supabase.from("categories").insert(rows);
     if (error) alert("Failed to save categories.");
   };
 
-  const handleLeadCapture = (phone: string) => {
+  const handleLeadCapture = (phone) => {
     if (phone.length >= 10) {
       setHasUnlockedCoupon(true);
       alert("Coupon code unlocked! 10% discount is now active.\nCode: new10");
@@ -3918,7 +3988,6 @@ export default function App() {
     }
   };
 
-  // ── Render: Admin ──
   if (isAdminMode && isAdmin) {
     return (
       <AdminDashboard
@@ -3936,7 +4005,6 @@ export default function App() {
     );
   }
 
-  // ── Render: Order success ──
   if (orderSuccess) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 md:p-8 text-center">
@@ -3964,12 +4032,27 @@ export default function App() {
                 Order Manifest
               </p>
               <div className="space-y-1">
-                {orderSuccess.items.map((item: any, idx: number) => (
+                {orderSuccess.items.map((item, idx) => (
                   <p key={idx} className="text-[11px] font-bold">
                     {item.name} ({item.selectedSize}) x{item.quantity}
                   </p>
                 ))}
               </div>
+              {orderSuccess.add_ons && orderSuccess.add_ons.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400 mb-2">
+                    🎁 Gift Extras
+                  </p>
+                  {orderSuccess.add_ons.map((addon, idx) => (
+                    <p
+                      key={idx}
+                      className="text-[11px] font-bold text-purple-700"
+                    >
+                      {addon.emoji} {addon.label} (+৳{addon.price})
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex justify-between pt-4 border-t border-gray-100">
               <div>
@@ -4008,14 +4091,12 @@ export default function App() {
     );
   }
 
-  // ── Render: Main ──
   return (
     <div className="min-h-screen bg-white font-sans text-gray-950 selection:bg-black selection:text-white overflow-x-hidden">
       <AnimatePresence>
         {isLoading && <LoadingScreen key="loader" />}
       </AnimatePresence>
 
-      {/* Coupon Popup */}
       <AnimatePresence>
         {isCouponPopupOpen && (
           <motion.div
@@ -4166,7 +4247,6 @@ export default function App() {
               productsList={productsList}
               onAddToCart={addToCart}
               onBack={() => {
-                // Use navigateTo so history is correct
                 const history = pageHistoryRef.current;
                 if (history.length > 1) {
                   const newHistory = history.slice(0, -1);
