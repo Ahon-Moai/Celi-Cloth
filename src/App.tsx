@@ -131,10 +131,13 @@ const ProductView = ({
       ? product.gallery
       : [product.image];
 
+  // ── FIX 1: Added "BOXY FIT T-SHIRTS" key so the correct chart shows per category ──
   const sizeChartImages = {
     Hoodies:
       "https://www.image2url.com/r2/default/images/1777270928450-aa406a06-2c71-4548-ab42-a148066f4b25.jpeg",
     Shirts:
+      "https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg",
+    "BOXY FIT T-SHIRTS":
       "https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg",
     default:
       "https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg",
@@ -177,7 +180,10 @@ const ProductView = ({
               >
                 <X className="w-5 h-5" />
               </button>
-              <div className="aspect-auto max-h-[80vh] overflow-auto flex items-center justify-center bg-white p-4 md:p-8">
+              <div
+                className="overflow-y-auto flex items-start justify-center bg-white p-4 md:p-8"
+                style={{ maxHeight: "calc(90vh - 120px)" }}
+              >
                 {currentSizeChart ? (
                   <img
                     src={currentSizeChart}
@@ -3315,8 +3321,8 @@ const CheckoutModal = ({
                 </div>
               </div>
 
-              {/* Order summary — desktop */}
-              <div className="hidden lg:block">
+              {/* ── FIX 2: Order summary — removed "hidden" so it shows on all screen sizes ── */}
+              <div className="block">
                 <div className="sticky top-24 bg-gray-50 rounded-2xl p-8 space-y-6">
                   <h3 className="text-xl font-serif italic text-gray-900">
                     Inventory
