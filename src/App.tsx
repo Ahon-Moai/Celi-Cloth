@@ -6,6 +6,7 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
+
 import {
   Search,
   User,
@@ -36,7 +37,7 @@ import {
   Heart,
   Star,
 } from "lucide-react";
-import productsData from "./data/products.json";
+
 import { Product, CartItem, Order } from "./types";
 import { supabase } from "./lib/supabase";
 import { GoogleGenAI, Type } from "@google/genai";
@@ -1060,12 +1061,33 @@ const AdminDashboard = ({
     setIsProductModalOpen(false);
   };
 
-  const handleBulkImport = () => {
+  const handleBulkImport = async () => {
     try {
       const data = JSON.parse(jsonInput);
-      if (Array.isArray(data)) {
-        data.forEach((p) => onAddProduct(p));
-        alert("Bulk synchronization initialized.");
+      if (!Array.isArray(data)) {
+        alert("JSON must be an array.");
+        return;
+      }
+      const rows = data.map((p) => ({
+        name: p.name,
+        price: p.price,
+        currency: p.currency || "BDT",
+        category: p.category,
+        image: p.image || null,
+        gallery: p.gallery || [],
+        colors: p.colors || [],
+        sizes: p.sizes || ["S", "M", "L"],
+        description: p.description || null,
+        is_new_arrival: p.isNewArrival || p.is_new_arrival || false,
+        sold_out: p.soldOut || p.sold_out || false,
+        stock: p.stock ?? null,
+        updated_at: new Date().toISOString(),
+      }));
+      const { error } = await supabase.from("products").insert(rows);
+      if (error) {
+        alert("Import failed: " + error.message);
+      } else {
+        alert(`${rows.length} products imported successfully.`);
         setJsonInput("");
       }
     } catch (e) {
@@ -2027,7 +2049,7 @@ const AdminDashboard = ({
                   <input
                     type="text"
                     placeholder="Class Name (e.g. OUTERWEAR)"
-                    className="flex-1 border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold uppercase"
+                    className="flex-1 border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-bold "
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
                   />
@@ -2056,7 +2078,7 @@ const AdminDashboard = ({
                       key={i}
                       className="p-6 flex items-center justify-between hover:bg-gray-50"
                     >
-                      <span className="text-xs font-black uppercase tracking-widest">
+                      <span className="text-xs font-black tracking-widest">
                         {cat}
                       </span>
                       <div className="flex gap-6">
@@ -2262,7 +2284,7 @@ const Categories = ({ onCategorySelect, setCurrentPage }) => (
       {
         cat: "BOXY FIT T-SHIRTS",
         src: "https://i.ibb.co.com/5hTh1Cp5/image.png",
-        label: "Boxy Fit T-shirts",
+        label: "BOXY FIT T-SHIRTS",
       },
       {
         cat: "Hoodies",
@@ -3737,7 +3759,7 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [orders, setOrders] = useState([]);
   const [adminEmail, setAdminEmail] = useState("");
-  const [productsList, setProductsList] = useState(productsData);
+  const [productsList, setProductsList] = useState([]);
   const pageHistoryRef = useRef(["home"]);
 
   useEffect(() => {
@@ -3796,6 +3818,49 @@ export default function App() {
             .order("sort_order", { ascending: true })
             .then(({ data }) => {
               if (data) setCategories(data.map((c) => c.name));
+            });
+        },
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setProductsList(
+            data.map((p) => ({
+              ...p,
+              isNewArrival: p.is_new_arrival,
+              soldOut: p.sold_out,
+            })),
+          );
+        }
+      });
+    const channel = supabase
+      .channel("products-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        () => {
+          supabase
+            .from("products")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .then(({ data }) => {
+              if (data) {
+                setProductsList(
+                  data.map((p) => ({
+                    ...p,
+                    isNewArrival: p.is_new_arrival,
+                    soldOut: p.sold_out,
+                  })),
+                );
+              }
             });
         },
       )
