@@ -86,7 +86,9 @@ const ProductView = ({
   hasCoupon,
 }) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "S");
-  const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || "");
+  const [selectedColor, setSelectedColor] = useState(
+    product.colors && product.colors.length > 0 ? product.colors[0] : "",
+  );
   const [activeTab, setActiveTab] = useState("Recommended");
   const [activeAccordion, setActiveAccordion] = useState("details");
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
@@ -317,6 +319,13 @@ const ProductView = ({
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
                   Select Color
                 </span>
+                {product.colors &&
+                  product.colors.length > 0 &&
+                  !selectedColor && (
+                    <span className="text-[9px] font-black uppercase tracking-widest text-red-400 animate-pulse">
+                      ← Required
+                    </span>
+                  )}
               </div>
               <div className="flex flex-wrap gap-3 md:gap-4 p-4 md:p-6 bg-gray-50 rounded-sm">
                 {product.colors.map((color, i) => (
@@ -385,7 +394,17 @@ const ProductView = ({
 
           <Reveal delay={0.3}>
             <button
-              onClick={() => onAddToCart(product, selectedSize, selectedColor)}
+              onClick={() => {
+                if (
+                  product.colors &&
+                  product.colors.length > 0 &&
+                  !selectedColor
+                ) {
+                  alert("Please select a color before adding to cart.");
+                  return;
+                }
+                onAddToCart(product, selectedSize, selectedColor);
+              }}
               className="w-full bg-black text-white py-8 text-[11px] font-black uppercase tracking-[0.6em] shadow-2xl shadow-black/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
               Add To Cart
@@ -1487,7 +1506,7 @@ const AdminDashboard = ({
                       className="w-5 h-5 accent-black"
                     />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black transition-colors">
-                      Manifesto Peak
+                      New Arrival Badge ✦
                     </span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer group">
@@ -1769,13 +1788,25 @@ const AdminDashboard = ({
                           <td className="px-8 py-6">
                             <div className="space-y-1">
                               {order.items?.map((item, idx) => (
-                                <p
-                                  key={idx}
-                                  className="text-[10px] font-bold text-gray-600"
-                                >
-                                  {item.name} [{item.selectedSize}] x
-                                  {item.quantity}
-                                </p>
+                                <div key={idx} className="space-y-0.5">
+                                  <p className="text-[10px] font-bold text-gray-700">
+                                    {item.name} [{item.selectedSize}] x
+                                    {item.quantity}
+                                  </p>
+                                  {item.selectedColor && (
+                                    <div className="flex items-center gap-1.5">
+                                      <span
+                                        className="inline-block w-4 h-4 rounded border border-gray-300 flex-shrink-0"
+                                        style={{
+                                          backgroundColor: item.selectedColor,
+                                        }}
+                                      />
+                                      <span className="text-[9px] font-mono text-gray-500">
+                                        {item.selectedColor}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
                               ))}
                             </div>
                             {/* ── Gift Add-Ons display in admin ── */}
@@ -2017,6 +2048,12 @@ const AdminDashboard = ({
                       <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">
                         {product.category}
                       </p>
+                      {product.isNewArrival && (
+                        <div className="mt-2 inline-flex items-center gap-1 bg-black text-white px-2 py-0.5 text-[8px] font-black uppercase tracking-widest">
+                          <Star className="w-2 h-2" />
+                          New Arrival
+                        </div>
+                      )}
                     </div>
                     <div className="pt-6 border-t border-gray-50 flex items-center justify-between gap-4">
                       <span
@@ -2388,8 +2425,9 @@ const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
               </div>
             )}
             {product.isNewArrival && (
-              <div className="bg-black text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap">
-                Manifesto Peak
+              <div className="bg-black text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap flex items-center gap-1">
+                <Star className="w-2.5 h-2.5" />
+                New Arrival
               </div>
             )}
             {hasCoupon && (
@@ -3352,6 +3390,17 @@ const CheckoutModal = ({
                           <p className="text-[10px] text-gray-400 font-bold mt-0.5">
                             Size: {item.selectedSize}
                           </p>
+                          {item.selectedColor && (
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span
+                                className="inline-block w-3 h-3 rounded-sm border border-gray-200 flex-shrink-0"
+                                style={{ backgroundColor: item.selectedColor }}
+                              />
+                              <span className="text-[10px] text-gray-400 font-bold">
+                                Color: {item.selectedColor}
+                              </span>
+                            </div>
+                          )}
                           <p className="text-[12px] font-black mt-1">
                             ৳{item.price.toLocaleString()}
                           </p>
@@ -4271,20 +4320,23 @@ export default function App() {
                   </h2>
                   <div className="w-16 h-1 bg-black mx-auto" />
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-1">
-                  {productsList.slice(0, 5).map((product) => (
-                    <div
-                      key={product.id}
-                      className="border border-gray-50 hover:bg-gray-50 transition-colors"
-                    >
-                      <ProductCard
-                        product={product}
-                        onAddToCart={addToCart}
-                        onClick={handleProductClick}
-                        hasCoupon={hasUnlockedCoupon}
-                      />
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1">
+                  {productsList
+                    .filter((p) => p.isNewArrival)
+                    .slice(0, 20)
+                    .map((product) => (
+                      <div
+                        key={product.id}
+                        className="border border-gray-50 hover:bg-gray-50 transition-colors"
+                      >
+                        <ProductCard
+                          product={product}
+                          onAddToCart={addToCart}
+                          onClick={handleProductClick}
+                          hasCoupon={hasUnlockedCoupon}
+                        />
+                      </div>
+                    ))}
                 </div>
               </div>
               <div className="mt-32 flex justify-center px-6">
