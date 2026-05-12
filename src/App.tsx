@@ -2352,17 +2352,17 @@ const Categories = ({ onCategorySelect, setCurrentPage }) => (
     {[
       {
         cat: "BOXY FIT T-SHIRTS",
-        src: "https://i.ibb.co.com/5hTh1Cp5/image.png",
+        src: "https://res.cloudinary.com/deyatjand/image/upload/v1778566368/image_copstz.webp",
         label: "BOXY FIT T-SHIRTS",
       },
       {
         cat: "Hoodies",
-        src: "https://i.ibb.co.com/5Wm1g5rJ/Whats-App-Image-2026-05-04-at-1-30-09-AM.jpg",
+        src: "https://res.cloudinary.com/deyatjand/image/upload/v1778566411/image-1_vso3n4.webp",
         label: "Hoodies",
       },
       {
         cat: "Shirts",
-        src: "https://i.ibb.co.com/GvFytRJR/image.png",
+        src: "https://res.cloudinary.com/deyatjand/image/upload/v1778566416/image-2_jvladm.webp",
         label: "Shirts",
       },
     ].map((item, i) => (
