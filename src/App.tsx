@@ -2213,25 +2213,42 @@ const AdminDashboard = ({
 // Hero
 // ─────────────────────────────────────────────
 const Hero = ({ setCurrentPage }) => {
+  // ─── Paste your 3 Cloudinary links here ───────────────────
   const slides = [
-    { src: "/banner_2.png" },
-    { src: "/banner_1.png" },
-    { src: "/banner_3.png" },
+    {
+      src: "https://res.cloudinary.com/deyatjand/image/upload/v1778565273/banner_2_lhf4wl.webp",
+    },
+    {
+      src: "https://res.cloudinary.com/deyatjand/image/upload/v1778565271/banner_1_lajlng.webp",
+    },
+    {
+      src: "https://res.cloudinary.com/deyatjand/image/upload/v1778565261/banner_3_oaayvx.webp",
+    },
   ];
+  // ──────────────────────────────────────────────────────────
+
+  // Auto-injects Cloudinary transforms into any cloudinary.com URL
+  const optimize = (url) =>
+    url.includes("res.cloudinary.com")
+      ? url.replace("/upload/", "/upload/f_auto,q_auto:good,w_1920/")
+      : url;
+
+  const lqip = (url) =>
+    url.includes("res.cloudinary.com")
+      ? url.replace("/upload/", "/upload/f_auto,q_1,w_20,e_blur:1000/")
+      : url;
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [loaded, setLoaded] = useState([false, false, false]);
+  const [fullyLoaded, setFullyLoaded] = useState([false, false, false]);
 
+  // Prefetch slides 2 & 3 after mount (slide 1 loads via fetchPriority=high)
   useEffect(() => {
-    slides.forEach((slide, i) => {
-      const img = new Image();
-      img.src = slide.src;
-      img.onload = () =>
-        setLoaded((prev) => {
-          const next = [...prev];
-          next[i] = true;
-          return next;
-        });
+    slides.slice(1).forEach((slide) => {
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.as = "image";
+      link.href = optimize(slide.src);
+      document.head.appendChild(link);
     });
   }, []);
 
@@ -2258,18 +2275,47 @@ const Hero = ({ setCurrentPage }) => {
           }}
           className="absolute inset-0 w-full h-full"
         >
+          {/* Tiny blurred placeholder — shows instantly while full image loads */}
           <img
-            src={slides[activeIndex].src}
-            alt={`Felicite Collection ${activeIndex + 1}`}
-            className="w-full h-full object-cover select-none pointer-events-none"
+            src={lqip(slides[activeIndex].src)}
+            aria-hidden="true"
             draggable={false}
-            fetchPriority={activeIndex === 0 ? "high" : "auto"}
-            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+            style={{
+              filter: "blur(24px)",
+              transform: "scale(1.06)",
+              opacity: fullyLoaded[activeIndex] ? 0 : 1,
+              transition: "opacity 0.5s ease",
+            }}
           />
+
+          {/* Full-res optimized image */}
+          <img
+            src={optimize(slides[activeIndex].src)}
+            alt={`Felicite Collection ${activeIndex + 1}`}
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+            draggable={false}
+            onLoad={() =>
+              setFullyLoaded((prev) => {
+                const next = [...prev];
+                next[activeIndex] = true;
+                return next;
+              })
+            }
+            fetchPriority={activeIndex === 0 ? "high" : "low"}
+            decoding={activeIndex === 0 ? "sync" : "async"}
+            loading="eager"
+            style={{
+              opacity: fullyLoaded[activeIndex] ? 1 : 0,
+              transition: "opacity 0.5s ease",
+            }}
+          />
+
           <div className="absolute inset-0 bg-black/25" />
         </motion.div>
       </AnimatePresence>
 
+      {/* Progress bars — unchanged */}
       <div className="absolute bottom-24 left-1/2 -translate-x-1/2 hidden md:flex gap-2 z-20">
         {slides.map((_, i) => (
           <div
@@ -2292,6 +2338,7 @@ const Hero = ({ setCurrentPage }) => {
         ))}
       </div>
 
+      {/* Hero copy — unchanged */}
       <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20">
         <p className="text-sm md:text-lg font-bold uppercase tracking-tight">
           SPRING'26
