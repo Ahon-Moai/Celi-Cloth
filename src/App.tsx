@@ -49,6 +49,167 @@ const ai = new GoogleGenAI({
 });
 
 // ─────────────────────────────────────────────
+// META PIXEL + CONVERSIONS API (CAPI)
+// ─────────────────────────────────────────────
+const META_PIXEL_ID = "1967787380765627";
+const META_ACCESS_TOKEN =
+  "EAA5j0Q8FKSQBRcewKoKW7HBkYaZAKpNGtQFBR8F2mYY1VgAb9JJL4mizXIOTBM4chkUqbUZBEl4wcWsK9S7sEfCn2OHBBmIm2VmkupjnKpa0EZBWUN6PSHgtpllVjRZBrqXyYYMtCwKkAiRdze89f3xO2risZCDr4sgKZC0X8ZCnkAzj5nvGXHkMbtleWtsUgZDZD";
+const META_TEST_EVENT = "TEST99021"; // ← set to "" before going live
+const META_CAPI_URL = `https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events`;
+
+function metaEventId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+async function metaSha256(value) {
+  if (!value) return undefined;
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(String(value).trim().toLowerCase()),
+  );
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function getMetaCookie(name) {
+  const m = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  return m ? m[2] : undefined;
+}
+
+async function metaUserData(info = {}) {
+  const [ph, em, fn, ln, ct, co] = await Promise.all([
+    metaSha256(info.phone?.replace(/\D/g, "")),
+    metaSha256(info.email),
+    metaSha256(info.firstName),
+    metaSha256(info.lastName),
+    metaSha256(info.city),
+    metaSha256("bd"),
+  ]);
+  return {
+    ...(ph && { ph }),
+    ...(em && { em }),
+    ...(fn && { fn }),
+    ...(ln && { ln }),
+    ...(ct && { ct }),
+    country: co,
+    client_user_agent: navigator.userAgent,
+    fbp: getMetaCookie("_fbp"),
+    fbc: getMetaCookie("_fbc"),
+  };
+}
+
+async function sendCAPI(eventName, eventId, customData, userData) {
+  try {
+    const payload = {
+      data: [
+        {
+          event_name: eventName,
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: eventId,
+          event_source_url: window.location.href,
+          action_source: "website",
+          user_data: userData,
+          custom_data: customData,
+        },
+      ],
+      ...(META_TEST_EVENT && { test_event_code: META_TEST_EVENT }),
+    };
+    await fetch(`${META_CAPI_URL}?access_token=${META_ACCESS_TOKEN}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    console.warn("[Meta CAPI]", e);
+  }
+}
+
+// Convenience wrappers — each fires browser fbq + CAPI simultaneously
+async function metaViewContent(product) {
+  const eid = metaEventId();
+  const cd = {
+    content_ids: [String(product.id)],
+    content_name: product.name,
+    content_type: "product",
+    content_category: product.category,
+    value: product.price,
+    currency: "BDT",
+  };
+  window.fbq?.("track", "ViewContent", cd, { eventID: eid });
+  await sendCAPI("ViewContent", eid, cd, await metaUserData());
+}
+
+async function metaAddToCart(product, size, color) {
+  const eid = metaEventId();
+  const cd = {
+    content_ids: [String(product.id)],
+    content_name: product.name,
+    content_type: "product",
+    value: product.price,
+    currency: "BDT",
+    contents: [
+      { id: String(product.id), quantity: 1, item_price: product.price },
+    ],
+  };
+  window.fbq?.("track", "AddToCart", cd, { eventID: eid });
+  await sendCAPI("AddToCart", eid, cd, await metaUserData());
+}
+
+async function metaInitiateCheckout(cartItems, total) {
+  const eid = metaEventId();
+  const cd = {
+    content_ids: cartItems.map((i) => String(i.id)),
+    num_items: cartItems.reduce((a, i) => a + i.quantity, 0),
+    value: total,
+    currency: "BDT",
+    contents: cartItems.map((i) => ({
+      id: String(i.id),
+      quantity: i.quantity,
+      item_price: i.price,
+    })),
+  };
+  window.fbq?.("track", "InitiateCheckout", cd, { eventID: eid });
+  await sendCAPI("InitiateCheckout", eid, cd, await metaUserData());
+}
+
+async function metaPurchase(orderData, customerInfo) {
+  const eid = metaEventId();
+  const cd = {
+    content_ids: (orderData.items || []).map((i) => String(i.id)),
+    content_type: "product",
+    num_items: (orderData.items || []).reduce((a, i) => a + i.quantity, 0),
+    value: orderData.grand_total,
+    currency: "BDT",
+    contents: (orderData.items || []).map((i) => ({
+      id: String(i.id),
+      quantity: i.quantity,
+      item_price: i.price,
+    })),
+    order_id: orderData.id || String(Date.now()),
+  };
+  window.fbq?.("track", "Purchase", cd, { eventID: eid });
+  await sendCAPI("Purchase", eid, cd, await metaUserData(customerInfo));
+}
+
+async function metaSearch(query) {
+  const eid = metaEventId();
+  const cd = { search_string: query };
+  window.fbq?.("track", "Search", cd, { eventID: eid });
+  await sendCAPI("Search", eid, cd, await metaUserData());
+}
+
+async function metaLead(phone) {
+  const eid = metaEventId();
+  const cd = { currency: "BDT", value: 0 };
+  window.fbq?.("track", "Lead", cd, { eventID: eid });
+  await sendCAPI("Lead", eid, cd, await metaUserData({ phone }));
+}
+// ─────────────────────────────────────────────
+// END META PIXEL
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
 // Gift Add-On Definitions (shared reference)
 // ─────────────────────────────────────────────
 const GIFT_ADDONS = [
@@ -94,6 +255,11 @@ const ProductView = ({
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  // ── Meta Pixel: ViewContent on product page open ──
+  useEffect(() => {
+    metaViewContent(product);
+  }, [product.id]);
+
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const isDragging = useRef(false);
@@ -133,7 +299,6 @@ const ProductView = ({
       ? product.gallery
       : [product.image];
 
-  // ── FIX 1: Added "BOXY FIT T-SHIRTS" key so the correct chart shows per category ──
   const sizeChartImages = {
     Hoodies:
       "https://www.image2url.com/r2/default/images/1777270928450-aa406a06-2c71-4548-ab42-a148066f4b25.jpeg",
@@ -640,7 +805,11 @@ const Navbar = ({
                       onCategorySelect("All");
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") setIsSearchOpen(false);
+                      if (e.key === "Enter") {
+                        setIsSearchOpen(false);
+                        // ── Meta Pixel: Search ──
+                        if (searchQuery.trim()) metaSearch(searchQuery.trim());
+                      }
                     }}
                   />
                 </div>
@@ -1725,7 +1894,6 @@ const AdminDashboard = ({
                 ))}
               </div>
 
-              {/* Orders table (desktop) */}
               <div className="hidden md:block bg-white border border-gray-100 rounded-sm">
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex gap-4">
@@ -1809,7 +1977,6 @@ const AdminDashboard = ({
                                 </div>
                               ))}
                             </div>
-                            {/* ── Gift Add-Ons display in admin ── */}
                             {order.add_ons && order.add_ons.length > 0 && (
                               <div className="mt-3 space-y-1">
                                 <p className="text-[8px] font-black uppercase tracking-widest text-purple-400 mb-1">
@@ -1909,7 +2076,6 @@ const AdminDashboard = ({
                 )}
               </div>
 
-              {/* Orders cards (mobile) */}
               <div className="md:hidden space-y-4">
                 <div className="flex gap-2 overflow-x-auto pb-4">
                   {["all", "pending", "confirmed", "shipped"].map((f) => (
@@ -1973,7 +2139,6 @@ const AdminDashboard = ({
                         </p>
                       )}
                     </div>
-                    {/* Gift add-ons on mobile */}
                     {order.add_ons && order.add_ons.length > 0 && (
                       <div className="space-y-1">
                         {order.add_ons.map((addon, idx) => (
@@ -2179,10 +2344,6 @@ const AdminDashboard = ({
                 <div className="bg-black text-green-500 p-6 md:p-8 rounded-sm font-mono text-[10px] h-[300px] md:h-[500px] overflow-auto">
                   <pre>{JSON.stringify(productsList, null, 2)}</pre>
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase leading-loose">
-                  Copy → overwrite <code>src/data/products.json</code> →
-                  redeploy.
-                </p>
               </div>
               <div className="space-y-6">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">
@@ -2231,7 +2392,6 @@ const Hero = ({ setCurrentPage }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullyLoaded, setFullyLoaded] = useState([false, false, false]);
 
-  // Preload ALL 3 images in parallel the moment component mounts
   useEffect(() => {
     slides.forEach((slide, i) => {
       const img = new window.Image();
@@ -2269,13 +2429,10 @@ const Hero = ({ setCurrentPage }) => {
           }}
           className="absolute inset-0 w-full h-full"
         >
-          {/* Brand color — renders in 0ms, no network needed */}
           <div
             className="absolute inset-0"
             style={{ backgroundColor: slides[activeIndex].bg }}
           />
-
-          {/* Full image fades in once loaded */}
           <img
             src={slides[activeIndex].src}
             alt={`Felicite Collection ${activeIndex + 1}`}
@@ -2289,12 +2446,10 @@ const Hero = ({ setCurrentPage }) => {
               transition: "opacity 0.6s ease",
             }}
           />
-
           <div className="absolute inset-0 bg-black/25" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Progress bars */}
       <div className="absolute bottom-24 left-1/2 -translate-x-1/2 hidden md:flex gap-2 z-20">
         {slides.map((_, i) => (
           <div
@@ -2317,7 +2472,6 @@ const Hero = ({ setCurrentPage }) => {
         ))}
       </div>
 
-      {/* Hero copy */}
       <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20">
         <p className="text-sm md:text-lg font-bold uppercase tracking-tight">
           SPRING'26
@@ -2394,7 +2548,7 @@ const Categories = ({ onCategorySelect, setCurrentPage }) => (
 );
 
 // ─────────────────────────────────────────────
-// ProductCard — with gallery hover effect
+// ProductCard
 // ─────────────────────────────────────────────
 const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -2411,7 +2565,6 @@ const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
         <div className="relative w-full aspect-[2/3] md:aspect-[3/4] lg:aspect-auto md:h-[470px] overflow-hidden bg-[#f9f9f9] mb-4 border border-gray-200">
           {product.image ? (
             <>
-              {/* Primary image */}
               <img
                 src={product.image}
                 alt={product.name}
@@ -2422,7 +2575,6 @@ const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
                 }`}
                 referrerPolicy="no-referrer"
               />
-              {/* Secondary hover image */}
               {hasSecondImage && (
                 <img
                   src={product.gallery[1]}
@@ -2464,7 +2616,6 @@ const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
             )}
           </div>
 
-          {/* Gallery indicator dots */}
           {hasSecondImage && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
               <div
@@ -2795,7 +2946,7 @@ const CartDrawer = ({
 );
 
 // ─────────────────────────────────────────────
-// CheckoutModal — with Gift Add-Ons section
+// CheckoutModal
 // ─────────────────────────────────────────────
 const CheckoutModal = ({
   isOpen,
@@ -2904,6 +3055,10 @@ const CheckoutModal = ({
         .from("orders")
         .insert([orderData]);
       if (insertError) throw insertError;
+
+      // ── Meta Pixel: Purchase ──────────────────────────────
+      await metaPurchase(orderData, formData);
+
       if (method === "WhatsApp") {
         const productSummary = totalItems
           .map(
@@ -3146,7 +3301,7 @@ const CheckoutModal = ({
                   </div>
                 </div>
 
-                {/* ── Gift & Premium Add-Ons ── */}
+                {/* Gift Add-Ons */}
                 <div className="space-y-5">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black">
@@ -3177,19 +3332,15 @@ const CheckoutModal = ({
                               : "border-gray-100 hover:border-gray-200"
                           }`}
                         >
-                          {/* Dark gradient background when selected */}
                           <div
                             className={`absolute inset-0 bg-gradient-to-r ${addon.color} transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-0"}`}
                           />
-
                           <div className="relative flex items-center gap-4 p-4">
-                            {/* Emoji in styled bubble */}
                             <div
                               className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 transition-all duration-300 ${isSelected ? "bg-white/15 shadow-inner" : "bg-gray-50"}`}
                             >
                               {addon.emoji}
                             </div>
-
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
                                 <p
@@ -3209,14 +3360,12 @@ const CheckoutModal = ({
                                 {addon.sublabel}
                               </p>
                             </div>
-
                             <div className="flex flex-col items-end gap-2 flex-shrink-0">
                               <p
                                 className={`text-sm font-black transition-colors ${isSelected ? "text-white" : "text-gray-800"}`}
                               >
                                 +৳{addon.price}
                               </p>
-                              {/* Custom checkbox */}
                               <div
                                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected ? "bg-white border-white" : "border-gray-200 bg-white"}`}
                               >
@@ -3241,8 +3390,6 @@ const CheckoutModal = ({
                               </div>
                             </div>
                           </div>
-
-                          {/* Animated shimmer on selected */}
                           {isSelected && (
                             <motion.div
                               className="absolute inset-0 pointer-events-none"
@@ -3260,7 +3407,6 @@ const CheckoutModal = ({
                     })}
                   </div>
 
-                  {/* Live preview of selected add-ons */}
                   <AnimatePresence>
                     {selectedAddOns.length > 0 && (
                       <motion.div
@@ -3385,7 +3531,7 @@ const CheckoutModal = ({
                 </div>
               </div>
 
-              {/* ── FIX 2: Order summary — removed "hidden" so it shows on all screen sizes ── */}
+              {/* Order summary */}
               <div className="block">
                 <div className="sticky top-24 bg-gray-50 rounded-2xl p-8 space-y-6">
                   <h3 className="text-xl font-serif italic text-gray-900">
@@ -3435,7 +3581,6 @@ const CheckoutModal = ({
                     ))}
                   </div>
 
-                  {/* Gift add-ons summary in order panel */}
                   {selectedAddOns.length > 0 && (
                     <div className="border-t border-gray-200 pt-4 space-y-2">
                       <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
@@ -4088,6 +4233,7 @@ export default function App() {
     setProductsList((prev) => prev.filter((p) => p.id !== id));
   };
 
+  // ── Meta Pixel: AddToCart ────────────────────────────────────────────────
   const addToCart = (product, selectedSize, selectedColor) => {
     setCart((prev) => {
       const existing = prev.find(
@@ -4109,6 +4255,7 @@ export default function App() {
         { ...product, quantity: 1, selectedSize, selectedColor },
       ];
     });
+    metaAddToCart(product, selectedSize, selectedColor);
     setIsCartOpen(true);
   };
 
@@ -4124,9 +4271,11 @@ export default function App() {
     if (error) alert("Failed to save categories.");
   };
 
+  // ── Meta Pixel: Lead ─────────────────────────────────────────────────────
   const handleLeadCapture = (phone) => {
     if (phone.length >= 10) {
       setHasUnlockedCoupon(true);
+      metaLead(phone);
       alert("Coupon code unlocked! 10% discount is now active.\nCode: new10");
       setIsCouponPopupOpen(false);
     } else {
@@ -4470,6 +4619,9 @@ export default function App() {
         onCheckout={() => {
           setIsCartOpen(false);
           setIsCheckoutOpen(true);
+          // ── Meta Pixel: InitiateCheckout ──
+          const total = cart.reduce((acc, i) => acc + i.price * i.quantity, 0);
+          metaInitiateCheckout(cart, total);
         }}
       />
 
