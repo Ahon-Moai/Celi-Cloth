@@ -125,7 +125,6 @@ async function sendCAPI(eventName, eventId, customData, userData) {
   }
 }
 
-// Convenience wrappers — each fires browser fbq + CAPI simultaneously
 async function metaViewContent(product) {
   const eid = metaEventId();
   const cd = {
@@ -198,13 +197,6 @@ async function metaSearch(query) {
   window.fbq?.("track", "Search", cd, { eventID: eid });
   await sendCAPI("Search", eid, cd, await metaUserData());
 }
-
-async function metaLead(phone) {
-  const eid = metaEventId();
-  const cd = { currency: "BDT", value: 0 };
-  window.fbq?.("track", "Lead", cd, { eventID: eid });
-  await sendCAPI("Lead", eid, cd, await metaUserData({ phone }));
-}
 // ─────────────────────────────────────────────
 // END META PIXEL
 // ─────────────────────────────────────────────
@@ -244,7 +236,6 @@ const ProductView = ({
   onAddToCart,
   onBack,
   onProductClick,
-  hasCoupon,
 }) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "S");
   const [selectedColor, setSelectedColor] = useState(
@@ -255,7 +246,6 @@ const ProductView = ({
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // ── Meta Pixel: ViewContent on product page open ──
   useEffect(() => {
     metaViewContent(product);
   }, [product.id]);
@@ -306,6 +296,8 @@ const ProductView = ({
       "https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg",
     "BOXY FIT T-SHIRTS":
       "https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg",
+    Bottoms:
+      "https://res.cloudinary.com/deyatjand/image/upload/v1779128166/WhatsApp_Image_2026-05-13_at_8.53.48_PM_zknsya.jpg",
     default:
       "https://www.image2url.com/r2/default/images/1777270967900-d086f42c-bea4-404a-9968-59e7cfad7a63.jpeg",
   };
@@ -698,7 +690,6 @@ const ProductView = ({
                 product={p}
                 onAddToCart={onAddToCart}
                 onClick={onProductClick}
-                hasCoupon={hasCoupon}
               />
             </div>
           ))}
@@ -807,7 +798,6 @@ const Navbar = ({
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         setIsSearchOpen(false);
-                        // ── Meta Pixel: Search ──
                         if (searchQuery.trim()) metaSearch(searchQuery.trim());
                       }
                     }}
@@ -2550,7 +2540,7 @@ const Categories = ({ onCategorySelect, setCurrentPage }) => (
 // ─────────────────────────────────────────────
 // ProductCard
 // ─────────────────────────────────────────────
-const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
+const ProductCard = ({ product, onAddToCart, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
   const hasSecondImage = product.gallery && product.gallery.length > 1;
 
@@ -2606,12 +2596,6 @@ const ProductCard = ({ product, onAddToCart, onClick, hasCoupon }) => {
               <div className="bg-black text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap flex items-center gap-1">
                 <Star className="w-2.5 h-2.5" />
                 New Arrival
-              </div>
-            )}
-            {hasCoupon && (
-              <div className="bg-[#024941] text-white px-3 py-1 text-[8px] uppercase font-bold tracking-tight whitespace-nowrap flex items-center gap-1">
-                <Zap className="w-2.5 h-2.5" />
-                10% OFF
               </div>
             )}
           </div>
@@ -2671,7 +2655,6 @@ const ShopPage = ({
   searchQuery,
   setSearchQuery,
   categoriesList,
-  hasCoupon,
 }) => {
   const categories = ["All", "New Arrivals", ...categoriesList];
   const [currentPageNum, setCurrentPageNum] = useState(1);
@@ -2753,7 +2736,6 @@ const ShopPage = ({
                 product={product}
                 onAddToCart={onAddToCart}
                 onClick={onProductClick}
-                hasCoupon={hasCoupon}
               />
             </div>
           ))}
@@ -2955,7 +2937,6 @@ const CheckoutModal = ({
   totalItems,
   totalAmount,
   onUpdateItem,
-  hasCoupon,
 }) => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -2968,20 +2949,11 @@ const CheckoutModal = ({
     designDetails: "",
     deliveryZone: "inside",
   });
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [selectedAddOns, setSelectedAddOns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [altPhoneError, setAltPhoneError] = useState("");
   const [copiedStatus, setCopiedStatus] = useState(null);
-
-  useEffect(() => {
-    if (hasCoupon && appliedDiscount === 0) {
-      setAppliedDiscount(0.1);
-      setCouponCode("new10");
-    }
-  }, [hasCoupon, appliedDiscount]);
 
   useEffect(() => {
     const cityLower = (formData.city || "").toLowerCase();
@@ -2994,25 +2966,15 @@ const CheckoutModal = ({
   }, [formData.city]);
 
   const deliveryCharge = formData.deliveryZone === "inside" ? 80 : 150;
-  const discountAmount = totalAmount * appliedDiscount;
   const addOnTotal = GIFT_ADDONS.filter((a) =>
     selectedAddOns.includes(a.id),
   ).reduce((acc, a) => acc + a.price, 0);
-  const grandTotal = totalAmount + deliveryCharge - discountAmount + addOnTotal;
+  const grandTotal = totalAmount + deliveryCharge + addOnTotal;
 
   const toggleAddOn = (id) => {
     setSelectedAddOns((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
-  };
-
-  const handleApplyCoupon = () => {
-    if (couponCode.toLowerCase() === "new10") {
-      setAppliedDiscount(0.1);
-      alert('Coupon "new10" applied! 10% off.');
-    } else {
-      alert("Invalid coupon code.");
-    }
   };
 
   const handleCopy = (text, type) => {
@@ -3042,11 +3004,11 @@ const CheckoutModal = ({
         items: totalItems,
         total_amount: totalAmount,
         delivery_charge: deliveryCharge,
-        discount_amount: discountAmount,
+        discount_amount: 0,
         add_ons: selectedAddOnDetails,
         add_ons_total: addOnTotal,
         grand_total: grandTotal,
-        coupon_used: appliedDiscount > 0 ? couponCode : null,
+        coupon_used: null,
         status: "pending",
         payment_method: method,
         created_at: new Date().toISOString(),
@@ -3056,7 +3018,6 @@ const CheckoutModal = ({
         .insert([orderData]);
       if (insertError) throw insertError;
 
-      // ── Meta Pixel: Purchase ──────────────────────────────
       await metaPurchase(orderData, formData);
 
       if (method === "WhatsApp") {
@@ -3625,33 +3586,12 @@ const CheckoutModal = ({
                         <span>+৳{addOnTotal}</span>
                       </div>
                     )}
-                    {appliedDiscount > 0 && (
-                      <div className="flex justify-between text-[11px] font-bold text-green-600 uppercase">
-                        <span>Discount (10%)</span>
-                        <span>-৳{discountAmount.toLocaleString()}</span>
-                      </div>
-                    )}
                     <div className="flex justify-between items-center pt-3 border-t border-gray-300">
                       <span className="text-lg font-serif italic">Total</span>
                       <span className="text-2xl font-black font-mono">
                         ৳{grandTotal.toLocaleString()}
                       </span>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Voucher code"
-                      className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-[11px] font-bold uppercase outline-none focus:border-black"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                    />
-                    <button
-                      onClick={handleApplyCoupon}
-                      className="px-4 py-2 bg-black text-white text-[10px] font-black rounded-lg"
-                    >
-                      Apply
-                    </button>
                   </div>
                 </div>
               </div>
@@ -3976,10 +3916,6 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [hasUnlockedCoupon, setHasUnlockedCoupon] = useState(false);
-  const [isCouponPopupOpen, setIsCouponPopupOpen] = useState(false);
-  const [couponPhone, setCouponPhone] = useState("");
-  const [hasShownCoupon, setHasShownCoupon] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -4093,16 +4029,6 @@ export default function App() {
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, []);
-
-  useEffect(() => {
-    if (!hasShownCoupon) {
-      const timer = setTimeout(() => {
-        setIsCouponPopupOpen(true);
-        setHasShownCoupon(true);
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasShownCoupon]);
 
   useEffect(() => {
     const authorizedEmails = [
@@ -4233,7 +4159,6 @@ export default function App() {
     setProductsList((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // ── Meta Pixel: AddToCart ────────────────────────────────────────────────
   const addToCart = (product, selectedSize, selectedColor) => {
     setCart((prev) => {
       const existing = prev.find(
@@ -4269,18 +4194,6 @@ export default function App() {
     const rows = newCats.map((name, i) => ({ name, sort_order: i }));
     const { error } = await supabase.from("categories").insert(rows);
     if (error) alert("Failed to save categories.");
-  };
-
-  // ── Meta Pixel: Lead ─────────────────────────────────────────────────────
-  const handleLeadCapture = (phone) => {
-    if (phone.length >= 10) {
-      setHasUnlockedCoupon(true);
-      metaLead(phone);
-      alert("Coupon code unlocked! 10% discount is now active.\nCode: new10");
-      setIsCouponPopupOpen(false);
-    } else {
-      alert("Invalid number.");
-    }
   };
 
   if (isAdminMode && isAdmin) {
@@ -4392,68 +4305,6 @@ export default function App() {
         {isLoading && <LoadingScreen key="loader" />}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {isCouponPopupOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="w-full max-w-md bg-white p-6 md:p-10 rounded-3xl shadow-2xl relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 w-full h-2 bg-[#024941]" />
-              <button
-                onClick={() => setIsCouponPopupOpen(false)}
-                className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <div className="text-center space-y-6">
-                <div className="w-20 h-20 bg-[#f0f7f6] rounded-full flex items-center justify-center mx-auto">
-                  <Zap className="w-10 h-10 text-[#024941]" />
-                </div>
-                <h3 className="text-2xl font-black uppercase tracking-tight text-[#1a1a1a]">
-                  Exclusive Gift For You
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  Enter your phone number to unlock a{" "}
-                  <span className="font-bold text-[#024941]">10% OFF</span>{" "}
-                  coupon.
-                </p>
-                <div className="space-y-4">
-                  <input
-                    type="tel"
-                    placeholder="01XXX-XXXXXX"
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-xl outline-none focus:border-[#024941] focus:bg-white transition-all text-center font-bold text-lg"
-                    value={couponPhone}
-                    onChange={(e) => setCouponPhone(e.target.value)}
-                  />
-                  <button
-                    onClick={() => {
-                      if (validatePhone(couponPhone)) {
-                        handleLeadCapture(couponPhone);
-                      } else {
-                        alert("Please enter a valid 11-digit phone number.");
-                      }
-                    }}
-                    className="w-full py-4 bg-[#024941] text-white rounded-xl font-bold hover:bg-[#013832] transition-all"
-                  >
-                    Get My Coupon
-                  </button>
-                </div>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">
-                  Limited Time Offer • felicite™
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <Navbar
         cartCount={cart.reduce((acc, i) => acc + i.quantity, 0)}
         onOpenCart={() => setIsCartOpen(true)}
@@ -4508,7 +4359,6 @@ export default function App() {
                           product={product}
                           onAddToCart={addToCart}
                           onClick={handleProductClick}
-                          hasCoupon={hasUnlockedCoupon}
                         />
                       </div>
                     ))}
@@ -4536,7 +4386,6 @@ export default function App() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             categoriesList={categories}
-            hasCoupon={hasUnlockedCoupon}
           />
         ) : currentPage === "product" ? (
           selectedProduct && (
@@ -4558,7 +4407,6 @@ export default function App() {
                 }
               }}
               onProductClick={handleProductClick}
-              hasCoupon={hasUnlockedCoupon}
             />
           )
         ) : currentPage === "support" ? (
@@ -4619,7 +4467,6 @@ export default function App() {
         onCheckout={() => {
           setIsCartOpen(false);
           setIsCheckoutOpen(true);
-          // ── Meta Pixel: InitiateCheckout ──
           const total = cart.reduce((acc, i) => acc + i.price * i.quantity, 0);
           metaInitiateCheckout(cart, total);
         }}
@@ -4646,7 +4493,6 @@ export default function App() {
             ),
           )
         }
-        hasCoupon={hasUnlockedCoupon}
       />
     </div>
   );
