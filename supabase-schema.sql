@@ -111,7 +111,8 @@ CREATE POLICY "Admins can insert products"
   WITH CHECK (
     auth.jwt() ->> 'email' IN (
       'mimpy124ahon124@gmail.com',
-      'feliciteclothing@gmail.com'
+      'feliciteclothing@gmail.com',
+      'adminloginpaidbase@gmail.com'
     )
   );
 
