@@ -4034,6 +4034,7 @@ export default function App() {
     const authorizedEmails = [
       "mimpy124ahon124@gmail.com",
       "feliciteclothing@gmail.com",
+      "one@gmail.com"
     ];
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user;
