@@ -655,6 +655,105 @@ const ProductView = ({
                 )}
               </AnimatePresence>
             </div>
+            <div className="border-t border-gray-100">
+              <button
+                onClick={() =>
+                  setActiveAccordion(activeAccordion === "care" ? null : "care")
+                }
+                className="w-full flex items-center justify-between py-8 group text-gray-600 hover:text-black transition-colors"
+              >
+                <div className="flex items-center gap-6">
+                  <Sparkles className="w-5 h-5" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+                    Care Instructions
+                  </span>
+                </div>
+                <Plus
+                  className={`w-4 h-4 text-gray-300 transition-all ${activeAccordion === "care" ? "rotate-45" : "group-hover:rotate-90"}`}
+                />
+              </button>
+              <AnimatePresence>
+                {activeAccordion === "care" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pb-8 space-y-5">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
+                        Designed As Wearable Art — Since 2018
+                      </p>
+                      <div className="grid grid-cols-5 gap-3 py-4 border border-gray-100 px-4">
+                        {[
+                          { icon: "🧤", label: "Handwash\nCold" },
+                          { icon: "🫧", label: "Machine Wash\nCold" },
+                          { icon: "🚫", label: "Do Not\nBleach" },
+                          { icon: "⊘", label: "Do Not\nTumble Dry" },
+                          { icon: "♨️", label: "Iron Inside\nOut (Low)" },
+                        ].map((item, i) => (
+                          <div
+                            key={i}
+                            className="flex flex-col items-center gap-2 text-center"
+                          >
+                            <span className="text-xl">{item.icon}</span>
+                            <p className="text-[8px] font-black uppercase tracking-wider text-gray-400 whitespace-pre-line leading-tight">
+                              {item.label}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-gray-500 uppercase font-medium">
+                        Made in Bangladesh · Designed by Felicite™
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="border-t border-gray-100">
+              <button
+                onClick={() =>
+                  setActiveAccordion(
+                    activeAccordion === "returns" ? null : "returns",
+                  )
+                }
+                className="w-full flex items-center justify-between py-8 group text-gray-600 hover:text-black transition-colors"
+              >
+                <div className="flex items-center gap-6">
+                  <ShieldCheck className="w-5 h-5" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+                    Returns & Exchange
+                  </span>
+                </div>
+                <Plus
+                  className={`w-4 h-4 text-gray-300 transition-all ${activeAccordion === "returns" ? "rotate-45" : "group-hover:rotate-90"}`}
+                />
+              </button>
+              <AnimatePresence>
+                {activeAccordion === "returns" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pb-8 space-y-4">
+                      <p className="text-[11px] text-gray-500 uppercase font-medium">
+                        Returns accepted only if tag is intact.
+                      </p>
+                      <p className="text-[11px] font-black uppercase text-black">
+                        Printed items are not eligible for return or exchange.
+                      </p>
+                      <p className="text-[11px] text-gray-500 uppercase font-medium">
+                        Items must be in original unused condition. Return
+                        requests must be initiated within 7 days of delivery.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </Reveal>
         </div>
       </div>
@@ -4034,7 +4133,7 @@ export default function App() {
     const authorizedEmails = [
       "mimpy124ahon124@gmail.com",
       "feliciteclothing@gmail.com",
-      "one@gmail.com"
+      "one@gmail.com",
     ];
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user;
