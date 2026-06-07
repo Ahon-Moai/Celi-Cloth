@@ -36,6 +36,9 @@ import {
   Gift,
   Heart,
   Star,
+  Flame,
+  TrendingUp,
+  Layout,
 } from "lucide-react";
 
 import { Product, CartItem, Order } from "./types";
@@ -227,6 +230,103 @@ const GIFT_ADDONS = [
   },
 ];
 
+export const SHOWCASE_SECTIONS = [
+  { id: "trending_now", label: "Trending Now", icon: "🔥", accent: "#ef4444" },
+  { id: "best_selling", label: "Best Selling", icon: "⚡", accent: "#f59e0b" },
+  { id: "boxy_fit", label: "Boxy Fit T-Shirts", icon: "👕", accent: "#3b82f6" },
+  { id: "must_buy", label: "Must Buy", icon: "★", accent: "#8b5cf6" },
+];
+const ShowcaseCarousel = ({
+  section,
+  products,
+  onAddToCart,
+  onProductClick,
+}) => {
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    checkScroll();
+    return () => el.removeEventListener("scroll", checkScroll);
+  }, [products]);
+
+  const scroll = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: dir === "right" ? el.clientWidth * 0.75 : -el.clientWidth * 0.75,
+      behavior: "smooth",
+    });
+  };
+
+  if (!products || products.length === 0) return null;
+  const sectionMeta = SHOWCASE_SECTIONS.find((s) => s.id === section);
+
+  return (
+    <div className="w-full py-16 md:py-24 border-t border-gray-50">
+      <div className="flex items-end justify-between px-6 md:px-12 mb-10">
+        <div className="space-y-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400 flex items-center gap-2">
+            <span>{sectionMeta?.icon}</span>
+            <span>{sectionMeta?.label}</span>
+          </p>
+          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight">
+            {sectionMeta?.label}
+          </h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => scroll("left")}
+            disabled={!canScrollLeft}
+            className={`w-10 h-10 flex items-center justify-center border transition-all ${canScrollLeft ? "border-black hover:bg-black hover:text-white" : "border-gray-100 text-gray-200 cursor-not-allowed"}`}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            disabled={!canScrollRight}
+            className={`w-10 h-10 flex items-center justify-center border transition-all ${canScrollRight ? "border-black hover:bg-black hover:text-white" : "border-gray-100 text-gray-200 cursor-not-allowed"}`}
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+      <div
+        ref={scrollRef}
+        className="flex gap-2 overflow-x-auto px-6 md:px-12 pb-4"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {products.map((product, i) => (
+          <motion.div
+            key={product.id}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.05 }}
+            className="flex-shrink-0 w-[180px] md:w-[220px] lg:w-[260px] border border-gray-50 hover:bg-gray-50 transition-colors"
+          >
+            <ProductCard
+              product={product}
+              onAddToCart={onAddToCart}
+              onClick={onProductClick}
+            />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
 // ─────────────────────────────────────────────
 // ProductView
 // ─────────────────────────────────────────────
@@ -1222,6 +1322,8 @@ const AdminDashboard = ({
   onAddProduct,
   onDeleteProduct,
   onUpdateCategories,
+  showcaseMap,
+  onUpdateShowcase,
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState("orders");
@@ -1851,6 +1953,11 @@ const AdminDashboard = ({
                   label: "CATEGORIES",
                   icon: <Layers className="w-4 h-4" />,
                 },
+                {
+                  id: "showcase",
+                  label: "SHOWCASE",
+                  icon: <Flame className="w-4 h-4" />,
+                },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -1907,7 +2014,9 @@ const AdminDashboard = ({
                   ? "Inventory"
                   : activeTab === "categories"
                     ? "Distinction Classes"
-                    : "JSON Portal"}
+                    : activeTab === "showcase"
+                      ? "Showcase Manager"
+                      : "JSON Portal"}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -2451,6 +2560,127 @@ const AdminDashboard = ({
                   Execute Bulk Sync
                 </button>
               </div>
+            </div>
+          )}
+          {activeTab === "showcase" && (
+            <div className="space-y-16">
+              {SHOWCASE_SECTIONS.map((sec) => {
+                const assignedIds = showcaseMap[sec.id] || [];
+                const assignedProducts = assignedIds
+                  .map((id) => productsList.find((p) => p.id === id))
+                  .filter(Boolean);
+                const unassigned = productsList.filter(
+                  (p) => !assignedIds.includes(p.id),
+                );
+
+                return (
+                  <div
+                    key={sec.id}
+                    className="bg-white border border-gray-100 overflow-hidden"
+                  >
+                    <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-4">
+                      <span className="text-2xl">{sec.icon}</span>
+                      <div>
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.4em]">
+                          {sec.label}
+                        </h3>
+                        <p className="text-[9px] text-gray-400 font-bold mt-0.5">
+                          {assignedIds.length}/10 products
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      {assignedProducts.length === 0 ? (
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-300 py-8 text-center">
+                          No products assigned
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-6">
+                          {assignedProducts.map((p) => (
+                            <div
+                              key={p.id}
+                              className="relative group border border-gray-100 bg-gray-50"
+                            >
+                              <div className="aspect-[3/4] overflow-hidden">
+                                {p.image ? (
+                                  <img
+                                    src={p.image}
+                                    className="w-full h-full object-cover"
+                                    alt={p.name}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-[9px] font-black text-gray-300 uppercase">
+                                    No Image
+                                  </div>
+                                )}
+                              </div>
+                              <div className="p-2">
+                                <p className="text-[9px] font-black uppercase truncate">
+                                  {p.name}
+                                </p>
+                                <p className="text-[8px] text-gray-400 font-bold">
+                                  ৳{p.price.toLocaleString()}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  onUpdateShowcase(sec.id, p.id, false)
+                                }
+                                className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {assignedIds.length < 10 && (
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
+                            Add Products
+                          </p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-h-64 overflow-y-auto">
+                            {unassigned.map((p) => (
+                              <button
+                                key={p.id}
+                                onClick={() =>
+                                  onUpdateShowcase(sec.id, p.id, true)
+                                }
+                                className="relative group border border-dashed border-gray-200 hover:border-black transition-all text-left"
+                              >
+                                <div className="aspect-[3/4] overflow-hidden bg-gray-50 relative">
+                                  {p.image ? (
+                                    <img
+                                      src={p.image}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                      alt={p.name}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                      <Plus className="w-4 h-4 text-gray-300" />
+                                    </div>
+                                  )}
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                                    <Plus className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  </div>
+                                </div>
+                                <div className="p-2">
+                                  <p className="text-[9px] font-black uppercase truncate">
+                                    {p.name}
+                                  </p>
+                                  <p className="text-[8px] text-gray-400 font-bold">
+                                    ৳{p.price.toLocaleString()}
+                                  </p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -4022,6 +4252,7 @@ export default function App() {
   const [adminEmail, setAdminEmail] = useState("");
   const [productsList, setProductsList] = useState([]);
   const pageHistoryRef = useRef(["home"]);
+  const [showcaseMap, setShowcaseMap] = useState({});
 
   useEffect(() => {
     window.history.pushState({ felicite: true }, "");
@@ -4058,6 +4289,33 @@ export default function App() {
     pageHistoryRef.current = [...pageHistoryRef.current, page];
     setCurrentPage(page);
   };
+  const fetchShowcases = async () => {
+    const { data, error } = await supabase
+      .from("showcases")
+      .select("section, product_id")
+      .order("sort_order");
+    if (!error && data) {
+      const map = {};
+      for (const row of data) {
+        if (!map[row.section]) map[row.section] = [];
+        map[row.section].push(row.product_id);
+      }
+      setShowcaseMap(map);
+    }
+  };
+
+  useEffect(() => {
+    fetchShowcases();
+    const channel = supabase
+      .channel("showcases-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "showcases" },
+        fetchShowcases,
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, []);
 
   useEffect(() => {
     supabase
@@ -4308,6 +4566,32 @@ export default function App() {
         onAddProduct={addOrUpdateProduct}
         onDeleteProduct={deleteProduct}
         onUpdateCategories={handleUpdateCategories}
+        showcaseMap={showcaseMap}
+        onUpdateShowcase={async (section, productId, add) => {
+          if (add) {
+            const currentIds = showcaseMap[section] || [];
+            if (currentIds.length >= 10) {
+              alert("Max 10 products per section.");
+              return;
+            }
+            await supabase
+              .from("showcases")
+              .upsert(
+                {
+                  section,
+                  product_id: productId,
+                  sort_order: currentIds.length,
+                },
+                { onConflict: "section,product_id" },
+              );
+          } else {
+            await supabase
+              .from("showcases")
+              .delete()
+              .eq("section", section)
+              .eq("product_id", productId);
+          }
+        }}
         onClose={() => setIsAdminMode(false)}
       />
     );
@@ -4435,36 +4719,24 @@ export default function App() {
               onCategorySelect={setSelectedCategory}
               setCurrentPage={navigateTo}
             />
-            <section className="py-24 md:py-32 bg-white px-0">
-              <div className="w-full">
-                <div className="text-center mb-24 space-y-4 px-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
-                    Curated pieces
-                  </p>
-                  <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">
-                    New Arrivals
-                  </h2>
-                  <div className="w-16 h-1 bg-black mx-auto" />
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1">
-                  {productsList
-                    .filter((p) => p.isNewArrival)
-                    .slice(0, 20)
-                    .map((product) => (
-                      <div
-                        key={product.id}
-                        className="border border-gray-50 hover:bg-gray-50 transition-colors"
-                      >
-                        <ProductCard
-                          product={product}
-                          onAddToCart={addToCart}
-                          onClick={handleProductClick}
-                        />
-                      </div>
-                    ))}
-                </div>
-              </div>
-              <div className="mt-32 flex justify-center px-6">
+            <section className="bg-white pb-24">
+              {SHOWCASE_SECTIONS.map((sec) => {
+                const ids = showcaseMap[sec.id] || [];
+                const sectionProducts = ids
+                  .map((id) => productsList.find((p) => p.id === id))
+                  .filter(Boolean)
+                  .slice(0, 10);
+                return (
+                  <ShowcaseCarousel
+                    key={sec.id}
+                    section={sec.id}
+                    products={sectionProducts}
+                    onAddToCart={addToCart}
+                    onProductClick={handleProductClick}
+                  />
+                );
+              })}
+              <div className="mt-16 flex justify-center px-6">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
