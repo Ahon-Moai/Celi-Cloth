@@ -36,9 +36,6 @@ import {
   Gift,
   Heart,
   Star,
-  Flame,
-  TrendingUp,
-  Layout,
 } from "lucide-react";
 
 import { Product, CartItem, Order } from "./types";
@@ -229,108 +226,6 @@ const GIFT_ADDONS = [
     tag: "ROMANTIC",
   },
 ];
-
-// ─────────────────────────────────────────────
-// Showcase sections definition
-// ─────────────────────────────────────────────
-export const SHOWCASE_SECTIONS = [
-  { id: "trending_now", label: "Trending Now", icon: "🔥", accent: "#ef4444" },
-  { id: "best_selling", label: "Best Selling", icon: "⚡", accent: "#f59e0b" },
-  { id: "boxy_fit", label: "Boxy Fit T-Shirts", icon: "👕", accent: "#3b82f6" },
-  { id: "must_buy", label: "Must Buy", icon: "★", accent: "#8b5cf6" },
-];
-
-// ─────────────────────────────────────────────
-// ShowcaseCarousel
-// ─────────────────────────────────────────────
-const ShowcaseCarousel = ({ section, products, onAddToCart, onProductClick }) => {
-  const scrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
-  const checkScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 10);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
-  };
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    checkScroll();
-    return () => el.removeEventListener("scroll", checkScroll);
-  }, [products]);
-
-  const scroll = (dir) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const amount = el.clientWidth * 0.75;
-    el.scrollBy({ left: dir === "right" ? amount : -amount, behavior: "smooth" });
-  };
-
-  if (!products || products.length === 0) return null;
-
-  const sectionMeta = SHOWCASE_SECTIONS.find((s) => s.id === section);
-
-  return (
-    <div className="w-full py-16 md:py-24 border-t border-gray-50">
-      {/* Header */}
-      <div className="flex items-end justify-between px-6 md:px-12 mb-10">
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400 flex items-center gap-2">
-            <span>{sectionMeta?.icon}</span>
-            <span>{sectionMeta?.label}</span>
-          </p>
-          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight">
-            {sectionMeta?.label}
-          </h2>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={`w-10 h-10 flex items-center justify-center border transition-all ${canScrollLeft ? "border-black hover:bg-black hover:text-white" : "border-gray-100 text-gray-200 cursor-not-allowed"}`}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={`w-10 h-10 flex items-center justify-center border transition-all ${canScrollRight ? "border-black hover:bg-black hover:text-white" : "border-gray-100 text-gray-200 cursor-not-allowed"}`}
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Carousel track */}
-      <div
-        ref={scrollRef}
-        className="flex gap-2 overflow-x-auto scrollbar-hide px-6 md:px-12 pb-4"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {products.map((product, i) => (
-          <motion.div
-            key={product.id}
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.05 }}
-            className="flex-shrink-0 w-[180px] md:w-[220px] lg:w-[260px] border border-gray-50 hover:bg-gray-50 transition-colors"
-          >
-            <ProductCard
-              product={product}
-              onAddToCart={onAddToCart}
-              onClick={onProductClick}
-            />
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // ─────────────────────────────────────────────
 // ProductView
@@ -760,14 +655,10 @@ const ProductView = ({
                 )}
               </AnimatePresence>
             </div>
-
-            {/* ── Care Instructions ── */}
             <div className="border-t border-gray-100">
               <button
                 onClick={() =>
-                  setActiveAccordion(
-                    activeAccordion === "care" ? null : "care",
-                  )
+                  setActiveAccordion(activeAccordion === "care" ? null : "care")
                 }
                 className="w-full flex items-center justify-between py-8 group text-gray-600 hover:text-black transition-colors"
               >
@@ -778,11 +669,7 @@ const ProductView = ({
                   </span>
                 </div>
                 <Plus
-                  className={`w-4 h-4 text-gray-300 transition-all ${
-                    activeAccordion === "care"
-                      ? "rotate-45"
-                      : "group-hover:rotate-90"
-                  }`}
+                  className={`w-4 h-4 text-gray-300 transition-all ${activeAccordion === "care" ? "rotate-45" : "group-hover:rotate-90"}`}
                 />
               </button>
               <AnimatePresence>
@@ -794,10 +681,10 @@ const ProductView = ({
                     className="overflow-hidden"
                   >
                     <div className="pb-8 space-y-5">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
                         Designed As Wearable Art — Since 2018
                       </p>
-                      <div className="grid grid-cols-5 gap-3 py-4 border border-gray-100 rounded-sm px-4 mb-4">
+                      <div className="grid grid-cols-5 gap-3 py-4 border border-gray-100 px-4">
                         {[
                           { icon: "🧤", label: "Handwash\nCold" },
                           { icon: "🫧", label: "Machine Wash\nCold" },
@@ -805,7 +692,10 @@ const ProductView = ({
                           { icon: "⊘", label: "Do Not\nTumble Dry" },
                           { icon: "♨️", label: "Iron Inside\nOut (Low)" },
                         ].map((item, i) => (
-                          <div key={i} className="flex flex-col items-center gap-2 text-center">
+                          <div
+                            key={i}
+                            className="flex flex-col items-center gap-2 text-center"
+                          >
                             <span className="text-xl">{item.icon}</span>
                             <p className="text-[8px] font-black uppercase tracking-wider text-gray-400 whitespace-pre-line leading-tight">
                               {item.label}
@@ -813,7 +703,7 @@ const ProductView = ({
                           </div>
                         ))}
                       </div>
-                      <p className="text-[11px] leading-relaxed text-gray-500 uppercase font-medium">
+                      <p className="text-[11px] text-gray-500 uppercase font-medium">
                         Made in Bangladesh · Designed by Felicite™
                       </p>
                     </div>
@@ -821,8 +711,6 @@ const ProductView = ({
                 )}
               </AnimatePresence>
             </div>
-
-            {/* ── Returns & Exchange ── */}
             <div className="border-t border-gray-100">
               <button
                 onClick={() =>
@@ -839,11 +727,7 @@ const ProductView = ({
                   </span>
                 </div>
                 <Plus
-                  className={`w-4 h-4 text-gray-300 transition-all ${
-                    activeAccordion === "returns"
-                      ? "rotate-45"
-                      : "group-hover:rotate-90"
-                  }`}
+                  className={`w-4 h-4 text-gray-300 transition-all ${activeAccordion === "returns" ? "rotate-45" : "group-hover:rotate-90"}`}
                 />
               </button>
               <AnimatePresence>
@@ -855,14 +739,15 @@ const ProductView = ({
                     className="overflow-hidden"
                   >
                     <div className="pb-8 space-y-4">
-                      <p className="text-[11px] leading-relaxed text-gray-500 uppercase font-medium">
+                      <p className="text-[11px] text-gray-500 uppercase font-medium">
                         Returns accepted only if tag is intact.
                       </p>
-                      <p className="text-[11px] leading-relaxed font-black uppercase text-black">
+                      <p className="text-[11px] font-black uppercase text-black">
                         Printed items are not eligible for return or exchange.
                       </p>
-                      <p className="text-[11px] leading-relaxed text-gray-500 uppercase font-medium">
-                        Items must be in original unused condition with all tags attached. Return requests must be initiated within 7 days of delivery.
+                      <p className="text-[11px] text-gray-500 uppercase font-medium">
+                        Items must be in original unused condition. Return
+                        requests must be initiated within 7 days of delivery.
                       </p>
                     </div>
                   </motion.div>
@@ -1337,8 +1222,6 @@ const AdminDashboard = ({
   onAddProduct,
   onDeleteProduct,
   onUpdateCategories,
-  showcaseMap,
-  onUpdateShowcase,
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState("orders");
@@ -1968,11 +1851,6 @@ const AdminDashboard = ({
                   label: "CATEGORIES",
                   icon: <Layers className="w-4 h-4" />,
                 },
-                {
-                  id: "showcase",
-                  label: "SHOWCASE",
-                  icon: <Flame className="w-4 h-4" />,
-                },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -2029,9 +1907,7 @@ const AdminDashboard = ({
                   ? "Inventory"
                   : activeTab === "categories"
                     ? "Distinction Classes"
-                    : activeTab === "showcase"
-                      ? "Showcase Manager"
-                      : "JSON Portal"}
+                    : "JSON Portal"}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -4145,7 +4021,6 @@ export default function App() {
   const [orders, setOrders] = useState([]);
   const [adminEmail, setAdminEmail] = useState("");
   const [productsList, setProductsList] = useState([]);
-  const [showcaseMap, setShowcaseMap] = useState<Record<string, string[]>>({});
   const pageHistoryRef = useRef(["home"]);
 
   useEffect(() => {
@@ -4254,32 +4129,11 @@ export default function App() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // Fetch showcase assignments
-  const fetchShowcases = async () => {
-    const { data, error } = await supabase.from("showcases").select("section, product_id").order("sort_order");
-    if (!error && data) {
-      const map: Record<string, string[]> = {};
-      for (const row of data) {
-        if (!map[row.section]) map[row.section] = [];
-        map[row.section].push(row.product_id);
-      }
-      setShowcaseMap(map);
-    }
-  };
-
-  useEffect(() => {
-    fetchShowcases();
-    const channel = supabase.channel("showcases-changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "showcases" }, fetchShowcases)
-      .subscribe();
-    return () => supabase.removeChannel(channel);
-  }, []);
-
   useEffect(() => {
     const authorizedEmails = [
       "mimpy124ahon124@gmail.com",
       "feliciteclothing@gmail.com",
-      "one@gmail.com"
+      "one@gmail.com",
     ];
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user;
@@ -4454,16 +4308,6 @@ export default function App() {
         onAddProduct={addOrUpdateProduct}
         onDeleteProduct={deleteProduct}
         onUpdateCategories={handleUpdateCategories}
-        showcaseMap={showcaseMap}
-        onUpdateShowcase={async (section, productId, add) => {
-          if (add) {
-            const currentIds = showcaseMap[section] || [];
-            if (currentIds.length >= 10) { alert("Max 10 products per section."); return; }
-            await supabase.from("showcases").upsert({ section, product_id: productId, sort_order: currentIds.length }, { onConflict: "section,product_id" });
-          } else {
-            await supabase.from("showcases").delete().eq("section", section).eq("product_id", productId);
-          }
-        }}
         onClose={() => setIsAdminMode(false)}
       />
     );
@@ -4591,24 +4435,36 @@ export default function App() {
               onCategorySelect={setSelectedCategory}
               setCurrentPage={navigateTo}
             />
-            <section className="bg-white pb-24">
-              {SHOWCASE_SECTIONS.map((sec) => {
-                const ids = showcaseMap[sec.id] || [];
-                const sectionProducts = ids
-                  .map((id) => productsList.find((p) => p.id === id))
-                  .filter(Boolean)
-                  .slice(0, 10);
-                return (
-                  <ShowcaseCarousel
-                    key={sec.id}
-                    section={sec.id}
-                    products={sectionProducts}
-                    onAddToCart={addToCart}
-                    onProductClick={handleProductClick}
-                  />
-                );
-              })}
-              <div className="mt-16 flex justify-center px-6">
+            <section className="py-24 md:py-32 bg-white px-0">
+              <div className="w-full">
+                <div className="text-center mb-24 space-y-4 px-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
+                    Curated pieces
+                  </p>
+                  <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase">
+                    New Arrivals
+                  </h2>
+                  <div className="w-16 h-1 bg-black mx-auto" />
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1">
+                  {productsList
+                    .filter((p) => p.isNewArrival)
+                    .slice(0, 20)
+                    .map((product) => (
+                      <div
+                        key={product.id}
+                        className="border border-gray-50 hover:bg-gray-50 transition-colors"
+                      >
+                        <ProductCard
+                          product={product}
+                          onAddToCart={addToCart}
+                          onClick={handleProductClick}
+                        />
+                      </div>
+                    ))}
+                </div>
+              </div>
+              <div className="mt-32 flex justify-center px-6">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
