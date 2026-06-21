@@ -1915,47 +1915,55 @@ const AdminDashboard = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-[450] w-72 bg-black text-white p-8 flex flex-col justify-between transition-transform duration-300 transform md:relative md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-[450] w-72 bg-white/80 backdrop-blur-xl border-r border-gray-100 p-8 flex flex-col justify-between transition-transform duration-500 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full shadow-none"}`}
       >
         <div className="space-y-12">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-black tracking-widest uppercase">
-              Console
-            </h2>
-            <X
-              className="w-6 h-6 cursor-pointer md:hidden"
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-sm font-black tracking-[0.2em] uppercase text-black">
+                Console
+              </h2>
+            </div>
+            <button 
               onClick={() => setIsSidebarOpen(false)}
-            />
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
           </div>
-          <div className="space-y-6">
-            <div className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-black">
+
+          <div className="space-y-8">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black px-2">
               Management
             </div>
-            <nav className="space-y-4">
+            <nav className="space-y-2">
               {[
                 {
                   id: "orders",
-                  label: "ORDERS",
+                  label: "Live Orders",
                   icon: <Package className="w-4 h-4" />,
                 },
                 {
                   id: "inventory",
-                  label: "INVENTORY",
+                  label: "Inventory",
                   icon: <ShoppingBag className="w-4 h-4" />,
                 },
                 {
                   id: "json",
-                  label: "JSON PORTAL",
+                  label: "JSON Portal",
                   icon: <ExternalLink className="w-4 h-4" />,
                 },
                 {
                   id: "categories",
-                  label: "CATEGORIES",
+                  label: "Classes",
                   icon: <Layers className="w-4 h-4" />,
                 },
                 {
                   id: "showcase",
-                  label: "SHOWCASE",
+                  label: "Showcase",
                   icon: <Flame className="w-4 h-4" />,
                 },
               ].map((item) => (
@@ -1965,67 +1973,82 @@ const AdminDashboard = ({
                     setActiveTab(item.id);
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center gap-4 w-full text-left py-2 text-sm font-bold transition-all ${activeTab === item.id ? "border-r-4 border-white pr-4 text-white" : "text-gray-500 hover:text-white"}`}
+                  className={`flex items-center gap-4 w-full text-left px-4 py-3.5 text-[11px] font-bold tracking-wider uppercase rounded-xl transition-all duration-300 ${
+                    activeTab === item.id 
+                      ? "bg-black text-white shadow-lg shadow-black/10 translate-x-1" 
+                      : "text-gray-400 hover:text-black hover:bg-gray-50 hover:translate-x-1"
+                  }`}
                 >
-                  {item.icon}
+                  <span className={activeTab === item.id ? "text-white" : "text-gray-400"}>
+                    {item.icon}
+                  </span>
                   {item.label}
                 </button>
               ))}
             </nav>
           </div>
         </div>
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-4 bg-white/5 rounded-lg border border-white/10">
-            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-black font-black text-xs">
-              A
+
+        <div className="space-y-6">
+          <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center text-black font-black text-xs">
+                {adminEmail?.charAt(0).toUpperCase()}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-[10px] font-black uppercase truncate text-black">
+                  {adminEmail}
+                </p>
+                <p className="text-[8px] text-gray-400 uppercase tracking-widest font-bold">
+                  Administrator
+                </p>
+              </div>
             </div>
-            <div className="overflow-hidden">
-              <p className="text-[10px] font-black uppercase truncate">
-                {adminEmail}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-widest">
-                Administrator
-              </p>
-            </div>
+            <div className="h-px bg-gray-100 w-full mb-3" />
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="w-full py-3 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center gap-2"
+            >
+              Terminate Session
+            </button>
           </div>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="w-full py-4 border border-white/20 text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all"
-          >
-            TERMINATE SESSION
-          </button>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="sticky top-0 z-[10] bg-gray-50/95 backdrop-blur-md p-6 md:px-12 md:py-8 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="flex-1 overflow-y-auto bg-gray-50/50">
+        <div className="sticky top-0 z-[100] bg-white/70 backdrop-blur-xl px-6 py-4 md:px-12 md:py-6 border-b border-gray-100 flex items-center justify-between">
+          <div className="flex items-center gap-6">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 md:hidden"
+              className="p-2 -ml-2 md:hidden hover:bg-gray-100 rounded-full transition-colors"
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">
-              {activeTab === "orders"
-                ? "Live Orders"
-                : activeTab === "inventory"
-                  ? "Inventory"
-                  : activeTab === "categories"
-                    ? "Distinction Classes"
-                    : activeTab === "showcase"
-                      ? "Showcase Manager"
-                      : "JSON Portal"}
-            </h1>
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-0.5">
+                Overview
+              </p>
+              <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black">
+                {activeTab === "orders"
+                  ? "Live Orders"
+                  : activeTab === "inventory"
+                    ? "Inventory"
+                    : activeTab === "categories"
+                      ? "Distinction Classes"
+                      : activeTab === "showcase"
+                        ? "Showcase Manager"
+                        : "JSON Portal"}
+              </h1>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {activeTab === "inventory" && (
               <button
                 onClick={handleOpenAddModal}
-                className="bg-black text-white p-3 md:px-6 md:py-3 rounded-full md:rounded-none flex items-center gap-2"
+                className="bg-black text-white px-4 py-2.5 md:px-8 md:py-4 rounded-xl flex items-center gap-3 shadow-xl shadow-black/10 hover:opacity-90 transition-all hover:-translate-y-0.5 active:translate-y-0"
               >
-                <Plus className="w-5 h-5 md:w-3 md:h-3" />
+                <Plus className="w-5 h-5 md:w-4 md:h-4" />
                 <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em]">
                   Insert Article
                 </span>
@@ -2033,10 +2056,10 @@ const AdminDashboard = ({
             )}
             <button
               onClick={onClose}
-              className="p-3 md:px-6 md:py-3 bg-white border border-gray-200 rounded-full md:rounded-none flex items-center gap-2 hover:bg-gray-50"
+              className="px-4 py-2.5 md:px-8 md:py-4 bg-white border border-gray-100 rounded-xl flex items-center gap-3 shadow-sm hover:bg-gray-50 transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
-              <ExternalLink className="w-5 h-5 md:w-3 md:h-3" />
-              <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em]">
+              <ExternalLink className="w-5 h-5 md:w-4 md:h-4 text-gray-400" />
+              <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
                 Exit
               </span>
             </button>
@@ -2046,60 +2069,72 @@ const AdminDashboard = ({
         <div className="p-6 md:p-12 pb-32">
           {activeTab === "orders" && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-12">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 mb-16">
                 {[
                   {
                     label: "Cycle Volume",
                     value: orders.length,
                     icon: (
-                      <Package className="w-8 h-8 md:w-10 md:h-10 text-gray-50" />
+                      <Package className="w-6 h-6 text-black" />
                     ),
-                    color: "",
+                    trend: "Live Orders",
+                    color: "bg-white",
                   },
                   {
                     label: "Action Required",
                     value: orders.filter((o) => o.status === "pending").length,
                     icon: (
-                      <Clock className="w-8 h-8 md:w-10 md:h-10 text-gray-50" />
+                      <Clock className="w-6 h-6 text-orange-500" />
                     ),
-                    color: "text-orange-500",
+                    trend: "Pending Auth",
+                    color: "bg-white",
+                    valueColor: "text-orange-500",
                   },
                   {
                     label: "Net Liquidity",
-                    value: `৳ ${orders.reduce((acc, o) => (o.status !== "cancelled" ? acc + (o.grand_total || o.total_amount || 0) : acc), 0).toLocaleString()}`,
+                    value: `৳${orders.reduce((acc, o) => (o.status !== "cancelled" ? acc + (o.grand_total || o.total_amount || 0) : acc), 0).toLocaleString()}`,
                     icon: (
-                      <CheckCircle className="w-8 h-8 md:w-10 md:h-10 text-gray-50" />
+                      <TrendingUp className="w-6 h-6 text-green-500" />
                     ),
-                    color: "text-green-500",
+                    trend: "Total Revenue",
+                    color: "bg-white",
+                    valueColor: "text-green-500",
                   },
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className="bg-white p-6 md:p-8 border border-gray-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500"
+                    className="bg-white p-8 rounded-[2rem] border border-gray-100 flex flex-col justify-between group hover:shadow-2xl hover:shadow-black/5 transition-all duration-500 hover:-translate-y-1"
                   >
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                        {stat.icon}
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">
+                        {stat.trend}
+                      </span>
+                    </div>
                     <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
                         {stat.label}
                       </p>
                       <p
-                        className={`text-2xl md:text-3xl font-black ${stat.color}`}
+                        className={`text-3xl md:text-4xl font-black tracking-tight ${stat.valueColor || "text-black"}`}
                       >
                         {stat.value}
                       </p>
                     </div>
-                    {stat.icon}
                   </div>
                 ))}
               </div>
 
-              <div className="hidden md:block bg-white border border-gray-100 rounded-sm">
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
+                <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-20">
                   <div className="flex gap-4">
                     {["all", "pending", "confirmed", "shipped"].map((f) => (
                       <button
                         key={f}
                         onClick={() => setOrderFilter(f)}
-                        className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${orderFilter === f ? "bg-black text-white border-black" : "text-gray-400 border-gray-100 hover:border-black hover:text-black"}`}
+                        className={`text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl border transition-all duration-300 ${orderFilter === f ? "bg-black text-white border-black shadow-lg shadow-black/10" : "text-gray-400 border-gray-100 hover:border-black hover:text-black"}`}
                       >
                         {f}
                       </button>
@@ -2107,138 +2142,100 @@ const AdminDashboard = ({
                   </div>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-gray-100 text-[10px] uppercase font-black tracking-[0.2em] text-gray-400">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-gray-50/50 text-[10px] uppercase font-black tracking-[0.2em] text-gray-400">
                       <tr>
-                        <th className="px-8 py-6">ID & Date</th>
-                        <th className="px-8 py-6">Customer</th>
-                        <th className="px-8 py-6">Items</th>
-                        <th className="px-8 py-6">Total</th>
-                        <th className="px-8 py-6">Status</th>
+                        <th className="px-8 py-6 font-black">Manifest ID</th>
+                        <th className="px-8 py-6 font-black">Client Details</th>
+                        <th className="px-8 py-6 font-black">Inventory</th>
+                        <th className="px-8 py-6 font-black">Liquidity</th>
+                        <th className="px-8 py-6 font-black">Execution</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-gray-50">
                       {filteredOrders.map((order) => (
                         <tr
                           key={order.id}
-                          className="group hover:bg-gray-50 transition-colors"
+                          className="group hover:bg-gray-50/50 transition-colors"
                         >
-                          <td className="px-8 py-6">
-                            <p className="font-black text-xs uppercase">
+                          <td className="px-8 py-8">
+                            <p className="font-mono text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-md inline-block">
+                              #{order.id?.slice(0, 8).toUpperCase()}
+                            </p>
+                            <p className="text-[9px] text-gray-400 font-bold mt-2 uppercase tracking-tighter">
+                              {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </p>
+                          </td>
+                          <td className="px-8 py-8">
+                            <p className="font-black text-xs uppercase text-black">
                               {order.customer_info?.firstName}{" "}
                               {order.customer_info?.lastName}
                             </p>
-                            <p className="text-[10px] text-gray-500 font-bold mt-1">
-                              📱 {order.customer_info?.phone}
-                            </p>
-                            {order.customer_info?.altPhone && (
-                              <p className="text-[10px] text-gray-400 font-bold mt-0.5">
-                                📱 Alt: {order.customer_info.altPhone}
-                              </p>
-                            )}
-                            <div className="mt-2 text-[9px] text-gray-400 font-medium max-w-[200px]">
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-[10px] text-gray-500 font-bold">
+                                📱 {order.customer_info?.phone}
+                              </span>
+                            </div>
+                            <div className="mt-2 text-[10px] text-gray-400 font-medium max-w-[220px] leading-relaxed">
                               {order.customer_info?.address},{" "}
                               {order.customer_info?.city}
                             </div>
-                            {order.customer_info?.designDetails && (
-                              <div className="mt-2 px-2 py-1 bg-yellow-50 border border-yellow-100 text-[9px] font-bold text-yellow-700 max-w-[200px]">
-                                ✏ {order.customer_info.designDetails}
-                              </div>
-                            )}
-                            {order.customer_info?.paymentInfo && (
-                              <div className="mt-1 px-2 py-1 bg-blue-50 border border-blue-100 text-[9px] font-black text-blue-700 font-mono uppercase">
-                                TXN: {order.customer_info.paymentInfo}
-                              </div>
-                            )}
                           </td>
-                          <td className="px-8 py-6">
-                            <div className="space-y-1">
+                          <td className="px-8 py-8">
+                            <div className="space-y-3">
                               {order.items?.map((item, idx) => (
-                                <div key={idx} className="space-y-0.5">
-                                  <p className="text-[10px] font-bold text-gray-700">
-                                    {item.name} [{item.selectedSize}] x
-                                    {item.quantity}
-                                  </p>
-                                  {item.selectedColor && (
-                                    <div className="flex items-center gap-1.5">
-                                      <span
-                                        className="inline-block w-4 h-4 rounded border border-gray-300 flex-shrink-0"
-                                        style={{
-                                          backgroundColor: item.selectedColor,
-                                        }}
-                                      />
-                                      <span className="text-[9px] font-mono text-gray-500">
-                                        {item.selectedColor}
-                                      </span>
-                                    </div>
-                                  )}
+                                <div key={idx} className="flex items-center gap-3">
+                                  <div className="w-10 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                                    <img src={item.image} className="w-full h-full object-cover" alt="" />
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] font-black text-black uppercase">
+                                      {item.name}
+                                    </p>
+                                    <p className="text-[9px] text-gray-400 font-bold uppercase">
+                                      {item.selectedSize} / {item.quantity} UNIT
+                                    </p>
+                                  </div>
                                 </div>
                               ))}
                             </div>
-                            {order.add_ons && order.add_ons.length > 0 && (
-                              <div className="mt-3 space-y-1">
-                                <p className="text-[8px] font-black uppercase tracking-widest text-purple-400 mb-1">
-                                  🎁 Gift Add-Ons
-                                </p>
-                                {order.add_ons.map((addon, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex items-center gap-2 px-2 py-1 bg-purple-50 border border-purple-100 rounded"
-                                  >
-                                    <span className="text-sm">
-                                      {addon.emoji}
-                                    </span>
-                                    <div>
-                                      <p className="text-[9px] font-black text-purple-700 uppercase">
-                                        {addon.label}
-                                      </p>
-                                      <p className="text-[8px] text-purple-500 font-bold">
-                                        +৳{addon.price}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
                           </td>
-                          <td className="px-8 py-6">
-                            <p className="font-black text-sm">
+                          <td className="px-8 py-8">
+                            <p className="font-black text-sm text-black">
                               ৳
                               {order.grand_total?.toLocaleString() ||
                                 order.total_amount?.toLocaleString()}
                             </p>
-                            <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">
-                              Delivery: ৳{order.delivery_charge || 0}
-                            </p>
-                            {order.add_ons_total > 0 && (
-                              <p className="text-[9px] text-purple-500 font-bold uppercase mt-0.5">
-                                Gift Extras: +৳{order.add_ons_total}
-                              </p>
-                            )}
-                            {order.discount_amount > 0 && (
-                              <p className="text-[9px] text-green-500 font-bold uppercase mt-0.5">
-                                Discount: -৳
-                                {order.discount_amount?.toLocaleString()}
-                              </p>
-                            )}
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {order.add_ons_total > 0 && (
+                                <span className="px-2 py-0.5 bg-purple-50 text-purple-600 text-[8px] font-black uppercase rounded-md">
+                                  Gift Included
+                                </span>
+                              )}
+                              {order.payment_method === "WhatsApp" && (
+                                <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[8px] font-black uppercase rounded-md">
+                                  WhatsApp Order
+                                </span>
+                              )}
+                            </div>
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-8 py-8">
                             <div className="flex items-center gap-4">
                               <select
                                 value={order.status}
                                 onChange={(e) =>
                                   onUpdateStatus(order.id, e.target.value)
                                 }
-                                className={`bg-transparent border-b-2 text-[10px] uppercase font-black p-1 outline-none cursor-pointer ${
+                                className={`bg-white border border-gray-100 rounded-xl text-[9px] uppercase font-black px-4 py-2.5 outline-none cursor-pointer shadow-sm transition-all focus:border-black ${
                                   order.status === "pending"
-                                    ? "border-orange-500 text-orange-600"
+                                    ? "text-orange-500"
                                     : order.status === "confirmed"
-                                      ? "border-blue-500 text-blue-600"
+                                      ? "text-blue-500"
                                       : order.status === "shipped"
-                                        ? "border-purple-500 text-purple-600"
+                                        ? "text-purple-500"
                                         : order.status === "delivered"
-                                          ? "border-green-500 text-green-600"
-                                          : "border-gray-300 text-gray-400"
+                                          ? "text-green-500"
+                                          : "text-gray-400"
                                 }`}
                               >
                                 <option value="pending">Authorize</option>
@@ -2268,8 +2265,13 @@ const AdminDashboard = ({
                   </table>
                 </div>
                 {filteredOrders.length === 0 && (
-                  <div className="p-24 text-center text-gray-300 text-[10px] font-black uppercase tracking-[0.5em]">
-                    System Idle — No Data
+                  <div className="p-32 text-center">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Search className="w-6 h-6 text-gray-200" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-300">
+                      System Idle — No Data
+                    </p>
                   </div>
                 )}
               </div>
