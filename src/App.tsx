@@ -1333,8 +1333,6 @@ const AdminDashboard = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [orderFilter, setOrderFilter] = useState("all");
   const [newCatName, setNewCatName] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState("");
 
   const [productForm, setProductForm] = useState({
     name: "",
@@ -1351,50 +1349,6 @@ const AdminDashboard = ({
 
   const [newColor, setNewColor] = useState("#000000");
   const [newGalleryUrl, setNewGalleryUrl] = useState("");
-
-  const uploadImage = async (file, folder) => {
-    const ext = file.name.split(".").pop();
-    const fileName = `${folder}/${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2)}.${ext}`;
-    const { data, error } = await supabase.storage
-      .from("product-images")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
-    if (error) {
-      console.error("Upload error:", error);
-      return null;
-    }
-    const { data: urlData } = supabase.storage
-      .from("product-images")
-      .getPublicUrl(data.path);
-    return urlData.publicUrl;
-  };
-
-  const handlePrimaryImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsUploading(true);
-    setUploadProgress("Uploading primary image...");
-    const url = await uploadImage(file, "primary");
-    if (url) setProductForm((prev) => ({ ...prev, image: url }));
-    setIsUploading(false);
-    setUploadProgress("");
-  };
-
-  const handleGalleryImageUpload = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    setIsUploading(true);
-    setUploadProgress(`Uploading ${files.length} image(s)...`);
-    const urls = await Promise.all(files.map((f) => uploadImage(f, "gallery")));
-    const validUrls = urls.filter(Boolean);
-    setProductForm((prev) => ({
-      ...prev,
-      gallery: [...prev.gallery, ...validUrls],
-    }));
-    setIsUploading(false);
-    setUploadProgress("");
-  };
 
   const handleAddGalleryUrl = () => {
     if (newGalleryUrl.trim()) {
@@ -1603,54 +1557,8 @@ const AdminDashboard = ({
                     </div>
                     <div className="space-y-4">
                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                        Primary Image
+                        Primary Image URL
                       </label>
-                      <label
-                        className={`flex items-center justify-center gap-3 border-2 border-dashed py-6 cursor-pointer transition-colors ${
-                          isUploading
-                            ? "border-blue-300 bg-blue-50"
-                            : "border-gray-200 hover:border-black"
-                        }`}
-                      >
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handlePrimaryImageUpload}
-                          disabled={isUploading}
-                        />
-                        {isUploading && uploadProgress.includes("primary") ? (
-                          <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 animate-pulse">
-                            {uploadProgress}
-                          </span>
-                        ) : (
-                          <>
-                            <svg
-                              className="w-4 h-4 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                              />
-                            </svg>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                              Upload from device
-                            </span>
-                          </>
-                        )}
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-px bg-gray-100" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-300">
-                          or paste URL
-                        </span>
-                        <div className="flex-1 h-px bg-gray-100" />
-                      </div>
                       <input
                         type="text"
                         placeholder="https://..."
@@ -1711,50 +1619,10 @@ const AdminDashboard = ({
                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                         Gallery Images
                       </label>
-                      <label
-                        className={`flex items-center justify-center gap-3 border-2 border-dashed py-5 cursor-pointer transition-colors ${
-                          isUploading && uploadProgress.includes("image(s)")
-                            ? "border-blue-300 bg-blue-50"
-                            : "border-gray-200 hover:border-black"
-                        }`}
-                      >
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="hidden"
-                          onChange={handleGalleryImageUpload}
-                          disabled={isUploading}
-                        />
-                        {isUploading && uploadProgress.includes("image(s)") ? (
-                          <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 animate-pulse">
-                            {uploadProgress}
-                          </span>
-                        ) : (
-                          <>
-                            <svg
-                              className="w-4 h-4 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                              />
-                            </svg>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                              Upload multiple images
-                            </span>
-                          </>
-                        )}
-                      </label>
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          placeholder="OR PASTE GALLERY URL"
+                          placeholder="PASTE GALLERY URL"
                           className="flex-1 border-b border-gray-100 py-2 text-xs outline-none focus:border-black font-mono uppercase"
                           value={newGalleryUrl}
                           onChange={(e) => setNewGalleryUrl(e.target.value)}
@@ -1890,14 +1758,11 @@ const AdminDashboard = ({
                 <div className="flex flex-col md:flex-row gap-4 pt-4">
                   <button
                     type="submit"
-                    disabled={isUploading}
-                    className="flex-1 bg-black text-white py-6 text-[10px] font-black uppercase tracking-[0.4em] hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex-1 bg-black text-white py-6 text-[10px] font-black uppercase tracking-[0.4em] hover:opacity-90 transition-opacity"
                   >
-                    {isUploading
-                      ? uploadProgress || "Uploading..."
-                      : editingProduct
-                        ? "Commit Changes"
-                        : "Initialize Article"}
+                    {editingProduct
+                      ? "Commit Changes"
+                      : "Initialize Article"}
                   </button>
                   <button
                     type="button"
