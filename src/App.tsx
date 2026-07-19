@@ -3614,11 +3614,11 @@ const CheckoutModal = ({
                   </div>
                   <div className="bg-red-50 border border-red-100 rounded-xl p-4 space-y-2">
                     <p className="text-[11px] font-black text-red-700 uppercase leading-tight">
-                      ⚠ Advance delivery charge is mandatory to confirm order.
+                      ⚠ Advance charge is mandatory to confirm your order.
                     </p>
                     <p className="text-[10px] font-bold text-red-600 leading-relaxed">
-                      Send <strong>৳80</strong> (Inside Dhaka) or{" "}
-                      <strong>৳150</strong> (Outside Dhaka) to{" "}
+                      Send <strong>৳200</strong>{" "}
+                        to{" "}
                       <strong>01974004221</strong> via bKash / Nagad / Rocket.
                     </p>
                   </div>
