@@ -2036,15 +2036,30 @@ const AdminDashboard = ({
                               {order.customer_info?.firstName}{" "}
                               {order.customer_info?.lastName}
                             </p>
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex flex-col gap-1 mt-2">
                               <span className="text-[10px] text-gray-500 font-bold">
                                 📱 {order.customer_info?.phone}
                               </span>
+                              {order.customer_info?.altPhone && (
+                                <span className="text-[10px] text-gray-400 font-bold">
+                                  📱 Alt: {order.customer_info.altPhone}
+                                </span>
+                              )}
                             </div>
                             <div className="mt-2 text-[10px] text-gray-400 font-medium max-w-[220px] leading-relaxed">
                               {order.customer_info?.address},{" "}
                               {order.customer_info?.city}
                             </div>
+                            {order.customer_info?.paymentInfo && (
+                              <p className="text-[10px] font-black font-mono text-blue-600 mt-2 bg-blue-50/50 px-2 py-1 rounded inline-block border border-blue-100">
+                                TXN ID: {order.customer_info.paymentInfo}
+                              </p>
+                            )}
+                            {order.customer_info?.designDetails && (
+                              <p className="text-[10px] text-yellow-700 bg-yellow-50 px-2 py-1 mt-2 rounded border border-yellow-100 max-w-[220px]">
+                                ✏ {order.customer_info.designDetails}
+                              </p>
+                            )}
                           </td>
                           <td className="px-8 py-8">
                             <div className="space-y-3">
