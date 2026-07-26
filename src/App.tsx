@@ -85,7 +85,7 @@ export function optimizeImageUrl(url: string, width?: number): string {
 
   if (url.includes("res.cloudinary.com") && url.includes("/image/upload")) {
     const targetWidth = width ? `w_${width}` : "w_600";
-    const transformation = `f_auto,q_30,${targetWidth}`;
+    const transformation = `f_auto,q_60,${targetWidth}`;
 
     const uploadIndex = url.indexOf("/image/upload");
     if (uploadIndex !== -1) {
