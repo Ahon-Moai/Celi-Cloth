@@ -80,6 +80,31 @@ function getMetaCookie(name) {
   return m ? m[2] : undefined;
 }
 
+export function optimizeImageUrl(url: string, width?: number): string {
+  if (!url) return "";
+
+  if (url.includes("res.cloudinary.com") && url.includes("/image/upload")) {
+    const targetWidth = width ? `w_${width}` : "w_600";
+    const transformation = `f_auto,q_30,${targetWidth}`;
+
+    const uploadIndex = url.indexOf("/image/upload");
+    if (uploadIndex !== -1) {
+      const beforeUpload = url.substring(0, uploadIndex + "/image/upload".length);
+      const afterUpload = url.substring(uploadIndex + "/image/upload".length);
+
+      if (afterUpload.startsWith("/f_auto")) {
+        const parts = afterUpload.split("/");
+        parts[1] = transformation;
+        return beforeUpload + parts.join("/");
+      } else {
+        return beforeUpload + "/" + transformation + afterUpload;
+      }
+    }
+  }
+
+  return url;
+}
+
 async function metaUserData(info = {}) {
   const [ph, em, fn, ln, ct, co] = await Promise.all([
     metaSha256(info.phone?.replace(/\D/g, "")),
@@ -445,7 +470,7 @@ const ProductView = ({
               >
                 {currentSizeChart ? (
                   <img
-                    src={currentSizeChart}
+                    src={optimizeImageUrl(currentSizeChart, 1000)}
                     alt={`${product.category} Size Chart`}
                     className="max-w-full h-auto object-contain"
                   />
@@ -483,7 +508,7 @@ const ProductView = ({
               >
                 {gallery[activeImageIndex] ? (
                   <img
-                    src={gallery[activeImageIndex]}
+                    src={optimizeImageUrl(gallery[activeImageIndex], 800)}
                     alt={product.name}
                     className="w-full h-full object-contain pointer-events-none"
                     draggable={false}
@@ -2596,7 +2621,7 @@ const Hero = ({ setCurrentPage }) => {
   useEffect(() => {
     slides.forEach((slide, i) => {
       const img = new window.Image();
-      img.src = slide.src;
+      img.src = optimizeImageUrl(slide.src, 1200);
       img.onload = () =>
         setFullyLoaded((prev) => {
           const next = [...prev];
@@ -2635,7 +2660,7 @@ const Hero = ({ setCurrentPage }) => {
             style={{ backgroundColor: slides[activeIndex].bg }}
           />
           <img
-            src={slides[activeIndex].src}
+            src={optimizeImageUrl(slides[activeIndex].src, 1200)}
             alt={`Felicite Collection ${activeIndex + 1}`}
             className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
             draggable={false}
@@ -2733,7 +2758,7 @@ const Categories = ({ onCategorySelect, setCurrentPage }) => (
         }}
       >
         <img
-          src={item.src}
+          src={optimizeImageUrl(item.src, 600)}
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           alt={item.label}
         />
@@ -2767,7 +2792,7 @@ const ProductCard = ({ product, onAddToCart, onClick }) => {
           {product.image ? (
             <>
               <img
-                src={product.image}
+                src={optimizeImageUrl(product.image, 450)}
                 alt={product.name}
                 className={`w-full h-full object-contain absolute inset-0 transition-all duration-700 ${
                   isHovered && hasSecondImage
@@ -2778,7 +2803,7 @@ const ProductCard = ({ product, onAddToCart, onClick }) => {
               />
               {hasSecondImage && (
                 <img
-                  src={product.gallery[1]}
+                  src={optimizeImageUrl(product.gallery[1], 450)}
                   alt={`${product.name} alt view`}
                   className={`w-full h-full object-contain absolute inset-0 transition-all duration-700 ${
                     isHovered
@@ -3055,7 +3080,7 @@ const CartDrawer = ({
                     <div className="w-24 h-32 bg-gray-50 flex-shrink-0">
                       {item.image ? (
                         <img
-                          src={item.image}
+                          src={optimizeImageUrl(item.image, 150)}
                           className="w-full h-full object-cover"
                           alt={item.name}
                         />
@@ -3204,6 +3229,14 @@ const CheckoutModal = ({
       setAltPhoneError("Must be 11 digits");
       hasError = true;
     }
+
+    const cleanPhone = formData.phone.replace(/\D/g, "");
+    const cleanAltPhone = formData.altPhone.replace(/\D/g, "");
+    if (!hasError && cleanPhone === cleanAltPhone) {
+      setAltPhoneError("Alternative number must be different from primary number");
+      hasError = true;
+    }
+
     if (hasError) return;
     setLoading(true);
     try {
@@ -3366,6 +3399,10 @@ const CheckoutModal = ({
                           setFormData({ ...formData, city: e.target.value })
                         }
                       />
+                    </div>
+                    <div className="col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-3 text-[10px] text-blue-800 leading-relaxed font-semibold">
+                      <p className="font-bold uppercase tracking-wider mb-1">📱 *Phone Number Instructions:*</p>
+                      <p>Your primary number and alternative number must be different. Your primary number should be whatsapp number so we can send confirmation details &amp; The alternative number should belong to someone who can receive delivery calls on your behalf if you are unreachable.</p>
                     </div>
                     <div className="space-y-1">
                       <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
@@ -3627,14 +3664,21 @@ const CheckoutModal = ({
                       Payment
                     </h3>
                   </div>
-                  <div className="bg-red-50 border border-red-100 rounded-xl p-4 space-y-2">
-                    <p className="text-[11px] font-black text-red-700 uppercase leading-tight">
-                      ⚠ Advance charge is mandatory to confirm your order.
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3 text-red-700 leading-relaxed">
+                    <p className="text-[11px] font-black uppercase">
+                      *Advance payment of ৳250 is required to confirm your order.*
                     </p>
-                    <p className="text-[10px] font-bold text-red-600 leading-relaxed">
-                      Send <strong>৳200</strong>{" "}
-                        to{" "}
-                      <strong>01974004221</strong> via bKash / Nagad / Rocket.
+                    <p className="text-[11px] font-bold">
+                      Send Money via *bKash / Nagad / Rocket* to *01974004221*.
+                    </p>
+                    <p className="text-[10px] text-red-600">
+                      Orders without advance payment will not be confirmed. Please provide the correct payment details and TRX ID. Fake or incorrect information will result in order cancellation.
+                    </p>
+                    <p className="text-[10px] font-black uppercase pt-1 border-t border-red-100">
+                      *Please verify your size before confirmation.*
+                    </p>
+                    <p className="text-[10px] text-red-600">
+                      Exchange is available only for *non-printed products* with the original tag intact and the product in unused condition.
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-4 space-y-3">
@@ -3718,7 +3762,7 @@ const CheckoutModal = ({
                         <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100 relative">
                           {item.image && (
                             <img
-                              src={item.image}
+                              src={optimizeImageUrl(item.image, 150)}
                               className="w-full h-full object-cover"
                               alt={item.name}
                             />
@@ -3959,7 +4003,7 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }) => {
                             <div className="aspect-[4/5] bg-gray-50 overflow-hidden">
                               {p.image ? (
                                 <img
-                                  src={p.image}
+                                  src={optimizeImageUrl(p.image, 300)}
                                   alt={p.name}
                                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                 />
