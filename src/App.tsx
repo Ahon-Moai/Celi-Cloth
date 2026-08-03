@@ -102,6 +102,22 @@ export function optimizeImageUrl(url: string, width?: number): string {
     }
   }
 
+  if (url.includes("ik.imagekit.io")) {
+    const targetWidth = width ? `w-${width}` : "w-600";
+    const transformation = `tr=${targetWidth},q-60`;
+    try {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set("tr", `${targetWidth},q-60`);
+      return urlObj.toString();
+    } catch (e) {
+      if (url.includes("?")) {
+        return `${url}&${transformation}`;
+      } else {
+        return `${url}?${transformation}`;
+      }
+    }
+  }
+
   return url;
 }
 
@@ -2602,15 +2618,15 @@ const AdminDashboard = ({
 const Hero = ({ setCurrentPage }) => {
   const slides = [
     {
-      src: "https://res.cloudinary.com/deyatjand/image/upload/f_auto,q_auto:good,w_1400/v1778565273/banner_2_lhf4wl.webp",
+      src: "https://ik.imagekit.io/t1q0n1ovm/banner%202.png?updatedAt=1785749082710",
       bg: "#111110",
     },
     {
-      src: "https://res.cloudinary.com/deyatjand/image/upload/f_auto,q_auto:good,w_1400/v1778565271/banner_1_lajlng.webp",
+      src: "https://ik.imagekit.io/t1q0n1ovm/banner%201.png?updatedAt=1785749085751",
       bg: "#131210",
     },
     {
-      src: "https://res.cloudinary.com/deyatjand/image/upload/f_auto,q_auto:good,w_1400/v1778565261/banner_3_oaayvx.webp",
+      src: "https://ik.imagekit.io/t1q0n1ovm/banner%203(1).png?updatedAt=1785749087019",
       bg: "#101113",
     },
   ];
