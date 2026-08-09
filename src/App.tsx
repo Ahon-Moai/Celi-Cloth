@@ -1373,6 +1373,7 @@ const AdminDashboard = ({
   const [jsonInput, setJsonInput] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [orderFilter, setOrderFilter] = useState("all");
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
   const [newCatName, setNewCatName] = useState("");
 
   const [productForm, setProductForm] = useState({
@@ -1476,8 +1477,48 @@ const AdminDashboard = ({
   };
 
   const filteredOrders = orders.filter((o) => {
-    if (orderFilter === "all") return true;
-    return o.status === orderFilter;
+    const matchesStatus = orderFilter === "all" || o.status === orderFilter;
+    if (!matchesStatus) return false;
+
+    const query = orderSearchQuery.trim().toLowerCase();
+    if (!query) return true;
+
+    const orderId = (o.id || "").toLowerCase();
+    const firstName = (o.customer_info?.firstName || "").toLowerCase();
+    const lastName = (o.customer_info?.lastName || "").toLowerCase();
+    const fullName = `${firstName} ${lastName}`;
+    const phone = (o.customer_info?.phone || "").toLowerCase();
+    const altPhone = (o.customer_info?.altPhone || "").toLowerCase();
+    const address = (o.customer_info?.address || "").toLowerCase();
+    const city = (o.customer_info?.city || "").toLowerCase();
+    const paymentInfo = (o.customer_info?.paymentInfo || "").toLowerCase();
+    const designDetails = (o.customer_info?.designDetails || "").toLowerCase();
+
+    const matchesBasic =
+      orderId.includes(query) ||
+      firstName.includes(query) ||
+      lastName.includes(query) ||
+      fullName.includes(query) ||
+      phone.includes(query) ||
+      altPhone.includes(query) ||
+      address.includes(query) ||
+      city.includes(query) ||
+      paymentInfo.includes(query) ||
+      designDetails.includes(query);
+
+    if (matchesBasic) return true;
+
+    const items = o.items || [];
+    return items.some((item) => {
+      const itemName = (item.name || "").toLowerCase();
+      const itemSize = (item.selectedSize || "").toLowerCase();
+      const itemColor = (item.selectedColor || "").toLowerCase();
+      return (
+        itemName.includes(query) ||
+        itemSize.includes(query) ||
+        itemColor.includes(query)
+      );
+    });
   });
 
   const availableSizes = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
@@ -2034,8 +2075,8 @@ const AdminDashboard = ({
               </div>
 
               <div className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
-                <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-20">
-                  <div className="flex gap-4">
+                <div className="p-8 border-b border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-20">
+                  <div className="flex gap-4 flex-wrap">
                     {["all", "pending", "confirmed", "shipped"].map((f) => (
                       <button
                         key={f}
@@ -2045,6 +2086,24 @@ const AdminDashboard = ({
                         {f}
                       </button>
                     ))}
+                  </div>
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 w-full sm:w-80">
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="SEARCH ORDERS..."
+                      value={orderSearchQuery}
+                      onChange={(e) => setOrderSearchQuery(e.target.value)}
+                      className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest placeholder:text-gray-300 w-full"
+                    />
+                    {orderSearchQuery && (
+                      <button
+                        onClick={() => setOrderSearchQuery("")}
+                        className="text-gray-300 hover:text-black transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -2198,6 +2257,24 @@ const AdminDashboard = ({
               </div>
 
               <div className="md:hidden space-y-4">
+                <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm">
+                  <Search className="w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="SEARCH ORDERS..."
+                    value={orderSearchQuery}
+                    onChange={(e) => setOrderSearchQuery(e.target.value)}
+                    className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest placeholder:text-gray-300 w-full"
+                  />
+                  {orderSearchQuery && (
+                    <button
+                      onClick={() => setOrderSearchQuery("")}
+                      className="text-gray-300 hover:text-black"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
                 <div className="flex gap-2 overflow-x-auto pb-4">
                   {["all", "pending", "confirmed", "shipped"].map((f) => (
                     <button
