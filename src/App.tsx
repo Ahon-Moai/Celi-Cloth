@@ -2695,15 +2695,15 @@ const AdminDashboard = ({
 const Hero = ({ setCurrentPage }) => {
   const slides = [
     {
-      src: "https://ik.imagekit.io/t1q0n1ovm/banner%202.png?updatedAt=1785749082710",
+      src: "https://ik.imagekit.io/ecrp2tqh2/banner%202.png",
       bg: "#111110",
     },
     {
-      src: "https://ik.imagekit.io/t1q0n1ovm/banner%201.png?updatedAt=1785749085751",
+      src: "https://ik.imagekit.io/ecrp2tqh2/banner%201.png",
       bg: "#131210",
     },
     {
-      src: "https://ik.imagekit.io/t1q0n1ovm/banner%203(1).png?updatedAt=1785749087019",
+      src: "https://ik.imagekit.io/ecrp2tqh2/banner%203(1).png",
       bg: "#101113",
     },
   ];
@@ -2825,17 +2825,17 @@ const Categories = ({ onCategorySelect, setCurrentPage }) => (
     {[
       {
         cat: "BOXY FIT T-SHIRTS",
-        src: "https://ik.imagekit.io/t1q0n1ovm/basic%20green.png",
+        src: "https://ik.imagekit.io/ecrp2tqh2/basic%20green.png",
         label: "BOXY FIT T-SHIRTS",
       },
       {
         cat: "Hoodies",
-        src: "https://ik.imagekit.io/t1q0n1ovm/WhatsApp%20Image%202026-08-02%20at%2016.31.15.jpeg",
+        src: "https://ik.imagekit.io/ecrp2tqh2/ChatGPT%20Image%20Aug%202,%202026,%2004_25_02%20PM.png",
         label: "Hoodies",
       },
       {
         cat: "Shirts",
-        src: "https://ik.imagekit.io/t1q0n1ovm/ChatGPT%20Image%20Aug%202,%202026,%2004_25_02%20PM.png",
+        src: "https://ik.imagekit.io/ecrp2tqh2/ChatGPT%20Image%20Aug%202,%202026,%2004_25_02%20PM.png",
         label: "Shirts",
       },
     ].map((item, i) => (
