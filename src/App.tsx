@@ -879,16 +879,21 @@ const ProductView = ({
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="pb-8 space-y-4">
-                      <p className="text-[11px] text-gray-500 uppercase font-medium">
-                        Returns accepted only if tag is intact.
+                    <div className="pb-8 space-y-4 text-[11px] text-gray-500 font-medium">
+                      <p>
+                        We want you to love your purchase! To help us process your return or exchange smoothly, please review our policy below:
                       </p>
-                      <p className="text-[11px] font-black uppercase text-black">
-                        Printed items are not eligible for return or exchange.
+                      <p>
+                        <strong className="font-black text-black">Eligibility:</strong> Items must be in their original, unused condition with all original tags attached. Exchange requests must be submitted within 3 days of delivery.
                       </p>
-                      <p className="text-[11px] text-gray-500 uppercase font-medium">
-                        Items must be in original unused condition. Return
-                        requests must be initiated within 7 days of delivery.
+                      <p>
+                        <strong className="font-black text-black">Printed &amp; Custom Items:</strong> Because our printed products are made specifically for you after order confirmation, we only offer exchanges on printed items if they arrive defective. Non-printed items in original condition are fully eligible for exchange.
+                      </p>
+                      <p>
+                        <strong className="font-black text-black">Size Verification:</strong> To avoid unnecessary exchanges, please carefully verify your size using our sizing guide before finalizing your order.
+                      </p>
+                      <p>
+                        <strong className="font-black text-black">Sale Items:</strong> Items purchased on sale are final sale and cannot be returned or exchanged.
                       </p>
                     </div>
                   </motion.div>
@@ -4822,7 +4827,7 @@ export default function App() {
           <InfoPage
             title="Returns & Exchanges"
             onBack={() => navigateTo("home")}
-            content={`Articles must be in original unused condition with tags intact.\n\nEligibility:\nRequests within 7 days of delivery. Sale articles are final sale.\n\nContact us via the contact form to initiate a return.`}
+            content={`We want you to love your purchase! To help us process your return or exchange smoothly, please review our policy below:\n\nEligibility:\nItems must be in their original, unused condition with all original tags attached. Exchange requests must be submitted within 3 days of delivery.\n\nPrinted & Custom Items:\nBecause our printed products are made specifically for you after order confirmation, we only offer exchanges on printed items if they arrive defective. Non-printed items in original condition are fully eligible for exchange.\n\nSize Verification:\nTo avoid unnecessary exchanges, please carefully verify your size using our sizing guide before finalizing your order.\n\nSale Items:\nItems purchased on sale are final sale and cannot be returned or exchanged.`}
           />
         ) : currentPage === "contact" ? (
           <InfoPage
