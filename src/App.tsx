@@ -39,6 +39,18 @@ import {
   Flame,
   TrendingUp,
   Layout,
+  BarChart3,
+  PieChart,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  DollarSign,
+  ShoppingBasket,
+  Percent,
+  MapPin,
+  CreditCard,
+  Users,
+  Activity,
 } from "lucide-react";
 
 import { Product, CartItem, Order } from "./types";
@@ -1356,6 +1368,599 @@ const Navbar = ({
 const validatePhone = (num) => /^\d{11}$/.test(num.replace(/\D/g, ""));
 
 // ─────────────────────────────────────────────
+// AnalyticsDashboard (Advanced Client-Side Stats)
+// ─────────────────────────────────────────────
+const AnalyticsDashboard = ({ orders, productsList }) => {
+  const [timeRange, setTimeRange] = useState("all");
+
+  const filteredOrders = React.useMemo(() => {
+    if (timeRange === "all") return orders;
+    const now = new Date();
+    const cutoff = new Date();
+    if (timeRange === "today") {
+      cutoff.setHours(0, 0, 0, 0);
+    } else if (timeRange === "7d") {
+      cutoff.setDate(now.getDate() - 7);
+    } else if (timeRange === "30d") {
+      cutoff.setDate(now.getDate() - 30);
+    }
+    return orders.filter((o) => new Date(o.created_at) >= cutoff);
+  }, [orders, timeRange]);
+
+  const totalOrdersCount = filteredOrders.length;
+  const validOrders = filteredOrders.filter((o) => o.status !== "cancelled");
+  const cancelledOrdersCount = filteredOrders.filter(
+    (o) => o.status === "cancelled",
+  ).length;
+
+  const grossRevenue = validOrders.reduce(
+    (acc, o) => acc + (o.grand_total || o.total_amount || 0),
+    0,
+  );
+
+  const settledRevenue = validOrders
+    .filter(
+      (o) =>
+        o.status === "delivered" ||
+        o.status === "shipped" ||
+        o.status === "confirmed",
+    )
+    .reduce((acc, o) => acc + (o.grand_total || o.total_amount || 0), 0);
+
+  const aov =
+    validOrders.length > 0 ? Math.round(grossRevenue / validOrders.length) : 0;
+
+  const totalItemsSold = validOrders.reduce((acc, o) => {
+    const items = o.items || [];
+    return acc + items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  }, 0);
+
+  const totalGiftRevenue = validOrders.reduce(
+    (acc, o) => acc + (o.add_ons_total || 0),
+    0,
+  );
+
+  const fulfillmentRate =
+    filteredOrders.length > 0
+      ? Math.round(
+          (filteredOrders.filter(
+            (o) => o.status === "delivered" || o.status === "shipped",
+          ).length /
+            filteredOrders.length) *
+            100,
+        )
+      : 0;
+
+  const statusCounts = React.useMemo(() => {
+    const counts = {
+      pending: 0,
+      confirmed: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+    };
+    filteredOrders.forEach((o) => {
+      const s = o.status || "pending";
+      if (counts[s] !== undefined) counts[s]++;
+      else counts.pending++;
+    });
+    return counts;
+  }, [filteredOrders]);
+
+  const timelineData = React.useMemo(() => {
+    const map = new Map();
+    const sorted = [...filteredOrders].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+
+    sorted.forEach((o) => {
+      if (!o.created_at) return;
+      const d = new Date(o.created_at);
+      const dateStr = d.toLocaleDateString("en-GB", {
+        month: "short",
+        day: "numeric",
+      });
+      const current = map.get(dateStr) || {
+        date: dateStr,
+        revenue: 0,
+        count: 0,
+      };
+      if (o.status !== "cancelled") {
+        current.revenue += o.grand_total || o.total_amount || 0;
+      }
+      current.count += 1;
+      map.set(dateStr, current);
+    });
+
+    const list = Array.from(map.values());
+    return list.slice(-14);
+  }, [filteredOrders]);
+
+  const maxDailyRevenue = Math.max(
+    ...timelineData.map((d) => d.revenue),
+    100,
+  );
+
+  const topProducts = React.useMemo(() => {
+    const prodMap = new Map();
+    validOrders.forEach((o) => {
+      (o.items || []).forEach((item) => {
+        const key = item.id || item.name;
+        const existing = prodMap.get(key) || {
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          unitsSold: 0,
+          revenue: 0,
+        };
+        existing.unitsSold += item.quantity || 1;
+        existing.revenue += (item.price || 0) * (item.quantity || 1);
+        if (!existing.image && item.image) existing.image = item.image;
+        prodMap.set(key, existing);
+      });
+    });
+
+    return Array.from(prodMap.values())
+      .sort((a, b) => b.unitsSold - a.unitsSold)
+      .slice(0, 5);
+  }, [validOrders]);
+
+  const paymentMethodSplit = React.useMemo(() => {
+    let cod = 0;
+    let whatsapp = 0;
+    validOrders.forEach((o) => {
+      if (o.payment_method === "WhatsApp") whatsapp++;
+      else cod++;
+    });
+    return { cod, whatsapp };
+  }, [validOrders]);
+
+  const deliveryZoneSplit = React.useMemo(() => {
+    let inside = 0;
+    let outside = 0;
+    validOrders.forEach((o) => {
+      const city = (o.customer_info?.city || "").toLowerCase();
+      if (city.includes("dhaka")) inside++;
+      else outside++;
+    });
+    return { inside, outside };
+  }, [validOrders]);
+
+  const topCities = React.useMemo(() => {
+    const cityMap = new Map();
+    validOrders.forEach((o) => {
+      let city = (o.customer_info?.city || "Dhaka").trim();
+      city = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+      cityMap.set(city, (cityMap.get(city) || 0) + 1);
+    });
+    return Array.from(cityMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+  }, [validOrders]);
+
+  return (
+    <div className="space-y-12">
+      {/* Header controls */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-black text-white rounded-2xl">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-widest text-black">
+              In-Memory Analytics Overview
+            </h2>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+              Zero Database Calls · Calculated Real-Time from Admin Memory
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+          {[
+            { id: "all", label: "All (100 Orders)" },
+            { id: "30d", label: "30 Days" },
+            { id: "7d", label: "7 Days" },
+            { id: "today", label: "Today" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setTimeRange(item.id)}
+              className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                timeRange === item.id
+                  ? "bg-black text-white shadow-md shadow-black/10"
+                  : "text-gray-400 hover:text-black hover:bg-white"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <span className="p-3 bg-green-50 text-green-600 rounded-2xl">
+              <DollarSign className="w-6 h-6" />
+            </span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-green-600 bg-green-50 px-2.5 py-1 rounded-full">
+              Gross Volume
+            </span>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              Gross Sales Revenue
+            </p>
+            <p className="text-3xl font-black tracking-tight text-black">
+              ৳{grossRevenue.toLocaleString()}
+            </p>
+            <p className="text-[9px] font-bold text-gray-400 mt-2">
+              Settled: ৳{settledRevenue.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <span className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+              <ShoppingBasket className="w-6 h-6" />
+            </span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
+              Sample Capped
+            </span>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              Total Orders Logged
+            </p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-black tracking-tight text-black">
+                {totalOrdersCount}
+              </p>
+              <span className="text-[9px] font-black text-gray-400 uppercase">
+                / 100 max
+              </span>
+            </div>
+            <p className="text-[9px] font-bold text-gray-400 mt-2">
+              Cancelled: {cancelledOrdersCount} orders
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <span className="p-3 bg-purple-50 text-purple-600 rounded-2xl">
+              <Percent className="w-6 h-6" />
+            </span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full">
+              Avg Basket
+            </span>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              Average Order Value (AOV)
+            </p>
+            <p className="text-3xl font-black tracking-tight text-black">
+              ৳{aov.toLocaleString()}
+            </p>
+            <p className="text-[9px] font-bold text-gray-400 mt-2">
+              {totalItemsSold} total items sold
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <span className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+              <Gift className="w-6 h-6" />
+            </span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">
+              Gift Extras
+            </span>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              Gift Add-Ons Revenue
+            </p>
+            <p className="text-3xl font-black tracking-tight text-black">
+              ৳{totalGiftRevenue.toLocaleString()}
+            </p>
+            <p className="text-[9px] font-bold text-gray-400 mt-2">
+              Fulfillment Rate: {fulfillmentRate}%
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Revenue Timeline Chart & Status Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Timeline Visual Chart */}
+        <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-widest text-black">
+                Revenue & Volume Timeline
+              </h3>
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+                Sales trend over distinct order dates
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-[9px] font-black uppercase">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-black inline-block" />
+                <span>Revenue (৳)</span>
+              </div>
+            </div>
+          </div>
+
+          {timelineData.length === 0 ? (
+            <div className="h-64 flex items-center justify-center text-[10px] font-black uppercase text-gray-300">
+              No Timeline Data
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="h-56 flex items-end gap-3 pt-6 pb-2 border-b border-gray-100 px-2">
+                {timelineData.map((d, i) => {
+                  const heightPercent = Math.max(
+                    12,
+                    Math.round((d.revenue / maxDailyRevenue) * 100),
+                  );
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1 flex flex-col items-center h-full justify-end group relative"
+                    >
+                      {/* Tooltip */}
+                      <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[8px] font-mono px-2 py-1 rounded shadow-lg pointer-events-none whitespace-nowrap z-20">
+                        ৳{d.revenue.toLocaleString()} ({d.count} orders)
+                      </div>
+                      <div
+                        style={{ height: `${heightPercent}%` }}
+                        className="w-full bg-black/90 group-hover:bg-blue-600 transition-all rounded-t-lg relative"
+                      >
+                        <div className="absolute -top-4 inset-x-0 text-center text-[8px] font-black text-gray-400 group-hover:text-black">
+                          {d.count}
+                        </div>
+                      </div>
+                      <span className="text-[8px] font-black text-gray-400 uppercase mt-2 truncate w-full text-center">
+                        {d.date}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Order Status Breakdown */}
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-8">
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-widest text-black">
+              Order Status Distribution
+            </h3>
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+              Current execution pipeline
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            {[
+              {
+                id: "pending",
+                label: "Authorize (Pending)",
+                count: statusCounts.pending,
+                color: "bg-orange-500",
+                textColor: "text-orange-500",
+              },
+              {
+                id: "confirmed",
+                label: "Confirmed",
+                count: statusCounts.confirmed,
+                color: "bg-blue-500",
+                textColor: "text-blue-500",
+              },
+              {
+                id: "shipped",
+                label: "Dispatched (Shipped)",
+                count: statusCounts.shipped,
+                color: "bg-purple-500",
+                textColor: "text-purple-500",
+              },
+              {
+                id: "delivered",
+                label: "Liquidated (Delivered)",
+                count: statusCounts.delivered,
+                color: "bg-green-500",
+                textColor: "text-green-500",
+              },
+              {
+                id: "cancelled",
+                label: "Aborted (Cancelled)",
+                count: statusCounts.cancelled,
+                color: "bg-red-400",
+                textColor: "text-red-400",
+              },
+            ].map((st) => {
+              const pct =
+                totalOrdersCount > 0
+                  ? Math.round((st.count / totalOrdersCount) * 100)
+                  : 0;
+              return (
+                <div key={st.id} className="space-y-1.5">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase">
+                    <span className="text-gray-700">{st.label}</span>
+                    <span className={st.textColor}>
+                      {st.count} ({pct}%)
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${st.color} rounded-full transition-all duration-700`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Top Products & Channel Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Top Performing Products */}
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-widest text-black">
+                Top Performing Products
+              </h3>
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+                Ranked by units sold in orders
+              </p>
+            </div>
+            <span className="text-[9px] font-black uppercase text-gray-400">
+              Top 5 Articles
+            </span>
+          </div>
+
+          <div className="divide-y divide-gray-50">
+            {topProducts.length === 0 ? (
+              <p className="text-[10px] font-black uppercase text-gray-300 py-8 text-center">
+                No Sales Recorded
+              </p>
+            ) : (
+              topProducts.map((p, rank) => (
+                <div
+                  key={rank}
+                  className="py-4 flex items-center justify-between gap-4 first:pt-0 last:pb-0"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="w-6 h-6 rounded-full bg-gray-100 text-[10px] font-black flex items-center justify-center text-black">
+                      #{rank + 1}
+                    </span>
+                    <div className="w-10 h-12 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex-shrink-0">
+                      {p.image ? (
+                        <img
+                          src={p.image}
+                          className="w-full h-full object-cover"
+                          alt=""
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black uppercase text-black max-w-[200px] truncate">
+                        {p.name}
+                      </p>
+                      <p className="text-[9px] text-gray-400 font-bold uppercase">
+                        {p.unitsSold} unit{p.unitsSold > 1 ? "s" : ""} sold
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] font-black text-black">
+                      ৳{p.revenue.toLocaleString()}
+                    </p>
+                    <p className="text-[8px] font-bold text-green-600 uppercase">
+                      Revenue
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Channel & Regional Distribution */}
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-8">
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-widest text-black">
+              Channels & Regional Distribution
+            </h3>
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+              Payment & delivery split
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Payment Method */}
+            <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-black" />
+                <h4 className="text-[10px] font-black uppercase tracking-wider text-black">
+                  Payment Channels
+                </h4>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] font-bold uppercase">
+                  <span className="text-gray-500">Website Direct (COD)</span>
+                  <span className="text-black font-black">
+                    {paymentMethodSplit.cod}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[10px] font-bold uppercase">
+                  <span className="text-gray-500">WhatsApp Assisted</span>
+                  <span className="text-green-600 font-black">
+                    {paymentMethodSplit.whatsapp}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery Zone */}
+            <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-black" />
+                <h4 className="text-[10px] font-black uppercase tracking-wider text-black">
+                  Delivery Zones
+                </h4>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] font-bold uppercase">
+                  <span className="text-gray-500">Inside Dhaka (৳80)</span>
+                  <span className="text-black font-black">
+                    {deliveryZoneSplit.inside}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[10px] font-bold uppercase">
+                  <span className="text-gray-500">Outside Dhaka (৳150)</span>
+                  <span className="text-blue-600 font-black">
+                    {deliveryZoneSplit.outside}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Cities List */}
+          <div className="pt-2">
+            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
+              Top Customer Regions
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {topCities.map(([city, count]) => (
+                <span
+                  key={city}
+                  className="px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl text-[9px] font-black uppercase text-black"
+                >
+                  📍 {city} ({count})
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
 // AdminDashboard
 // ─────────────────────────────────────────────
 const AdminDashboard = ({
@@ -1899,6 +2504,11 @@ const AdminDashboard = ({
                   icon: <Package className="w-4 h-4" />,
                 },
                 {
+                  id: "analytics",
+                  label: "Advanced Stats",
+                  icon: <BarChart3 className="w-4 h-4" />,
+                },
+                {
                   id: "inventory",
                   label: "Inventory",
                   icon: <ShoppingBag className="w-4 h-4" />,
@@ -1981,16 +2591,18 @@ const AdminDashboard = ({
               <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-0.5">
                 Overview
               </p>
-              <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black">
+              <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black flex items-center gap-3">
                 {activeTab === "orders"
                   ? "Live Orders"
-                  : activeTab === "inventory"
-                    ? "Inventory"
-                    : activeTab === "categories"
-                      ? "Distinction Classes"
-                      : activeTab === "showcase"
-                        ? "Showcase Manager"
-                        : "JSON Portal"}
+                  : activeTab === "analytics"
+                    ? "Advanced Analytics"
+                    : activeTab === "inventory"
+                      ? "Inventory"
+                      : activeTab === "categories"
+                        ? "Distinction Classes"
+                        : activeTab === "showcase"
+                          ? "Showcase Manager"
+                          : "JSON Portal"}
               </h1>
             </div>
           </div>
@@ -2019,6 +2631,10 @@ const AdminDashboard = ({
         </div>
 
         <div className="p-6 md:p-12 pb-32">
+          {activeTab === "analytics" && (
+            <AnalyticsDashboard orders={orders} productsList={productsList} />
+          )}
+
           {activeTab === "orders" && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 mb-16">
@@ -4445,7 +5061,7 @@ export default function App() {
         .order("created_at", { ascending: false })
         .limit(100)
         .then(({ data, error }) => {
-          if (!error) setOrders(data || []);
+          if (!error) setOrders((data || []).slice(0, 100));
         });
       ordersChannel = supabase
         .channel("orders-changes")
@@ -4458,7 +5074,7 @@ export default function App() {
               .select("*")
               .order("created_at", { ascending: false })
               .limit(100)
-              .then(({ data }) => setOrders(data || []));
+              .then(({ data }) => setOrders((data || []).slice(0, 100)));
           },
         )
         .subscribe();
