@@ -1559,7 +1559,7 @@ const AnalyticsDashboard = ({ orders, productsList }) => {
 
         <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
           {[
-            { id: "all", label: "All (100 Orders)" },
+            { id: "all", label: "All Time" },
             { id: "30d", label: "30 Days" },
             { id: "7d", label: "7 Days" },
             { id: "today", label: "Today" },
@@ -1609,7 +1609,7 @@ const AnalyticsDashboard = ({ orders, productsList }) => {
               <ShoppingBasket className="w-6 h-6" />
             </span>
             <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
-              Sample Capped
+              Total Log
             </span>
           </div>
           <div>
@@ -1620,9 +1620,6 @@ const AnalyticsDashboard = ({ orders, productsList }) => {
               <p className="text-3xl font-black tracking-tight text-black">
                 {totalOrdersCount}
               </p>
-              <span className="text-[9px] font-black text-gray-400 uppercase">
-                / 100 max
-              </span>
             </div>
             <p className="text-[9px] font-bold text-gray-400 mt-2">
               Cancelled: {cancelledOrdersCount} orders
@@ -5059,9 +5056,8 @@ export default function App() {
         .from("orders")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(100)
         .then(({ data, error }) => {
-          if (!error) setOrders((data || []).slice(0, 100));
+          if (!error) setOrders(data || []);
         });
       ordersChannel = supabase
         .channel("orders-changes")
@@ -5073,8 +5069,7 @@ export default function App() {
               .from("orders")
               .select("*")
               .order("created_at", { ascending: false })
-              .limit(100)
-              .then(({ data }) => setOrders((data || []).slice(0, 100)));
+              .then(({ data }) => setOrders(data || []));
           },
         )
         .subscribe();
