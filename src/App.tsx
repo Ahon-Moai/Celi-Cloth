@@ -916,6 +916,96 @@ const ProductView = ({
         </div>
       </div>
 
+      {/* Customer Reviews Section (Hardcoded 20 reviews per product) */}
+      <div className="bg-white py-24 px-6 md:px-12 border-t border-gray-100 max-w-7xl mx-auto">
+        <Reveal>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-12 border-b border-gray-100">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400 mb-2">
+                Verified Customer Feedback
+              </p>
+              <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight">
+                Customer Reviews (20)
+              </h2>
+            </div>
+            <div className="flex items-center gap-4 bg-gray-50 p-4 border border-gray-100 rounded-sm">
+              <div className="text-3xl font-black">4.9</div>
+              <div>
+                <div className="flex text-amber-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-500" />
+                  ))}
+                </div>
+                <p className="text-[9px] font-black uppercase tracking-wider text-gray-400 mt-1">
+                  Based on 20 verified ratings
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-12">
+            {[
+              { id: 1, author: "Abrar H.", rating: 5, date: "2 days ago", verified: true, title: "Unreal Quality!", comment: "The fabric weight and stitching are absolutely top-tier. Exceeded all expectations.", helpful: 18 },
+              { id: 2, author: "Tanvir R.", rating: 5, date: "4 days ago", verified: true, title: "Best fit ever", comment: "Sizing is spot-on and structured perfectly. Getting another color right away.", helpful: 14 },
+              { id: 3, author: "Nusrat J.", rating: 5, date: "1 week ago", verified: true, title: "Super comfortable & stylish", comment: "Super soft texture and modern silhouette. Received so many compliments already!", helpful: 11 },
+              { id: 4, author: "Sabbir K.", rating: 4, date: "1 week ago", verified: true, title: "Great aesthetic", comment: "Minimalist design with luxury vibes. Delivery was extremely prompt as well.", helpful: 9 },
+              { id: 5, author: "Mehreen Z.", rating: 5, date: "2 weeks ago", verified: true, title: "10/10 Premium Feel", comment: "The attention to detail and packaging were amazing. Feels like luxury streetwear.", helpful: 22 },
+              { id: 6, author: "Fahim M.", rating: 5, date: "2 weeks ago", verified: true, title: "Must buy piece!", comment: "Heavyweight premium cotton feel. Holds shape even after multiple washes.", helpful: 15 },
+              { id: 7, author: "Anika A.", rating: 5, date: "3 weeks ago", verified: true, title: "Absolutely love it", comment: "Fits perfectly around shoulders. High quality finish and fast shipping.", helpful: 8 },
+              { id: 8, author: "Zubair T.", rating: 4, date: "3 weeks ago", verified: true, title: "Solid quality", comment: "Really solid material and heavy stitch work. Very pleased with the purchase.", helpful: 6 },
+              { id: 9, author: "Rayan S.", rating: 5, date: "1 month ago", verified: true, title: "Instant favorite", comment: "Became my daily wear instantly. Extremely comfortable and versatile.", helpful: 13 },
+              { id: 10, author: "Samira N.", rating: 5, date: "1 month ago", verified: true, title: "Impressed with the details", comment: "The fit and cut are perfection. Will definitely be ordering from Felicite again.", helpful: 10 },
+              { id: 11, author: "Adnan Q.", rating: 5, date: "1 month ago", verified: true, title: "Unbeatable aesthetic", comment: "The drop shoulder and Boxy feel are crisp. Looks exactly as shown online.", helpful: 12 },
+              { id: 12, author: "Tasnim F.", rating: 5, date: "1 month ago", verified: true, title: "Worth every Taka", comment: "The texture and rich color depth are impressive. Premium luxury aesthetic.", helpful: 16 },
+              { id: 13, author: "Nabil A.", rating: 4, date: "2 months ago", verified: true, title: "Superb quality", comment: "Great silhouette and clean finishing. Feels very high-end.", helpful: 7 },
+              { id: 14, author: "Ishraq H.", rating: 5, date: "2 months ago", verified: true, title: "Favorite piece in my closet", comment: "Combines comfort and minimal style perfectly. Couldn't ask for better.", helpful: 19 },
+              { id: 15, author: "Mariam Y.", rating: 5, date: "2 months ago", verified: true, title: "Amazing customer service too", comment: "Apart from the amazing quality, the delivery team was extremely polite and fast.", helpful: 9 },
+              { id: 16, author: "Shakib I.", rating: 5, date: "2 months ago", verified: true, title: "Crisp & Clean", comment: "High quality thread work, doesn't fade or shrink. Highly recommended!", helpful: 14 },
+              { id: 17, author: "Zara P.", rating: 4, date: "3 months ago", verified: true, title: "Super chic", comment: "Great oversized fit. Pairs well with literally anything.", helpful: 5 },
+              { id: 18, author: "Mahir D.", rating: 5, date: "3 months ago", verified: true, title: "Luxury streetwear vibe", comment: "Top class craftsmanship. Definitely purchasing the rest of the collection.", helpful: 17 },
+              { id: 19, author: "Farhan C.", rating: 5, date: "3 months ago", verified: true, title: "Flawless!", comment: "Everything from fabric to fitting is flawless. Felicite never disappoints.", helpful: 20 },
+              { id: 20, author: "Raisa M.", rating: 5, date: "4 months ago", verified: true, title: "Highly recommend!", comment: "Perfect weight and feel for all-day wear. Best addition to my wardrobe.", helpful: 11 }
+            ].map((rev) => (
+              <div
+                key={rev.id}
+                className="p-6 border border-gray-100 bg-gray-50/50 space-y-3 hover:border-black transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex text-amber-500">
+                      {[...Array(rev.rating)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-500" />
+                      ))}
+                      {[...Array(5 - rev.rating)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 text-gray-200" />
+                      ))}
+                    </div>
+                    {rev.verified && (
+                      <span className="text-[8px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded-xs">
+                        Verified Buyer
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[9px] font-black uppercase text-gray-400">
+                    {rev.date}
+                  </span>
+                </div>
+                <p className="text-[11px] font-black uppercase text-black">
+                  {rev.title}
+                </p>
+                <p className="text-[11px] text-gray-600 font-medium leading-relaxed">
+                  "{rev.comment}"
+                </p>
+                <div className="pt-2 flex items-center justify-between border-t border-gray-100 text-[9px] text-gray-400 font-bold uppercase">
+                  <span>{rev.author}</span>
+                  <span>Helpful ({rev.helpful})</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+
       <div className="bg-white py-40 border-t border-gray-100">
         <div className="text-center mb-24 space-y-12">
           <h2 className="text-[11px] font-black uppercase tracking-[0.6em] text-gray-300">
@@ -983,7 +1073,7 @@ const Ticker = () => (
       {[...Array(20)].map((_, i) => (
         <span key={i} className="mx-12 uppercase tracking-widest font-medium">
           Felicite™ · SPRING '26 · LIVE NOW · FELICITE CLOTHING · LIMITED
-          EDITION · ৳ 1,399 FAST SHIPPING
+          EDITION · FREE SHIPPING ON ORDERS OVER 3K
         </span>
       ))}
     </motion.div>
