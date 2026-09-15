@@ -43,3 +43,24 @@ export interface CartItem extends Product {
   selectedSize?: string;
   selectedColor?: string;
 }
+
+export interface CheckoutSession {
+  id?: string;
+  session_id: string;
+  customer_name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  city?: string | null;
+  area?: string | null;
+  notes?: string | null;
+  cart_items: CartItem[];
+  subtotal: number;
+  delivery_charge: number;
+  total: number;
+  status: 'in_progress' | 'abandoned' | 'completed';
+  order_id?: string | null;
+  last_activity_at: string;
+  created_at?: string;
+  updated_at?: string;
+}

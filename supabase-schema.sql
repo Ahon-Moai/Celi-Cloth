@@ -178,3 +178,83 @@ CREATE POLICY "Product images are public"
   ON storage.objects FOR SELECT
   TO anon, authenticated
   USING (bucket_id = 'product-images');
+
+-- ============================================================
+-- Checkout Sessions table (Abandoned / Partial Checkouts)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.checkout_sessions (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id       TEXT UNIQUE NOT NULL,
+  customer_name    TEXT,
+  phone            TEXT,
+  email            TEXT,
+  address          TEXT,
+  city             TEXT,
+  area             TEXT,
+  notes            TEXT,
+  cart_items       JSONB DEFAULT '[]',
+  subtotal         NUMERIC(10, 2) DEFAULT 0,
+  delivery_charge  NUMERIC(10, 2) DEFAULT 0,
+  total            NUMERIC(10, 2) DEFAULT 0,
+  status           TEXT NOT NULL DEFAULT 'in_progress'
+                     CHECK (status IN ('in_progress', 'abandoned', 'completed')),
+  order_id         UUID,
+  last_activity_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_checkout_sessions_session_id ON public.checkout_sessions(session_id);
+CREATE INDEX IF NOT EXISTS idx_checkout_sessions_status ON public.checkout_sessions(status);
+CREATE INDEX IF NOT EXISTS idx_checkout_sessions_last_activity_at ON public.checkout_sessions(last_activity_at);
+CREATE INDEX IF NOT EXISTS idx_checkout_sessions_created_at ON public.checkout_sessions(created_at);
+
+-- Enable Row Level Security
+ALTER TABLE public.checkout_sessions ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can insert a checkout session
+CREATE POLICY "Anyone can insert checkout sessions"
+  ON public.checkout_sessions
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- Anyone can update a checkout session
+CREATE POLICY "Anyone can update checkout sessions"
+  ON public.checkout_sessions
+  FOR UPDATE
+  TO anon, authenticated
+  USING (true);
+
+-- Admins can view checkout sessions
+CREATE POLICY "Admins can view checkout sessions"
+  ON public.checkout_sessions
+  FOR SELECT
+  TO authenticated
+  USING (
+    auth.jwt() ->> 'email' IN (
+      'mimpy124ahon124@gmail.com',
+      'feliciteclothing@gmail.com',
+      'adminloginpaidbase@gmail.com',
+      'one@gmail.com'
+    )
+  );
+
+-- Admins can delete checkout sessions
+CREATE POLICY "Admins can delete checkout sessions"
+  ON public.checkout_sessions
+  FOR DELETE
+  TO authenticated
+  USING (
+    auth.jwt() ->> 'email' IN (
+      'mimpy124ahon124@gmail.com',
+      'feliciteclothing@gmail.com',
+      'adminloginpaidbase@gmail.com',
+      'one@gmail.com'
+    )
+  );
+
+-- Enable Realtime for checkout_sessions
+ALTER PUBLICATION supabase_realtime ADD TABLE public.checkout_sessions;
