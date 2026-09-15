@@ -53,7 +53,7 @@ import {
   Activity,
 } from "lucide-react";
 
-import { Product, CartItem, Order } from "./types";
+import { Product, CartItem, Order, CheckoutSession } from "./types";
 import { supabase } from "./lib/supabase";
 import { GoogleGenAI, Type } from "@google/genai";
 
@@ -2051,15 +2051,64 @@ const AnalyticsDashboard = ({ orders, productsList }) => {
 };
 
 // ─────────────────────────────────────────────
+// Abandoned Checkout Utilities
+// ─────────────────────────────────────────────
+const ABANDONMENT_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+
+function processCheckoutSessions(rawSessions: CheckoutSession[]): CheckoutSession[] {
+  const now = Date.now();
+  const staleSessionIds: string[] = [];
+
+  const processed = (rawSessions || []).map((s) => {
+    if (s.status === "in_progress" && s.last_activity_at) {
+      const lastActive = new Date(s.last_activity_at).getTime();
+      if (!isNaN(lastActive) && now - lastActive > ABANDONMENT_THRESHOLD_MS) {
+        if (s.session_id) staleSessionIds.push(s.session_id);
+        return { ...s, status: "abandoned" as const };
+      }
+    }
+    return s;
+  });
+
+  if (staleSessionIds.length > 0) {
+    supabase
+      .from("checkout_sessions")
+      .update({ status: "abandoned", updated_at: new Date().toISOString() })
+      .in("session_id", staleSessionIds)
+      .then(({ error }) => {
+        if (error) console.warn("[Auto-mark Abandoned Error]", error);
+      });
+  }
+
+  return processed;
+}
+
+function formatRelativeTime(dateStr?: string | null): string {
+  if (!dateStr) return "N/A";
+  const d = new Date(dateStr);
+  const diffMs = Date.now() - d.getTime();
+  if (isNaN(diffMs)) return dateStr;
+  const mins = Math.floor(diffMs / (1000 * 60));
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+// ─────────────────────────────────────────────
 // AdminDashboard
 // ─────────────────────────────────────────────
 const AdminDashboard = ({
   orders,
+  checkoutSessions = [],
   productsList,
   categories,
   adminEmail,
   onUpdateStatus,
   onDeleteOrder,
+  onDeleteCheckoutSession,
   onAddProduct,
   onDeleteProduct,
   onUpdateCategories,
@@ -2075,6 +2124,45 @@ const AdminDashboard = ({
   const [orderFilter, setOrderFilter] = useState("all");
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
   const [newCatName, setNewCatName] = useState("");
+
+  const [sessionFilter, setSessionFilter] = useState("all");
+  const [sessionSearchQuery, setSessionSearchQuery] = useState("");
+  const [selectedSessionModal, setSelectedSessionModal] = useState<CheckoutSession | null>(null);
+
+  const processedSessions = React.useMemo(
+    () => processCheckoutSessions(checkoutSessions || []),
+    [checkoutSessions],
+  );
+
+  const filteredSessions = processedSessions.filter((s) => {
+    const matchesStatus = sessionFilter === "all" || s.status === sessionFilter;
+    if (!matchesStatus) return false;
+
+    const query = sessionSearchQuery.trim().toLowerCase();
+    if (!query) return true;
+
+    const sid = (s.session_id || "").toLowerCase();
+    const name = (s.customer_name || "").toLowerCase();
+    const phone = (s.phone || "").toLowerCase();
+    const email = (s.email || "").toLowerCase();
+    const address = (s.address || "").toLowerCase();
+    const city = (s.city || "").toLowerCase();
+    const notes = (s.notes || "").toLowerCase();
+
+    const basicMatch =
+      sid.includes(query) ||
+      name.includes(query) ||
+      phone.includes(query) ||
+      email.includes(query) ||
+      address.includes(query) ||
+      city.includes(query) ||
+      notes.includes(query);
+
+    if (basicMatch) return true;
+
+    const items = s.cart_items || [];
+    return items.some((item) => (item.name || "").toLowerCase().includes(query));
+  });
 
   const [productForm, setProductForm] = useState({
     name: "",
@@ -2599,6 +2687,11 @@ const AdminDashboard = ({
                   icon: <BarChart3 className="w-4 h-4" />,
                 },
                 {
+                  id: "abandoned",
+                  label: "Partial Checkouts",
+                  icon: <Clock className="w-4 h-4" />,
+                },
+                {
                   id: "inventory",
                   label: "Inventory",
                   icon: <ShoppingBag className="w-4 h-4" />,
@@ -2686,13 +2779,15 @@ const AdminDashboard = ({
                   ? "Live Orders"
                   : activeTab === "analytics"
                     ? "Advanced Analytics"
-                    : activeTab === "inventory"
-                      ? "Inventory"
-                      : activeTab === "categories"
-                        ? "Distinction Classes"
-                        : activeTab === "showcase"
-                          ? "Showcase Manager"
-                          : "JSON Portal"}
+                    : activeTab === "abandoned"
+                      ? "Abandoned / Partial Checkouts"
+                      : activeTab === "inventory"
+                        ? "Inventory"
+                        : activeTab === "categories"
+                          ? "Distinction Classes"
+                          : activeTab === "showcase"
+                            ? "Showcase Manager"
+                            : "JSON Portal"}
               </h1>
             </div>
           </div>
@@ -3078,6 +3173,414 @@ const AdminDashboard = ({
                     </div>
                   </div>
                 ))}
+              </div>
+            </>
+          )}
+
+          {activeTab === "abandoned" && (
+            <>
+              {/* Detail Modal */}
+              <AnimatePresence>
+                {selectedSessionModal && (
+                  <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 md:p-8">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setSelectedSessionModal(null)}
+                      className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="relative bg-white w-full max-w-3xl rounded-2xl p-6 md:p-10 shadow-2xl overflow-y-auto max-h-[90vh] z-10 space-y-8"
+                    >
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-6">
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">
+                            Checkout Session Details
+                          </p>
+                          <h3 className="text-xl font-black font-mono text-black mt-1">
+                            {selectedSessionModal.session_id}
+                          </h3>
+                        </div>
+                        <button
+                          onClick={() => setSelectedSessionModal(null)}
+                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                          <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-md ${
+                            selectedSessionModal.status === "completed"
+                              ? "bg-green-50 text-green-600 border border-green-200"
+                              : selectedSessionModal.status === "abandoned"
+                                ? "bg-red-50 text-red-600 border border-red-200"
+                                : "bg-blue-50 text-blue-600 border border-blue-200"
+                          }`}
+                        >
+                          {selectedSessionModal.status.replace("_", " ")}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-bold">
+                          Last Activity: {formatRelativeTime(selectedSessionModal.last_activity_at)}
+                        </span>
+                      </div>
+
+                      {/* Customer Details */}
+                      <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 space-y-4">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          Customer Information
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold">
+                          <div>
+                            <p className="text-[9px] text-gray-400 uppercase">Name</p>
+                            <p className="text-black">{selectedSessionModal.customer_name || "Not Provided"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] text-gray-400 uppercase">Phone</p>
+                            <p className="text-black">{selectedSessionModal.phone || "Not Provided"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] text-gray-400 uppercase">Email</p>
+                            <p className="text-black">{selectedSessionModal.email || "Not Provided"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] text-gray-400 uppercase">City / Area</p>
+                            <p className="text-black">
+                              {selectedSessionModal.city || "N/A"}{" "}
+                              {selectedSessionModal.area ? `(${selectedSessionModal.area})` : ""}
+                            </p>
+                          </div>
+                          <div className="md:col-span-2">
+                            <p className="text-[9px] text-gray-400 uppercase">Address</p>
+                            <p className="text-black">{selectedSessionModal.address || "Not Provided"}</p>
+                          </div>
+                          {selectedSessionModal.notes && (
+                            <div className="md:col-span-2 bg-yellow-50/80 p-3 rounded-lg border border-yellow-200 text-yellow-800 font-mono text-[10px]">
+                              <p className="font-bold uppercase text-[9px] text-yellow-900 mb-1">Notes / Extras</p>
+                              <p>{selectedSessionModal.notes}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {selectedSessionModal.phone && (
+                          <div className="pt-2">
+                            <a
+                              href={`https://wa.me/88${selectedSessionModal.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                                `Hi ${selectedSessionModal.customer_name || "Customer"}, we noticed you left some items in your cart at Felicite. Can we help you complete your order?`,
+                              )}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-green-700 transition-colors shadow-md shadow-green-600/20"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                              Contact Customer via WhatsApp
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Cart Items */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          Cart Inventory ({(selectedSessionModal.cart_items || []).length} items)
+                        </h4>
+                        <div className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden bg-white">
+                          {(selectedSessionModal.cart_items || []).map((item, idx) => (
+                            <div key={idx} className="p-4 flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-14 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                                  {item.image ? (
+                                    <img src={item.image} className="w-full h-full object-cover" alt="" />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-100" />
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-black uppercase text-black">{item.name}</p>
+                                  <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">
+                                    Size: {item.selectedSize || "N/A"} / Color: {item.selectedColor || "N/A"}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-black text-black">
+                                  ৳{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                                </p>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase">
+                                  Qty: {item.quantity || 1} x ৳{(item.price || 0).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Financial Summary */}
+                      <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 space-y-2 text-xs font-bold text-gray-500 uppercase">
+                        <div className="flex justify-between">
+                          <span>Subtotal</span>
+                          <span>৳{(selectedSessionModal.subtotal || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Delivery Charge</span>
+                          <span>৳{(selectedSessionModal.delivery_charge || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t border-gray-200 text-sm font-black text-black">
+                          <span>Total Value</span>
+                          <span>৳{(selectedSessionModal.total || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      {/* Session Metadata */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[9px] font-bold text-gray-400 uppercase pt-2 border-t border-gray-100">
+                        <div>
+                          <p>Created</p>
+                          <p className="text-black font-mono">
+                            {selectedSessionModal.created_at
+                              ? new Date(selectedSessionModal.created_at).toLocaleString("en-GB")
+                              : "N/A"}
+                          </p>
+                        </div>
+                        <div>
+                          <p>Last Activity</p>
+                          <p className="text-black font-mono">
+                            {selectedSessionModal.last_activity_at
+                              ? new Date(selectedSessionModal.last_activity_at).toLocaleString("en-GB")
+                              : "N/A"}
+                          </p>
+                        </div>
+                        <div>
+                          <p>Linked Order</p>
+                          <p className="text-black font-mono">
+                            {selectedSessionModal.order_id
+                              ? `#${selectedSessionModal.order_id.slice(0, 8).toUpperCase()}`
+                              : "None"}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-16">
+                {[
+                  {
+                    label: "Total Sessions",
+                    value: processedSessions.length,
+                    icon: <ShoppingBasket className="w-6 h-6 text-black" />,
+                    color: "text-black",
+                  },
+                  {
+                    label: "In Progress",
+                    value: processedSessions.filter((s) => s.status === "in_progress").length,
+                    icon: <Activity className="w-6 h-6 text-blue-500" />,
+                    color: "text-blue-500",
+                  },
+                  {
+                    label: "Abandoned",
+                    value: processedSessions.filter((s) => s.status === "abandoned").length,
+                    icon: <Clock className="w-6 h-6 text-red-500" />,
+                    color: "text-red-500",
+                  },
+                  {
+                    label: "Completed",
+                    value: processedSessions.filter((s) => s.status === "completed").length,
+                    icon: <CheckCircle className="w-6 h-6 text-green-500" />,
+                    color: "text-green-500",
+                  },
+                ].map((card) => (
+                  <div
+                    key={card.label}
+                    className="bg-white p-8 rounded-[2rem] border border-gray-100 flex flex-col justify-between hover:shadow-2xl hover:shadow-black/5 transition-all duration-500"
+                  >
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                        {card.icon}
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">
+                        Live Checkout
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
+                        {card.label}
+                      </p>
+                      <p className={`text-3xl md:text-4xl font-black tracking-tight ${card.color}`}>
+                        {card.value}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Filter and Table Container */}
+              <div className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
+                <div className="p-8 border-b border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-20">
+                  <div className="flex gap-4 flex-wrap">
+                    {["all", "in_progress", "abandoned", "completed"].map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setSessionFilter(f)}
+                        className={`text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl border transition-all duration-300 ${
+                          sessionFilter === f
+                            ? "bg-black text-white border-black shadow-lg shadow-black/10"
+                            : "text-gray-400 border-gray-100 hover:border-black hover:text-black"
+                        }`}
+                      >
+                        {f.replace("_", " ")}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 w-full sm:w-80">
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="SEARCH SESSIONS..."
+                      value={sessionSearchQuery}
+                      onChange={(e) => setSessionSearchQuery(e.target.value)}
+                      className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest placeholder:text-gray-300 w-full"
+                    />
+                    {sessionSearchQuery && (
+                      <button
+                        onClick={() => setSessionSearchQuery("")}
+                        className="text-gray-300 hover:text-black transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-gray-50/50 text-[10px] uppercase font-black tracking-[0.2em] text-gray-400">
+                      <tr>
+                        <th className="px-8 py-6 font-black">Session ID</th>
+                        <th className="px-8 py-6 font-black">Customer</th>
+                        <th className="px-8 py-6 font-black">Cart Items</th>
+                        <th className="px-8 py-6 font-black">Value</th>
+                        <th className="px-8 py-6 font-black">Status & Activity</th>
+                        <th className="px-8 py-6 font-black">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {filteredSessions.map((session) => (
+                        <tr key={session.session_id} className="group hover:bg-gray-50/50 transition-colors">
+                          <td className="px-8 py-8">
+                            <p className="font-mono text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-md inline-block">
+                              {session.session_id.slice(0, 14)}...
+                            </p>
+                            <p className="text-[9px] text-gray-400 font-bold mt-2 uppercase tracking-tighter">
+                              Created: {session.created_at ? new Date(session.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) : "N/A"}
+                            </p>
+                          </td>
+                          <td className="px-8 py-8">
+                            <p className="font-black text-xs uppercase text-black">
+                              {session.customer_name || "Anonymous"}
+                            </p>
+                            {session.phone && (
+                              <p className="text-[10px] text-gray-500 font-bold mt-1">
+                                📱 {session.phone}
+                              </p>
+                            )}
+                            {session.address && (
+                              <p className="text-[10px] text-gray-400 font-medium max-w-[200px] truncate mt-1">
+                                📍 {session.address}, {session.city || ""}
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-8 py-8">
+                            <div className="space-y-1">
+                              {(session.cart_items || []).slice(0, 2).map((item, idx) => (
+                                <p key={idx} className="text-[10px] font-bold text-black uppercase max-w-[180px] truncate">
+                                  • {item.name} ({item.selectedSize}) x{item.quantity}
+                                </p>
+                              ))}
+                              {(session.cart_items || []).length > 2 && (
+                                <p className="text-[9px] text-gray-400 font-black uppercase">
+                                  +{(session.cart_items || []).length - 2} more item(s)
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-8 py-8">
+                            <p className="font-black text-sm text-black">
+                              ৳{(session.total || 0).toLocaleString()}
+                            </p>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">
+                              {(session.cart_items || []).length} items
+                            </p>
+                          </td>
+                          <td className="px-8 py-8">
+                            <span
+                              className={`inline-block px-3 py-1 text-[9px] font-black uppercase tracking-wider rounded-md ${
+                                session.status === "completed"
+                                  ? "bg-green-50 text-green-600"
+                                  : session.status === "abandoned"
+                                    ? "bg-red-50 text-red-600"
+                                    : "bg-blue-50 text-blue-600"
+                              }`}
+                            >
+                              {session.status.replace("_", " ")}
+                            </span>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase mt-2">
+                              Active {formatRelativeTime(session.last_activity_at)}
+                            </p>
+                          </td>
+                          <td className="px-8 py-8">
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => setSelectedSessionModal(session)}
+                                className="px-3 py-1.5 bg-black text-white rounded-lg text-[9px] font-black uppercase tracking-wider hover:bg-gray-800 transition-colors"
+                              >
+                                Inspect
+                              </button>
+                              {session.phone && (
+                                <a
+                                  href={`https://wa.me/88${session.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                                    `Hi ${session.customer_name || "Customer"}, we noticed you left some items in your cart at Felicite. Can we help you complete your order?`,
+                                  )}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
+                                  title="Contact via WhatsApp"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </a>
+                              )}
+                              {onDeleteCheckoutSession && (
+                                <button
+                                  onClick={() => onDeleteCheckoutSession(session.session_id)}
+                                  className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                  title="Delete Session"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filteredSessions.length === 0 && (
+                  <div className="p-32 text-center">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ShoppingBasket className="w-6 h-6 text-gray-200" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-300">
+                      No Checkout Sessions Found
+                    </p>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -3970,6 +4473,16 @@ const CartDrawer = ({
 // ─────────────────────────────────────────────
 // CheckoutModal
 // ─────────────────────────────────────────────
+function getOrCreateCheckoutSessionId(): string {
+  const STORAGE_KEY = "felicite_checkout_session_id";
+  let sid = localStorage.getItem(STORAGE_KEY);
+  if (!sid) {
+    sid = "cs_" + (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + "_" + Math.random().toString(36).substring(2, 9)));
+    localStorage.setItem(STORAGE_KEY, sid);
+  }
+  return sid;
+}
+
 const CheckoutModal = ({
   isOpen,
   onClose,
@@ -3995,6 +4508,14 @@ const CheckoutModal = ({
   const [altPhoneError, setAltPhoneError] = useState("");
   const [copiedStatus, setCopiedStatus] = useState(null);
 
+  const sessionIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      sessionIdRef.current = getOrCreateCheckoutSessionId();
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     const cityLower = (formData.city || "").toLowerCase();
     if (cityLower.length > 2) {
@@ -4010,6 +4531,72 @@ const CheckoutModal = ({
     selectedAddOns.includes(a.id),
   ).reduce((acc, a) => acc + a.price, 0);
   const grandTotal = totalAmount + deliveryCharge + addOnTotal;
+
+  const saveCheckoutSession = async () => {
+    if (!isOpen || !sessionIdRef.current) return;
+    const sid = sessionIdRef.current;
+    const name = `${formData.firstName} ${formData.lastName}`.trim() || null;
+    const phoneVal = formData.phone?.trim() || null;
+    const addressVal = formData.address?.trim() || null;
+    const cityVal = formData.city?.trim() || null;
+    const areaVal = formData.deliveryZone || null;
+
+    const noteParts = [];
+    if (formData.altPhone?.trim()) noteParts.push(`Alt Phone: ${formData.altPhone.trim()}`);
+    if (formData.designDetails?.trim()) noteParts.push(`Custom: ${formData.designDetails.trim()}`);
+    if (formData.paymentInfo?.trim()) noteParts.push(`Pay Ref: ${formData.paymentInfo.trim()}`);
+    const notesVal = noteParts.join(" | ") || null;
+
+    const payload = {
+      session_id: sid,
+      customer_name: name,
+      phone: phoneVal,
+      email: null,
+      address: addressVal,
+      city: cityVal,
+      area: areaVal,
+      notes: notesVal,
+      cart_items: totalItems,
+      subtotal: totalAmount,
+      delivery_charge: deliveryCharge,
+      total: grandTotal,
+      status: "in_progress",
+      last_activity_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      await supabase
+        .from("checkout_sessions")
+        .upsert(payload, { onConflict: "session_id" });
+    } catch (err) {
+      console.warn("[Checkout Session Save Error]", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      saveCheckoutSession();
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [
+    isOpen,
+    formData.firstName,
+    formData.lastName,
+    formData.phone,
+    formData.altPhone,
+    formData.address,
+    formData.city,
+    formData.deliveryZone,
+    formData.designDetails,
+    formData.paymentInfo,
+    selectedAddOns,
+    totalItems,
+    totalAmount,
+    deliveryCharge,
+    grandTotal,
+  ]);
 
   const toggleAddOn = (id) => {
     setSelectedAddOns((prev) =>
@@ -4061,10 +4648,33 @@ const CheckoutModal = ({
         payment_method: method,
         created_at: new Date().toISOString(),
       };
-      const { error: insertError } = await supabase
+      const { data: insertedOrders, error: insertError } = await supabase
         .from("orders")
-        .insert([orderData]);
+        .insert([orderData])
+        .select("id");
       if (insertError) throw insertError;
+
+      const createdOrderId = insertedOrders?.[0]?.id || null;
+      if (createdOrderId) {
+        orderData.id = createdOrderId;
+      }
+
+      if (sessionIdRef.current) {
+        try {
+          await supabase
+            .from("checkout_sessions")
+            .update({
+              status: "completed",
+              order_id: createdOrderId,
+              last_activity_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("session_id", sessionIdRef.current);
+          localStorage.removeItem("felicite_checkout_session_id");
+        } catch (sErr) {
+          console.warn("[Checkout Session Complete Error]", sErr);
+        }
+      }
 
       await metaPurchase(orderData, formData);
 
@@ -4151,6 +4761,7 @@ const CheckoutModal = ({
                         placeholder="First Name"
                         className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent"
                         value={formData.firstName}
+                        onBlur={() => saveCheckoutSession()}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -4169,6 +4780,7 @@ const CheckoutModal = ({
                         placeholder="Last Name"
                         className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent"
                         value={formData.lastName}
+                        onBlur={() => saveCheckoutSession()}
                         onChange={(e) =>
                           setFormData({ ...formData, lastName: e.target.value })
                         }
@@ -4184,6 +4796,7 @@ const CheckoutModal = ({
                         placeholder="House No, Road, Area"
                         className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent"
                         value={formData.address}
+                        onBlur={() => saveCheckoutSession()}
                         onChange={(e) =>
                           setFormData({ ...formData, address: e.target.value })
                         }
@@ -4199,6 +4812,7 @@ const CheckoutModal = ({
                         placeholder="City / District"
                         className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent"
                         value={formData.city}
+                        onBlur={() => saveCheckoutSession()}
                         onChange={(e) =>
                           setFormData({ ...formData, city: e.target.value })
                         }
@@ -4218,6 +4832,7 @@ const CheckoutModal = ({
                         placeholder="01XXXXXXXXX"
                         className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent ${phoneError ? "border-red-400 text-red-600" : "border-gray-100 focus:border-black"}`}
                         value={formData.phone}
+                        onBlur={() => saveCheckoutSession()}
                         onChange={(e) => {
                           setFormData({ ...formData, phone: e.target.value });
                           setPhoneError("");
@@ -4239,6 +4854,7 @@ const CheckoutModal = ({
                         placeholder="01XXXXXXXXX"
                         className={`w-full border-b-2 py-2 text-sm font-bold outline-none bg-transparent ${altPhoneError ? "border-red-400 text-red-600" : "border-gray-100 focus:border-black"}`}
                         value={formData.altPhone}
+                        onBlur={() => saveCheckoutSession()}
                         onChange={(e) => {
                           setFormData({
                             ...formData,
@@ -4262,6 +4878,7 @@ const CheckoutModal = ({
                         placeholder="Any custom details..."
                         className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent"
                         value={formData.designDetails}
+                        onBlur={() => saveCheckoutSession()}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -4514,6 +5131,7 @@ const CheckoutModal = ({
                       placeholder="e.g. 8821 or TXN123456"
                       className="w-full border-b-2 border-gray-100 py-2 text-sm font-bold outline-none focus:border-black bg-transparent font-mono uppercase"
                       value={formData.paymentInfo}
+                      onBlur={() => saveCheckoutSession()}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -4979,8 +5597,15 @@ export default function App() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [orders, setOrders] = useState([]);
+  const [checkoutSessions, setCheckoutSessions] = useState<CheckoutSession[]>([]);
   const [adminEmail, setAdminEmail] = useState("");
   const [productsList, setProductsList] = useState([]);
+
+  const deleteCheckoutSession = async (sessionId: string) => {
+    if (!window.confirm("Delete this checkout session?")) return;
+    await supabase.from("checkout_sessions").delete().eq("session_id", sessionId);
+    setCheckoutSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
+  };
   const pageHistoryRef = useRef(["home"]);
   const [showcaseMap, setShowcaseMap] = useState({});
 
@@ -5144,6 +5769,7 @@ export default function App() {
 
   useEffect(() => {
     let ordersChannel = null;
+    let sessionsChannel = null;
     if (isAdmin) {
       supabase
         .from("orders")
@@ -5168,10 +5794,42 @@ export default function App() {
           },
         )
         .subscribe();
+
+      supabase
+        .from("checkout_sessions")
+        .select("*")
+        .order("last_activity_at", { ascending: false })
+        .limit(100)
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setCheckoutSessions(processCheckoutSessions(data as CheckoutSession[]));
+          }
+        });
+
+      sessionsChannel = supabase
+        .channel("checkout-sessions-changes")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "checkout_sessions" },
+          () => {
+            supabase
+              .from("checkout_sessions")
+              .select("*")
+              .order("last_activity_at", { ascending: false })
+              .limit(100)
+              .then(({ data }) => {
+                if (data) {
+                  setCheckoutSessions(processCheckoutSessions(data as CheckoutSession[]));
+                }
+              });
+          },
+        )
+        .subscribe();
     }
     setIsLoading(false);
     return () => {
       if (ordersChannel) supabase.removeChannel(ordersChannel);
+      if (sessionsChannel) supabase.removeChannel(sessionsChannel);
     };
   }, [isAdmin]);
 
@@ -5288,11 +5946,13 @@ export default function App() {
     return (
       <AdminDashboard
         orders={orders}
+        checkoutSessions={checkoutSessions}
         productsList={productsList}
         categories={categories}
         adminEmail={adminEmail}
         onUpdateStatus={updateOrderStatus}
         onDeleteOrder={deleteOrder}
+        onDeleteCheckoutSession={deleteCheckoutSession}
         onAddProduct={addOrUpdateProduct}
         onDeleteProduct={deleteProduct}
         onUpdateCategories={handleUpdateCategories}
