@@ -58,6 +58,8 @@ import { Product, CartItem, Order, CheckoutSession } from "./types";
 import { supabase } from "./lib/supabase";
 import { products as defaultProducts } from "./products";
 import { BrandFilm } from "./BrandFilm";
+import { BrandTransitionBanner } from "./BrandTransitionBanner";
+import { Footer } from "./Footer";
 
 // ─────────────────────────────────────────────
 // META PIXEL + CONVERSIONS API (CAPI)
@@ -4111,7 +4113,7 @@ const Categories = ({ onCategorySelect, setCurrentPage }) => (
       },
       {
         cat: "Hoodies",
-        src: "https://ik.imagekit.io/ecrp2tqh2/ChatGPT%20Image%20Aug%202,%202026,%2004_25_02%20PM.png",
+        src: "https://ik.imagekit.io/t1q0n1ovm/WhatsApp%20Image%202026-09-24%20at%2023.40.09.jpeg",
         label: "Hoodies",
       },
       {
@@ -5543,35 +5545,6 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }) => {
   );
 };
 
-// ─────────────────────────────────────────────
-// Footer
-// ─────────────────────────────────────────────
-const Footer = ({ setCurrentPage }) => (
-  <footer className="bg-black text-white pt-20 md:pt-32 pb-12 px-6 mt-20 md:mt-32">
-    <div className="max-w-7xl mx-auto flex flex-col items-center">
-      <div className="flex gap-8 md:gap-10 mb-12 md:mb-16">
-        <Facebook className="w-5 h-5 cursor-pointer opacity-40 hover:opacity-100 transition-opacity" />
-        <Instagram className="w-5 h-5 cursor-pointer opacity-40 hover:opacity-100 transition-opacity" />
-        <Twitter className="w-5 h-5 cursor-pointer opacity-40 hover:opacity-100 transition-opacity" />
-      </div>
-      <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 mb-24 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold text-gray-500">
-        {["support", "privacy", "terms", "return", "contact"].map((page) => (
-          <button
-            key={page}
-            onClick={() => setCurrentPage(page)}
-            className="hover:text-white transition-colors capitalize"
-          >
-            {page === "return" ? "Return & Exchange" : page}
-          </button>
-        ))}
-      </div>
-      <div className="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium">
-        © 2026 - FELICITE
-      </div>
-    </div>
-  </footer>
-);
-
 const InfoPage = ({ title, content, onBack }) => (
   <div className="bg-white min-h-screen pt-32 pb-40 px-8">
     <div className="max-w-3xl mx-auto space-y-16">
@@ -6278,6 +6251,7 @@ export default function App() {
               </div>
             </section>
             <BrandFilm onShopClick={() => navigateTo("shop")} />
+            <BrandTransitionBanner />
           </>
         ) : currentPage === "shop" ? (
           <>
@@ -6292,6 +6266,7 @@ export default function App() {
               categoriesList={categories}
             />
             <BrandFilm onShopClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+            <BrandTransitionBanner />
           </>
         ) : currentPage === "product" ? (
           selectedProduct && (
@@ -6345,10 +6320,36 @@ export default function App() {
             onBack={() => navigateTo("home")}
             content={`Reach us at: feliciteclothing@gmail.com\n\nWhatsApp: 01974004221\n\nWe respond within 24-48 hours.`}
           />
+        ) : currentPage === "shipping" ? (
+          <InfoPage
+            title="Shipping & Delivery"
+            onBack={() => navigateTo("home")}
+            content={`Fast, secure nationwide delivery across Bangladesh.\n\nDelivery Timelines:\n• Inside Dhaka Metro: 1–3 business days (৳80)\n• Outside Dhaka (All 64 districts): 3–5 business days (৳150)\n\nCash on Delivery (COD):\nAvailable nationwide. Inspect your package upon arrival before paying the courier.\n\nTracking:\nOnce dispatched via Steadfast or Pathao courier, SMS tracking updates are transmitted directly to your mobile phone.`}
+          />
+        ) : currentPage === "sizing" ? (
+          <InfoPage
+            title="Sizing & Fit Guide"
+            onBack={() => navigateTo("home")}
+            content={`Our silhouettes are intentionally engineered with contemporary streetwear proportions in mind.\n\nBoxy Fit T-Shirts:\nCut with relaxed drop shoulders, wide chest, and a slightly cropped waist for the quintessential high-street drape. We recommend taking your true size for the intended boxy fit, or sizing down for a closer classic fit.\n\nHeavyweight Hoodies:\nConstructed from 380+ GSM ultra-soft brushed fleece with double-layered hood and structured kangaroo pocket. True to size with a generous streetwear drape.\n\nNeed personal sizing advice?\nMessage our concierge on WhatsApp at 01974004221 for immediate measurements and recommendations.`}
+          />
+        ) : currentPage === "care" ? (
+          <InfoPage
+            title="Garment Care & Longevity"
+            onBack={() => navigateTo("home")}
+            content={`Preserve the luxury hand-feel, graphic integrity, and silhouette of your FELICITÉ garments:\n\n1. Wash Cold:\nMachine wash cold (30°C or below) inside out with similar colors.\n\n2. Gentle Cycle:\nUse mild liquid detergent. Avoid bleach, fabric softeners, or harsh stain removers.\n\n3. Hang Dry:\nLine dry in the shade. Never tumble dry heavyweight fleece or screen-printed pieces.\n\n4. Ironing:\nIron inside out on low heat. Never iron directly over screen prints or rubberized branding.`}
+          />
         ) : null}
       </main>
 
-      <Footer setCurrentPage={navigateTo} />
+      <Footer
+        setCurrentPage={navigateTo}
+        hasBanner={currentPage === "home" || currentPage === "shop"}
+        onCategorySelect={setSelectedCategory}
+        onOpenAdmin={() => {
+          setAuthError("");
+          setIsAdminLoginOpen(true);
+        }}
+      />
 
       <CartDrawer
         isOpen={isCartOpen}
