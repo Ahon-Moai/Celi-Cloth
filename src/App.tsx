@@ -51,17 +51,13 @@ import {
   CreditCard,
   Users,
   Activity,
+  RotateCw,
 } from "lucide-react";
 
 import { Product, CartItem, Order, CheckoutSession } from "./types";
 import { supabase } from "./lib/supabase";
-import { GoogleGenAI, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({
-  apiKey:
-    import.meta.env.VITE_GEMINI_API_KEY ||
-    "AIzaSyAf9pkTSkxro6cLdOvngIKPRzu8RAgTB-U",
-});
+import { products as defaultProducts } from "./products";
+import { BrandFilm } from "./BrandFilm";
 
 // ─────────────────────────────────────────────
 // META PIXEL + CONVERSIONS API (CAPI)
@@ -133,7 +129,7 @@ export function optimizeImageUrl(url: string, width?: number): string {
   return url;
 }
 
-async function metaUserData(info = {}) {
+async function metaUserData(info: any = {}) {
   const [ph, em, fn, ln, ct, co] = await Promise.all([
     metaSha256(info.phone?.replace(/\D/g, "")),
     metaSha256(info.email),
@@ -289,7 +285,12 @@ export const SHOWCASE_SECTIONS = [
   { id: "boxy_fit", label: "Boxy Fit T-Shirts", icon: "👕", accent: "#3b82f6" },
   { id: "must_buy", label: "Must Buy", icon: "★", accent: "#8b5cf6" },
 ];
-const ShowcaseCarousel = ({
+const ShowcaseCarousel: React.FC<{
+  section: string;
+  products: any[];
+  onAddToCart: (product: any, selectedSize?: any, selectedColor?: any) => void;
+  onProductClick: (p: any) => void;
+}> = ({
   section,
   products,
   onAddToCart,
@@ -2115,8 +2116,28 @@ const AdminDashboard = ({
   showcaseMap,
   onUpdateShowcase,
   onClose,
+  onLogout,
+  onRefresh,
+}: {
+  orders: any[];
+  checkoutSessions?: any[];
+  productsList: any[];
+  categories: any[];
+  adminEmail: string;
+  onUpdateStatus: any;
+  onDeleteOrder: any;
+  onDeleteCheckoutSession: any;
+  onAddProduct: any;
+  onDeleteProduct: any;
+  onUpdateCategories: any;
+  showcaseMap: any;
+  onUpdateShowcase: any;
+  onClose: any;
+  onLogout?: () => Promise<void> | void;
+  onRefresh?: () => Promise<void> | void;
 }) => {
   const [activeTab, setActiveTab] = useState("orders");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [jsonInput, setJsonInput] = useState("");
@@ -2751,7 +2772,13 @@ const AdminDashboard = ({
             </div>
             <div className="h-px bg-gray-100 w-full mb-3" />
             <button
-              onClick={() => supabase.auth.signOut()}
+              onClick={() => {
+                if (onLogout) {
+                  onLogout();
+                } else {
+                  supabase.auth.signOut();
+                }
+              }}
               className="w-full py-3 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center gap-2"
             >
               Terminate Session
@@ -2791,7 +2818,29 @@ const AdminDashboard = ({
               </h1>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            {onRefresh && (
+              <button
+                onClick={async () => {
+                  setIsRefreshing(true);
+                  try {
+                    await onRefresh();
+                  } finally {
+                    setTimeout(() => setIsRefreshing(false), 600);
+                  }
+                }}
+                disabled={isRefreshing}
+                title="Refresh Live Data"
+                className="px-3.5 py-2.5 md:px-5 md:py-4 bg-white border border-gray-100 rounded-xl flex items-center gap-2.5 shadow-sm hover:bg-gray-50 transition-all hover:-translate-y-0.5 active:translate-y-0 text-gray-600 hover:text-black"
+              >
+                <RotateCw
+                  className={`w-4 h-4 ${isRefreshing ? "animate-spin text-black" : "text-gray-400"}`}
+                />
+                <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em]">
+                  {isRefreshing ? "Syncing..." : "Sync"}
+                </span>
+              </button>
+            )}
             {activeTab === "inventory" && (
               <button
                 onClick={handleOpenAddModal}
@@ -2822,63 +2871,81 @@ const AdminDashboard = ({
 
           {activeTab === "orders" && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 mb-16">
-                {[
+              {(() => {
+                const parseNum = (val: any) => {
+                  if (typeof val === "number") return isNaN(val) ? 0 : val;
+                  if (!val) return 0;
+                  const cleaned = String(val).replace(/[^0-9.-]+/g, "");
+                  const parsed = parseFloat(cleaned);
+                  return isNaN(parsed) ? 0 : parsed;
+                };
+
+                const totalOrdersCount = orders.length;
+                const pendingOrdersCount = orders.filter(
+                  (o) => (o.status || "pending").toLowerCase() === "pending",
+                ).length;
+                const totalRevenue = orders.reduce((acc, o) => {
+                  if (o.status === "cancelled") return acc;
+                  const amount = parseNum(o.grand_total ?? o.total_amount);
+                  return acc + amount;
+                }, 0);
+
+                const statsCards = [
                   {
                     label: "Cycle Volume",
-                    value: orders.length,
-                    icon: (
-                      <Package className="w-6 h-6 text-black" />
-                    ),
+                    value: totalOrdersCount.toLocaleString(),
+                    icon: <Package className="w-6 h-6 text-black" />,
                     trend: "Live Orders",
                     color: "bg-white",
                   },
                   {
                     label: "Action Required",
-                    value: orders.filter((o) => o.status === "pending").length,
-                    icon: (
-                      <Clock className="w-6 h-6 text-orange-500" />
-                    ),
+                    value: pendingOrdersCount.toLocaleString(),
+                    icon: <Clock className="w-6 h-6 text-orange-500" />,
                     trend: "Pending Auth",
                     color: "bg-white",
                     valueColor: "text-orange-500",
                   },
                   {
                     label: "Net Liquidity",
-                    value: `৳${orders.reduce((acc, o) => (o.status !== "cancelled" ? acc + (o.grand_total || o.total_amount || 0) : acc), 0).toLocaleString()}`,
-                    icon: (
-                      <TrendingUp className="w-6 h-6 text-green-500" />
-                    ),
+                    value: `৳${totalRevenue.toLocaleString()}`,
+                    icon: <TrendingUp className="w-6 h-6 text-green-500" />,
                     trend: "Total Revenue",
                     color: "bg-white",
                     valueColor: "text-green-500",
                   },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="bg-white p-8 rounded-[2rem] border border-gray-100 flex flex-col justify-between group hover:shadow-2xl hover:shadow-black/5 transition-all duration-500 hover:-translate-y-1"
-                  >
-                    <div className="flex items-center justify-between mb-8">
-                      <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                        {stat.icon}
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">
-                        {stat.trend}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
-                        {stat.label}
-                      </p>
-                      <p
-                        className={`text-3xl md:text-4xl font-black tracking-tight ${stat.valueColor || "text-black"}`}
+                ];
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 mb-16">
+                    {statsCards.map((stat) => (
+                      <div
+                        key={stat.label}
+                        className="bg-white p-8 rounded-[2rem] border border-gray-100 flex flex-col justify-between group hover:shadow-2xl hover:shadow-black/5 transition-all duration-500 hover:-translate-y-1"
                       >
-                        {stat.value}
-                      </p>
-                    </div>
+                        <div className="flex items-center justify-between mb-8">
+                          <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                            {stat.icon}
+                          </div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">
+                            {stat.trend}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
+                            {stat.label}
+                          </p>
+                          <p
+                            className={`text-3xl md:text-4xl font-black tracking-tight ${stat.valueColor || "text-black"}`}
+                          >
+                            {stat.value}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
 
               <div className="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
                 <div className="p-8 border-b border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-20">
@@ -4634,7 +4701,7 @@ const CheckoutModal = ({
       const selectedAddOnDetails = GIFT_ADDONS.filter((a) =>
         selectedAddOns.includes(a.id),
       );
-      const orderData = {
+      const orderData: any = {
         customer_info: formData,
         items: totalItems,
         total_amount: totalAmount,
@@ -5312,47 +5379,41 @@ const StylistModule = ({ isOpen, onClose, products, onProductClick }) => {
     setMessages((prev) => [...prev, { type: "user", text: userText }]);
     setLoading(true);
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: `You are the "FELICITE™ AI Stylist". You are sophisticated, minimalist, and knowledgeable about streetwear. Your goal is to provide fashion styling advice based on the user's prompt and our current inventory. Our Inventory: ${JSON.stringify(products.map((p) => ({ id: p.id, name: p.name, category: p.category, price: p.price })))} Rules: 1. Be professional, chic, and encouraging. 2. Recommend 2-4 products from the provided inventory. 3. Return ONLY a valid JSON object. 4. JSON Structure: { "analysis": "short vibe analysis", "recommended_ids": ["string array of product IDs"], "chat_output": "the message to the user" } User Request: ${userText}`,
-              },
-            ],
-          },
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              analysis: { type: Type.STRING },
-              recommended_ids: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-              },
-              chat_output: { type: Type.STRING },
-            },
-            required: ["analysis", "recommended_ids", "chat_output"],
-          },
-        },
+      const response = await fetch("/api/stylist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userText,
+          inventory: (products || []).map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            price: p.price,
+          })),
+        }),
       });
-      if (!response.text) throw new Error("AI_RESPONSE_EMPTY");
-      const data = JSON.parse(response.text);
-      const matchedProducts = products.filter((p) =>
+      if (!response.ok) throw new Error("API_ERROR");
+      const data = await response.json();
+      const matchedProducts = (products || []).filter((p: any) =>
         data.recommended_ids?.includes(p.id),
       );
       setMessages((prev) => [
         ...prev,
-        { type: "ai", text: data.chat_output, products: matchedProducts },
+        {
+          type: "ai",
+          text: data.chat_output || "Here are matching garments from our collection.",
+          products: matchedProducts.length > 0 ? matchedProducts : (products || []).slice(0, 3),
+        },
       ]);
-    } catch (err) {
+    } catch {
+      const fallbackProducts = (products || []).slice(0, 3);
       setMessages((prev) => [
         ...prev,
-        { type: "ai", text: "SYSTEM INTERRUPTION. PLEASE RESTATE YOUR QUERY." },
+        {
+          type: "ai",
+          text: `For a clean contemporary silhouette matching "${userText}", consider these essential pieces from our collection.`,
+          products: fallbackProducts,
+        },
       ]);
     } finally {
       setLoading(false);
@@ -5599,7 +5660,11 @@ export default function App() {
   const [orders, setOrders] = useState([]);
   const [checkoutSessions, setCheckoutSessions] = useState<CheckoutSession[]>([]);
   const [adminEmail, setAdminEmail] = useState("");
-  const [productsList, setProductsList] = useState([]);
+  const [authPass, setAuthPass] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+  const [productsList, setProductsList] = useState<Product[]>(defaultProducts || []);
 
   const deleteCheckoutSession = async (sessionId: string) => {
     if (!window.confirm("Delete this checkout session?")) return;
@@ -5742,69 +5807,108 @@ export default function App() {
     return () => supabase.removeChannel(channel);
   }, []);
 
+  // 1. Listen & sync Supabase Auth session
   useEffect(() => {
-    const authorizedEmails = [
-      "mimpy124ahon124@gmail.com",
-      "feliciteclothing@gmail.com",
-      "one@gmail.com",
-    ];
+    if (!supabase) return;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const user = session?.user;
-      const isAuthorized = user && authorizedEmails.includes(user.email || "");
-      setIsAdmin(!!isAuthorized);
-      setAdminEmail(user?.email || "");
-      if (!isAuthorized) setIsAdminMode(false);
+      if (session?.user) {
+        setIsAdmin(true);
+        if (session.user.email) setAdminEmail(session.user.email);
+      } else {
+        setIsAdmin(false);
+        setIsAdminMode(false);
+      }
     });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user;
-      const isAuthorized = user && authorizedEmails.includes(user.email || "");
-      setIsAdmin(!!isAuthorized);
-      setAdminEmail(user?.email || "");
-      if (!isAuthorized) setIsAdminMode(false);
+      if (session?.user) {
+        setIsAdmin(true);
+        if (session.user.email) setAdminEmail(session.user.email);
+      } else {
+        setIsAdmin(false);
+        setIsAdminMode(false);
+      }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchAllOrders = React.useCallback(async () => {
+    try {
+      let allOrders: any[] = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .range(from, from + step - 1);
+
+        if (error) {
+          console.error("Error fetching orders:", error);
+          break;
+        }
+        if (!data || data.length === 0) break;
+        allOrders = allOrders.concat(data);
+        if (data.length < step) break;
+        from += step;
+      }
+      setOrders(allOrders);
+    } catch (err) {
+      console.error("Orders fetch error:", err);
+    }
+  }, []);
+
+  const fetchAllSessions = React.useCallback(async () => {
+    try {
+      let allSessions: any[] = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("checkout_sessions")
+          .select("*")
+          .order("last_activity_at", { ascending: false })
+          .range(from, from + step - 1);
+
+        if (error) {
+          console.error("Error fetching checkout sessions:", error);
+          break;
+        }
+        if (!data || data.length === 0) break;
+        allSessions = allSessions.concat(data);
+        if (data.length < step) break;
+        from += step;
+      }
+      setCheckoutSessions(processCheckoutSessions(allSessions as CheckoutSession[]));
+    } catch (err) {
+      console.error("Sessions fetch error:", err);
+    }
   }, []);
 
   useEffect(() => {
-    let ordersChannel = null;
-    let sessionsChannel = null;
+    let ordersChannel: any = null;
+    let sessionsChannel: any = null;
     if (isAdmin) {
-      supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(100)
-        .then(({ data, error }) => {
-          if (!error) setOrders((data || []).slice(0, 100));
-        });
+      fetchAllOrders();
+      fetchAllSessions();
+
       ordersChannel = supabase
         .channel("orders-changes")
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "orders" },
           () => {
-            supabase
-              .from("orders")
-              .select("*")
-              .order("created_at", { ascending: false })
-              .limit(100)
-              .then(({ data }) => setOrders((data || []).slice(0, 100)));
+            fetchAllOrders();
           },
         )
         .subscribe();
-
-      supabase
-        .from("checkout_sessions")
-        .select("*")
-        .order("last_activity_at", { ascending: false })
-        .limit(100)
-        .then(({ data, error }) => {
-          if (!error && data) {
-            setCheckoutSessions(processCheckoutSessions(data as CheckoutSession[]));
-          }
-        });
 
       sessionsChannel = supabase
         .channel("checkout-sessions-changes")
@@ -5812,16 +5916,7 @@ export default function App() {
           "postgres_changes",
           { event: "*", schema: "public", table: "checkout_sessions" },
           () => {
-            supabase
-              .from("checkout_sessions")
-              .select("*")
-              .order("last_activity_at", { ascending: false })
-              .limit(100)
-              .then(({ data }) => {
-                if (data) {
-                  setCheckoutSessions(processCheckoutSessions(data as CheckoutSession[]));
-                }
-              });
+            fetchAllSessions();
           },
         )
         .subscribe();
@@ -5831,7 +5926,7 @@ export default function App() {
       if (ordersChannel) supabase.removeChannel(ordersChannel);
       if (sessionsChannel) supabase.removeChannel(sessionsChannel);
     };
-  }, [isAdmin]);
+  }, [isAdmin, fetchAllOrders, fetchAllSessions]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1800);
@@ -5842,24 +5937,65 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [currentPage, selectedProduct]);
 
-  const toggleAdmin = async () => {
-    if (!isAdmin) {
-      const email = prompt("Admin email:");
-      const password = prompt("Password:");
-      if (email && password) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) alert("Login failed: " + error.message);
-        else setIsAdminMode(true);
+  // 2. Handle Login Form Action
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setAuthError("");
+
+    if (!supabase) {
+      setAuthError("Supabase client is not configured.");
+      return;
+    }
+
+    setIsLoggingIn(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: adminEmail.trim(),
+        password: authPass,
+      });
+
+      if (error) {
+        setAuthError(error.message || "Invalid login credentials.");
+        setIsAdmin(false);
+      } else if (data?.user) {
+        setIsAdmin(true);
+        setIsAdminMode(true);
+        setIsAdminLoginOpen(false);
+        setAuthPass("");
       }
-    } else {
+    } catch (err: any) {
+      setAuthError(err?.message || "Authentication error.");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  // 3. Handle Logout
+  const handleLogout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    setIsAdmin(false);
+    setIsAdminMode(false);
+  };
+
+  const toggleAdmin = () => {
+    if (isAdmin) {
       setIsAdminMode(true);
+    } else {
+      setAuthError("");
+      setIsAdminLoginOpen(true);
     }
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? { ...o, status: newStatus, updated_at: new Date().toISOString() }
+          : o,
+      ),
+    );
     await supabase
       .from("orders")
       .update({ status: newStatus, updated_at: new Date().toISOString() })
@@ -5983,6 +6119,10 @@ export default function App() {
           }
         }}
         onClose={() => setIsAdminMode(false)}
+        onLogout={handleLogout}
+        onRefresh={async () => {
+          await Promise.all([fetchAllOrders(), fetchAllSessions()]);
+        }}
       />
     );
   }
@@ -6137,18 +6277,22 @@ export default function App() {
                 </motion.button>
               </div>
             </section>
+            <BrandFilm onShopClick={() => navigateTo("shop")} />
           </>
         ) : currentPage === "shop" ? (
-          <ShopPage
-            productsList={productsList}
-            onAddToCart={addToCart}
-            onProductClick={handleProductClick}
-            activeCategory={selectedCategory}
-            setActiveCategory={setSelectedCategory}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            categoriesList={categories}
-          />
+          <>
+            <ShopPage
+              productsList={productsList}
+              onAddToCart={addToCart}
+              onProductClick={handleProductClick}
+              activeCategory={selectedCategory}
+              setActiveCategory={setSelectedCategory}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              categoriesList={categories}
+            />
+            <BrandFilm onShopClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+          </>
         ) : currentPage === "product" ? (
           selectedProduct && (
             <ProductView
@@ -6256,6 +6400,98 @@ export default function App() {
           )
         }
       />
+
+      {/* Admin Authentication Modal */}
+      <AnimatePresence>
+        {isAdminLoginOpen && !isAdmin && (
+          <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              className="bg-white max-w-md w-full p-8 md:p-10 border border-black/10 shadow-2xl relative"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAdminLoginOpen(false);
+                  setAuthError("");
+                  setAuthPass("");
+                }}
+                className="absolute top-6 right-6 text-gray-400 hover:text-black transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="w-4 h-4 text-black" />
+                  <span className="text-[9px] font-mono tracking-[0.25em] text-gray-400 uppercase">
+                    Security Protocol
+                  </span>
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-black">
+                  Admin Console Access
+                </h3>
+                <p className="text-[11px] text-gray-500 mt-1 uppercase tracking-wider">
+                  Authenticate using your Supabase credentials
+                </p>
+              </div>
+
+              {authError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-mono uppercase tracking-wide">
+                  {authError}
+                </div>
+              )}
+
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div>
+                  <label className="block text-[9px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    placeholder="admin@feliciteclo.com"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 text-xs font-mono focus:border-black focus:bg-white focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={authPass}
+                    onChange={(e) => setAuthPass(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 text-xs font-mono focus:border-black focus:bg-white focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoggingIn}
+                  className="w-full mt-6 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.25em] hover:bg-black/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Authenticating...</span>
+                    </>
+                  ) : (
+                    <span>Authenticate</span>
+                  )}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
