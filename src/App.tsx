@@ -4703,7 +4703,13 @@ const CheckoutModal = ({
       const selectedAddOnDetails = GIFT_ADDONS.filter((a) =>
         selectedAddOns.includes(a.id),
       );
+      const createdOrderId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `ord-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
       const orderData: any = {
+        id: createdOrderId,
         customer_info: formData,
         items: totalItems,
         total_amount: totalAmount,
@@ -4717,16 +4723,13 @@ const CheckoutModal = ({
         payment_method: method,
         created_at: new Date().toISOString(),
       };
-      const { data: insertedOrders, error: insertError } = await supabase
-        .from("orders")
-        .insert([orderData])
-        .select("id");
-      if (insertError) throw insertError;
 
-      const createdOrderId = insertedOrders?.[0]?.id || null;
-      if (createdOrderId) {
-        orderData.id = createdOrderId;
-      }
+      // We do not append .select('id') here because public/guest checkouts have INSERT permissions
+      // but Postgres RLS evaluates SELECT policies when RETURNING is requested, causing RLS error 42501.
+      const { error: insertError } = await supabase
+        .from("orders")
+        .insert([orderData]);
+      if (insertError) throw insertError;
 
       if (sessionIdRef.current) {
         try {

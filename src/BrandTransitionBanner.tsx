@@ -14,7 +14,7 @@ export const BrandTransitionBanner: React.FC = () => {
         {/* Editorial Eyebrow */}
         <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <span className="h-[1px] w-6 sm:w-12 bg-neutral-200" />
-          <p className="text-[10px] sm:text-[11px] font-mono tracking-[0.35em] sm:tracking-[0.45em] text-neutral-400 uppercase font-semibold">
+          <p className="text-[10px] sm:text-[11px] tracking-[0.35em] sm:tracking-[0.45em] text-neutral-400 uppercase font-bold font-sans">
             SPRING ARCHIVE 2026
           </p>
           <span className="h-[1px] w-6 sm:w-12 bg-neutral-200" />
@@ -30,23 +30,23 @@ export const BrandTransitionBanner: React.FC = () => {
         >
           <h2
             style={{ fontFamily: "'Syne', sans-serif" }}
-            className="font-goated text-[clamp(2.5rem,8.2vw,7.2rem)] lg:text-[7.8rem] xl:text-[8.5rem] font-black uppercase tracking-[0.03em] sm:tracking-[0.05em] text-black leading-none text-center cursor-default drop-shadow-sm transition-all duration-500 ease-out hover:opacity-85 max-w-full"
+            className="font-goated text-[clamp(2.5rem,8.2vw,7.2rem)] lg:text-[7.8rem] xl:text-[8.5rem] font-black uppercase tracking-[0.04em] sm:tracking-[0.06em] text-black leading-none text-center cursor-default drop-shadow-sm transition-all duration-500 ease-out hover:opacity-85 max-w-full"
           >
-            FELICITE
+            FELICITÉ
           </h2>
         </motion.div>
 
         {/* Editorial Sub-bar */}
         <div className="mt-5 sm:mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-6 text-neutral-400">
-          <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.3em] text-neutral-500 uppercase font-medium">
+          <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-neutral-600 uppercase font-semibold font-sans">
             CONTEMPORARY WEAR
           </span>
-          <span className="hidden sm:inline-block text-neutral-300 font-mono">/</span>
-          <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.3em] text-neutral-500 uppercase font-medium">
+          <span className="hidden sm:inline-block text-neutral-300">/</span>
+          <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-neutral-600 uppercase font-semibold font-sans">
             PARIS · DHAKA
           </span>
-          <span className="hidden sm:inline-block text-neutral-300 font-mono">/</span>
-          <span className="text-[9px] sm:text-[10px] font-mono tracking-[0.3em] text-neutral-400 uppercase font-medium">
+          <span className="hidden sm:inline-block text-neutral-300">/</span>
+          <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-neutral-500 uppercase font-semibold font-sans">
             HAUTE READY-TO-WEAR
           </span>
         </div>

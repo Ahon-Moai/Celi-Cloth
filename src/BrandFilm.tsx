@@ -226,13 +226,13 @@ export const BrandFilm: React.FC<BrandFilmProps> = ({ onShopClick }) => {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 border-b border-white/10 pb-6">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-[0.25em] text-zinc-400 uppercase">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-[0.2em] text-zinc-400 uppercase">
                 <Film className="w-3 h-3 text-white" />
-                CAMPAIGN 2026
+                CAMPAIGN ARCHIVE 2026
               </span>
               <span className="text-zinc-600">/</span>
-              <span className="text-[10px] tracking-[0.25em] text-zinc-400 uppercase font-mono">
-                SPRING COLLECTION
+              <span className="text-[10px] tracking-[0.2em] text-zinc-400 uppercase font-sans font-bold">
+                SPRING / SUMMER CAPSULE
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white font-sans">
@@ -269,7 +269,7 @@ export const BrandFilm: React.FC<BrandFilmProps> = ({ onShopClick }) => {
           className="relative w-full aspect-video bg-zinc-950 border border-white/15 overflow-hidden shadow-2xl group select-none"
         >
           {/* Subtle Brand Watermarks */}
-          <div className="absolute top-3 left-3 pointer-events-none z-20 text-[10px] font-mono tracking-widest text-white/50 uppercase">
+          <div className="absolute top-3 left-3 pointer-events-none z-20 text-[10px] font-sans font-bold tracking-widest text-white/50 uppercase">
             FELICITÉ
           </div>
 
@@ -340,11 +340,11 @@ export const BrandFilm: React.FC<BrandFilmProps> = ({ onShopClick }) => {
                 </motion.div>
 
                 {/* Tag below center button */}
-                <div className="mt-5 flex items-center gap-2 px-3.5 py-1.5 bg-black/80 border border-white/20 text-[10px] font-mono tracking-[0.25em] uppercase text-zinc-300">
+                <div className="mt-5 flex items-center gap-2 px-3.5 py-1.5 bg-black/80 border border-white/20 text-[10px] font-sans font-bold tracking-[0.2em] uppercase text-zinc-300">
                   <Film className="w-3 h-3 text-white" />
                   <span>{hasStartedPlaying ? "RESUME FILM" : "PLAY CAMPAIGN FILM"}</span>
                   <span className="text-zinc-500">·</span>
-                  <span>{formatTime(duration)}</span>
+                  <span className="tabular-nums">{formatTime(duration)}</span>
                 </div>
               </motion.div>
             )}
@@ -409,11 +409,11 @@ export const BrandFilm: React.FC<BrandFilmProps> = ({ onShopClick }) => {
                   type="button"
                   onClick={handleStop}
                   aria-label="Stop Video and Reset"
-                  className="group relative px-2.5 sm:px-3 h-9 sm:h-10 flex items-center gap-1.5 bg-white/5 hover:bg-red-600/90 text-zinc-300 hover:text-white border border-white/20 hover:border-red-500 transition-all"
+                  className="group relative px-2.5 sm:px-3 h-9 sm:h-10 flex items-center gap-1.5 bg-white/5 hover:bg-neutral-800 text-zinc-300 hover:text-white border border-white/20 transition-all"
                   title="Stop and Reset to Beginning"
                 >
-                  <Square className="w-3.5 h-3.5 fill-current" />
-                  <span className="text-[10px] font-mono tracking-widest font-bold uppercase hidden sm:inline">
+                  <Square className="w-3 h-3 fill-current" />
+                  <span className="text-[10px] font-sans tracking-wider font-bold uppercase hidden sm:inline">
                     STOP
                   </span>
                 </button>
@@ -435,7 +435,7 @@ export const BrandFilm: React.FC<BrandFilmProps> = ({ onShopClick }) => {
                 </button>
 
                 {/* Digital Time Code Display */}
-                <div className="text-[11px] sm:text-xs font-mono tracking-wider text-zinc-300 ml-1 sm:ml-2">
+                <div className="text-[11px] sm:text-xs font-sans tracking-wide text-zinc-300 ml-1 sm:ml-2 tabular-nums">
                   <span className="text-white font-bold">{formatTime(currentTime)}</span>
                   <span className="text-zinc-500 mx-1">/</span>
                   <span className="text-zinc-400">{formatTime(duration)}</span>
@@ -493,9 +493,9 @@ export const BrandFilm: React.FC<BrandFilmProps> = ({ onShopClick }) => {
         </div>
 
         {/* Clean Editorial Footer under the player */}
-        <div className="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+        <div className="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-[10px] font-sans text-zinc-400 uppercase tracking-widest">
           <div className="flex items-center gap-2">
-            <Film className="w-3 h-3 text-zinc-400" />
+            <Film className="w-3 h-3 text-zinc-300" />
             <span>FELICITÉ CAMPAIGN ARCHIVE</span>
           </div>
           <div className="text-zinc-500">
