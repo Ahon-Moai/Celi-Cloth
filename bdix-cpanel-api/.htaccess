@@ -1,0 +1,28 @@
+# ----------------------------------------------------------------------
+# BDIX Image Storage API - Root .htaccess
+# ----------------------------------------------------------------------
+
+# 1. Enable Authorization header in Apache / cPanel FastCGI
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Pass Authorization header into PHP $_SERVER['HTTP_AUTHORIZATION']
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+</IfModule>
+
+# 2. Disable directory listing
+Options -Indexes
+
+# 3. Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+# 4. Optional: Recommended upload settings (if supported by cPanel Apache handler)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 25M
+    php_value max_execution_time 120
+    php_value memory_limit 128M
+</IfModule>

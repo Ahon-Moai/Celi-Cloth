@@ -253,7 +253,12 @@ function createMockSupabaseClient() {
     auth: {
       getSession: async () => ({
         data: {
-          session: currentUser ? { user: currentUser } : null,
+          session: currentUser
+            ? {
+                user: currentUser,
+                access_token: currentUser.access_token || `mock-token-${currentUser.id}`,
+              }
+            : null,
         },
         error: null,
       }),

@@ -52,10 +52,19 @@ import {
   Users,
   Activity,
   RotateCw,
+  Upload,
+  Image as ImageIcon,
+  Server,
 } from "lucide-react";
 
 import { Product, CartItem, Order, CheckoutSession } from "./types";
 import { supabase } from "./lib/supabase";
+import {
+  uploadProductImage,
+  uploadProductImages,
+  isBdixImageUrl,
+  BDIX_BASE_URL,
+} from "./lib/bdixStorage";
 import { products as defaultProducts } from "./products";
 import { BrandFilm } from "./BrandFilm";
 import { BrandTransitionBanner } from "./BrandTransitionBanner";
@@ -2203,6 +2212,69 @@ const AdminDashboard = ({
   const [newColor, setNewColor] = useState("#000000");
   const [newGalleryUrl, setNewGalleryUrl] = useState("");
 
+  // BDIX Image Upload States
+  const [isUploadingPrimary, setIsUploadingPrimary] = useState(false);
+  const [primaryUploadProgress, setPrimaryUploadProgress] = useState(0);
+  const [primaryUploadError, setPrimaryUploadError] = useState("");
+  const primaryFileInputRef = useRef<HTMLInputElement>(null);
+
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
+  const [galleryUploadError, setGalleryUploadError] = useState("");
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePrimaryFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPrimary(true);
+    setPrimaryUploadProgress(0);
+    setPrimaryUploadError("");
+
+    try {
+      const res = await uploadProductImage(file, (pct) => {
+        setPrimaryUploadProgress(pct);
+      });
+      setProductForm((prev) => ({
+        ...prev,
+        image: res.url,
+      }));
+    } catch (err: any) {
+      console.error("[Primary Upload Error]", err);
+      setPrimaryUploadError(err.message || "Failed to upload image to BDIX server.");
+    } finally {
+      setIsUploadingPrimary(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const handleGalleryFilesSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files: File[] = e.target.files ? Array.from(e.target.files) : [];
+    if (!files.length) return;
+
+    setIsUploadingGallery(true);
+    setGalleryUploadProgress(0);
+    setGalleryUploadError("");
+
+    try {
+      const res = await uploadProductImages(files, (pct) => {
+        setGalleryUploadProgress(pct);
+      });
+      if (res.urls && res.urls.length) {
+        setProductForm((prev) => ({
+          ...prev,
+          gallery: [...prev.gallery, ...res.urls],
+        }));
+      }
+    } catch (err: any) {
+      console.error("[Gallery Upload Error]", err);
+      setGalleryUploadError(err.message || "Failed to upload gallery images to BDIX server.");
+    } finally {
+      setIsUploadingGallery(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
   const handleAddGalleryUrl = () => {
     if (newGalleryUrl.trim()) {
       setProductForm((prev) => ({
@@ -2215,6 +2287,10 @@ const AdminDashboard = ({
 
   const handleOpenAddModal = () => {
     setEditingProduct(null);
+    setPrimaryUploadError("");
+    setGalleryUploadError("");
+    setPrimaryUploadProgress(0);
+    setGalleryUploadProgress(0);
     setProductForm({
       name: "",
       price: 0,
@@ -2232,6 +2308,10 @@ const AdminDashboard = ({
 
   const handleOpenEditModal = (p) => {
     setEditingProduct(p);
+    setPrimaryUploadError("");
+    setGalleryUploadError("");
+    setPrimaryUploadProgress(0);
+    setGalleryUploadProgress(0);
     setProductForm({
       name: p.name,
       price: p.price,
@@ -2449,40 +2529,131 @@ const AdminDashboard = ({
                       </div>
                     </div>
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                        Primary Image URL
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          Primary Product Image
+                        </label>
+                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+                          <Server className="w-2.5 h-2.5 text-gray-500" />
+                          BDIX: files.feliciteclo.com
+                        </span>
+                      </div>
+
+                      {/* Hidden File Input */}
                       <input
-                        type="text"
-                        placeholder="https://..."
-                        className="w-full border-b border-gray-100 py-3 text-sm outline-none focus:border-black font-mono"
-                        value={productForm.image}
-                        onChange={(e) =>
-                          setProductForm({
-                            ...productForm,
-                            image: e.target.value,
-                          })
-                        }
+                        type="file"
+                        ref={primaryFileInputRef}
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handlePrimaryFileSelect}
+                        className="hidden"
                       />
-                      {productForm.image && (
-                        <div className="aspect-[4/5] bg-gray-50 border border-gray-100 overflow-hidden relative">
+
+                      {/* Upload Box / Dropzone */}
+                      {!productForm.image ? (
+                        <div
+                          onClick={() => !isUploadingPrimary && primaryFileInputRef.current?.click()}
+                          className={`border-2 border-dashed border-gray-200 hover:border-black transition-all p-6 text-center cursor-pointer bg-gray-50/50 flex flex-col items-center justify-center gap-2 group ${
+                            isUploadingPrimary ? "opacity-60 cursor-not-allowed" : ""
+                          }`}
+                        >
+                          {isUploadingPrimary ? (
+                            <>
+                              <Loader2 className="w-6 h-6 animate-spin text-black" />
+                              <span className="text-xs font-black uppercase tracking-widest">
+                                Uploading to BDIX ({primaryUploadProgress}%)
+                              </span>
+                              <div className="w-48 bg-gray-200 h-1.5 mt-1 overflow-hidden">
+                                <div
+                                  className="bg-black h-full transition-all duration-200"
+                                  style={{ width: `${primaryUploadProgress}%` }}
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-10 h-10 border border-gray-200 bg-white flex items-center justify-center group-hover:border-black transition-colors">
+                                <Upload className="w-4 h-4 text-gray-600 group-hover:text-black" />
+                              </div>
+                              <span className="text-xs font-black uppercase tracking-wider">
+                                Upload to BDIX Hosting
+                              </span>
+                              <span className="text-[10px] text-gray-400 font-mono">
+                                WebP, JPG, PNG • Max 10MB • Auto-Optimized
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="aspect-[4/5] bg-gray-50 border border-gray-100 overflow-hidden relative group">
                           <img
                             src={productForm.image}
                             className="w-full h-full object-cover"
                             alt="Preview"
                             referrerPolicy="no-referrer"
                           />
+                          <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm text-white px-2 py-0.5 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
+                            {isBdixImageUrl(productForm.image) ? (
+                              <>
+                                <Server className="w-2.5 h-2.5 text-emerald-400" />
+                                BDIX Hosted
+                              </>
+                            ) : (
+                              "External / Supabase"
+                            )}
+                          </div>
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => primaryFileInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-white text-black text-[9px] font-black uppercase tracking-wider hover:bg-gray-100"
+                            >
+                              Replace Image
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setProductForm((prev) => ({ ...prev, image: "" }))
+                              }
+                              className="p-1.5 bg-red-600 text-white hover:bg-red-700"
+                              title="Remove image"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {primaryUploadError && (
+                        <div className="text-[11px] text-red-600 font-mono bg-red-50 p-2.5 border border-red-100 flex items-start justify-between gap-2">
+                          <span>{primaryUploadError}</span>
                           <button
                             type="button"
-                            onClick={() =>
-                              setProductForm((prev) => ({ ...prev, image: "" }))
-                            }
-                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                            onClick={() => setPrimaryUploadError("")}
+                            className="text-red-400 hover:text-red-700"
                           >
                             <X className="w-3 h-3" />
                           </button>
                         </div>
                       )}
+
+                      {/* Direct URL input fallback */}
+                      <div className="pt-1">
+                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          Direct Image URL (Or Paste Link)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="https://files.feliciteclo.com/uploads/products/..."
+                          className="w-full border-b border-gray-100 py-2 text-xs outline-none focus:border-black font-mono text-gray-600"
+                          value={productForm.image}
+                          onChange={(e) =>
+                            setProductForm({
+                              ...productForm,
+                              image: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
@@ -2509,13 +2680,64 @@ const AdminDashboard = ({
 
                   <div className="space-y-6">
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                        Gallery Images
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          Gallery Images
+                        </label>
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                          {productForm.gallery.length} Images Added
+                        </span>
+                      </div>
+
+                      {/* Hidden Multi-file input */}
+                      <input
+                        type="file"
+                        ref={galleryFileInputRef}
+                        multiple
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleGalleryFilesSelect}
+                        className="hidden"
+                      />
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => !isUploadingGallery && galleryFileInputRef.current?.click()}
+                          disabled={isUploadingGallery}
+                          className="flex-1 py-2.5 px-3 border border-black bg-black text-white text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-neutral-800 disabled:opacity-50 transition-colors"
+                        >
+                          {isUploadingGallery ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Uploading to BDIX ({galleryUploadProgress}%)
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-3.5 h-3.5" />
+                              Upload Images to BDIX
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {galleryUploadError && (
+                        <div className="text-[11px] text-red-600 font-mono bg-red-50 p-2.5 border border-red-100 flex items-start justify-between gap-2">
+                          <span>{galleryUploadError}</span>
+                          <button
+                            type="button"
+                            onClick={() => setGalleryUploadError("")}
+                            className="text-red-400 hover:text-red-700"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Manual Gallery URL Paste */}
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          placeholder="PASTE GALLERY URL"
+                          placeholder="PASTE GALLERY URL (HTTPS://...)"
                           className="flex-1 border-b border-gray-100 py-2 text-xs outline-none focus:border-black font-mono uppercase"
                           value={newGalleryUrl}
                           onChange={(e) => setNewGalleryUrl(e.target.value)}
@@ -2523,24 +2745,33 @@ const AdminDashboard = ({
                         <button
                           type="button"
                           onClick={handleAddGalleryUrl}
-                          className="px-4 py-2 border border-black text-[9px] font-black uppercase"
+                          className="px-4 py-2 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-colors"
                         >
-                          Add
+                          Add URL
                         </button>
                       </div>
+
+                      {/* Gallery Thumbnails Grid */}
                       <div className="grid grid-cols-3 gap-3">
                         {productForm.gallery.map((url, i) => (
                           <div
                             key={i}
-                            className="aspect-square relative group bg-gray-50 border border-gray-100"
+                            className="aspect-square relative group bg-gray-50 border border-gray-100 overflow-hidden"
                           >
                             {url ? (
-                              <img
-                                src={url}
-                                className="w-full h-full object-cover"
-                                alt=""
-                                referrerPolicy="no-referrer"
-                              />
+                              <>
+                                <img
+                                  src={url}
+                                  className="w-full h-full object-cover"
+                                  alt=""
+                                  referrerPolicy="no-referrer"
+                                />
+                                {isBdixImageUrl(url) && (
+                                  <span className="absolute top-1 left-1 bg-black/80 text-white text-[7px] font-black px-1 uppercase tracking-wider">
+                                    BDIX
+                                  </span>
+                                )}
+                              </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-[8px] font-black text-gray-200 uppercase">
                                 Void
@@ -2549,7 +2780,8 @@ const AdminDashboard = ({
                             <button
                               type="button"
                               onClick={() => removeGalleryItem(i)}
-                              className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                              className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                              title="Remove image"
                             >
                               <X className="w-4 h-4" />
                             </button>

@@ -1,0 +1,35 @@
+# ----------------------------------------------------------------------
+# Upload Security: Disable all script execution inside /uploads/products/
+# ----------------------------------------------------------------------
+
+# Disable CGI execution and directory listings
+Options -ExecCGI -Indexes
+
+# Remove script handlers
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .cgi .pl .py .sh .bash
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .cgi .pl .py .sh .bash
+
+# Deny access to any script or executable file types
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phps|pl|py|cgi|sh|bash|exe|bin|htaccess|htpasswd)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Disable PHP engine in mod_php if enabled
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Ensure public images cache well for fast BDIX delivery
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+</IfModule>
