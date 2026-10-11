@@ -28,10 +28,22 @@ Options -Indexes
     Header set X-Content-Type-Options "nosniff"
 </IfModule>
 
-# 5. Optional: Recommended upload settings (if supported by cPanel Apache handler)
+# 5. Recommended upload settings (for mod_php, mod_php7, mod_php8)
 <IfModule mod_php.c>
-    php_value upload_max_filesize 20M
-    php_value post_max_size 25M
-    php_value max_execution_time 120
-    php_value memory_limit 128M
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value memory_limit 256M
+</IfModule>
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value memory_limit 256M
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value memory_limit 256M
 </IfModule>

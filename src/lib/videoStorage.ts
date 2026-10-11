@@ -1,11 +1,12 @@
+import { BDIX_BASE_URL } from "./bdixStorage";
+
 /**
  * Product Video Optimization and Upload Engine
  * 
  * Provides:
  * 1. Client-side video poster frame extraction via Canvas
  * 2. Real-time upload progress tracking
- * 3. Server-side FFmpeg H.264 CRF compression with FastStart streaming
- * 4. Automatic video poster generation to eliminate customer bandwidth drain
+ * 3. Direct upload to BDIX cPanel hosting
  */
 
 export interface VideoUploadResult {
@@ -43,7 +44,7 @@ export function isVideoUrl(url?: string): boolean {
 }
 
 /**
- * Extracts a crisp snapshot frame from a video File using HTML5 Video + Canvas
+ * Extracts a crisp snapshot frame from a video File using HTML5 Video + Canvas.
  * Used for instant poster thumbnails so the browser doesn't have to load
  * video frames over cellular/slow connections.
  */
@@ -104,7 +105,67 @@ export async function generateVideoPosterFromClient(file: File): Promise<string>
 }
 
 /**
- * Uploads a video file to the server with real-time progress and FFmpeg optimization
+ * Upload video directly to BDIX cPanel hosting endpoint
+ */
+async function uploadVideoToBdix(
+  file: File,
+  clientPoster: string,
+  onProgress?: (percentage: number) => void
+): Promise<VideoUploadResult> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("video", file);
+    formData.append("file", file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${BDIX_BASE_URL}/upload.php`, true);
+    xhr.setRequestHeader("Accept", "application/json");
+
+    if (xhr.upload && onProgress) {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 95);
+          onProgress(percent);
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300 && res.success) {
+          if (onProgress) onProgress(100);
+          const finalUrl =
+            res.url ||
+            (res.files && res.files[0]?.url) ||
+            `${BDIX_BASE_URL}/uploads/videos/${res.filename}`;
+          resolve({
+            url: finalUrl,
+            thumbnail: clientPoster,
+            originalSize: file.size,
+            optimizedSize: res.size || file.size,
+            savingsPercent: 0,
+            optimizedWithFfmpeg: false,
+            message: "Hosted on BDIX cPanel CDN",
+          });
+        } else {
+          reject(new Error(res.error || `BDIX upload returned HTTP ${xhr.status}`));
+        }
+      } catch {
+        reject(new Error(`Failed to parse BDIX response (HTTP ${xhr.status})`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network error connecting to BDIX hosting"));
+    xhr.ontimeout = () => reject(new Error("BDIX video upload timed out"));
+    xhr.timeout = 60000;
+    xhr.send(formData);
+  });
+}
+
+/**
+ * Uploads a video file directly to BDIX cPanel hosting with real-time progress
+ * and client-side poster extraction.
  */
 export async function uploadAndOptimizeProductVideo(
   file: File,
@@ -119,7 +180,7 @@ export async function uploadAndOptimizeProductVideo(
     throw new Error('Unsupported video format. Please upload MP4, WebM, or MOV files.');
   }
 
-  // 100MB max limit to avoid exceeding system memory
+  // 100MB max limit
   const maxBytes = 100 * 1024 * 1024;
   if (file.size > maxBytes) {
     throw new Error(`Video file too large (${formatBytes(file.size)}). Maximum supported file size is 100MB.`);
@@ -133,66 +194,15 @@ export async function uploadAndOptimizeProductVideo(
     // Non-blocking
   }
 
-  // 3. Read video file into base64
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error('Failed to read video file from your device.'));
-    reader.readAsDataURL(file);
-  });
-
-  // 4. Send upload with progress tracking
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/upload-video', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-
-    // Live progress: allocation: 0-80% for network transfer, 80-100% for server compression
-    if (onProgress && xhr.upload) {
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const networkPct = Math.round((event.loaded / event.total) * 80);
-          onProgress(networkPct);
-        }
-      };
-    }
-
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          if (onProgress) onProgress(100);
-          const response = JSON.parse(xhr.responseText) as VideoUploadResult;
-          resolve(response);
-        } catch {
-          reject(new Error('Invalid response from video optimization server.'));
-        }
-      } else {
-        try {
-          const errRes = JSON.parse(xhr.responseText);
-          reject(new Error(errRes.error || `Server returned error (${xhr.status})`));
-        } catch {
-          reject(new Error(`Failed to upload video (HTTP ${xhr.status})`));
-        }
-      }
-    };
-
-    xhr.onerror = () => {
-      reject(new Error('Network error during video upload. Please check your connection.'));
-    };
-
-    xhr.ontimeout = () => {
-      reject(new Error('Video upload timed out. File may be too large.'));
-    };
-
-    // 120s timeout for large uploads + ffmpeg processing
-    xhr.timeout = 120000;
-
-    const payload = JSON.stringify({
-      data: dataUrl,
-      filename: file.name,
-      clientPoster: clientPoster || undefined,
-    });
-
-    xhr.send(payload);
-  });
+  // 3. Upload directly to BDIX cPanel Media Hosting
+  try {
+    return await uploadVideoToBdix(file, clientPoster, onProgress);
+  } catch (err: any) {
+    const errorMsg = err?.message || 'Failed to upload video to BDIX hosting.';
+    throw new Error(
+      errorMsg.includes('No files')
+        ? 'BDIX server rejected upload. Please verify cPanel upload folder permissions or server upload limit.'
+        : errorMsg
+    );
+  }
 }
