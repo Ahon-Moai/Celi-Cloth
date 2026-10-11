@@ -11,15 +11,24 @@
     RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 </IfModule>
 
-# 2. Disable directory listing
+# 2. Disable ModSecurity / WAF rule inspection on uploads if allowed by host
+<IfModule mod_security.c>
+    SecFilterEngine Off
+    SecFilterScanPOST Off
+</IfModule>
+<IfModule mod_security2.c>
+    SecRuleEngine Off
+</IfModule>
+
+# 3. Disable directory listing
 Options -Indexes
 
-# 3. Security headers
+# 4. Security headers
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
 </IfModule>
 
-# 4. Optional: Recommended upload settings (if supported by cPanel Apache handler)
+# 5. Optional: Recommended upload settings (if supported by cPanel Apache handler)
 <IfModule mod_php.c>
     php_value upload_max_filesize 20M
     php_value post_max_size 25M

@@ -34,6 +34,24 @@
     <link rel="preload" as="image" href="/banner_2.png" />
     <link rel="preload" as="image" href="/banner_3.png" />
     <script>
+      // Suppress Vite HMR WebSocket transport error logs in sandbox iframe
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event.reason;
+        var msg = reason ? (reason.message || String(reason)) : '';
+        var stack = (reason && reason.stack) ? String(reason.stack) : '';
+        if (msg.includes('WebSocket') || stack.includes('createWebSocketModuleRunnerTransport') || stack.includes('@vite/client')) {
+          event.preventDefault();
+        }
+      });
+      window.addEventListener('error', function(event) {
+        var msg = event.message || '';
+        var filename = event.filename || '';
+        if (msg.includes('WebSocket') || filename.includes('@vite/client')) {
+          event.preventDefault();
+        }
+      });
+    </script>
+    <script>
       !(function (f, b, e, v, n, t, s) {
         if (f.fbq) return;
         n = f.fbq = function () {

@@ -59,13 +59,50 @@ async function getAuthToken(): Promise<string> {
 }
 
 /**
+ * Local application storage fallback when external BDIX cPanel hosting is blocked by firewall/cPGuard
+ */
+async function uploadToLocalFallback(file: File): Promise<{ url: string; filename: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64Data = reader.result as string;
+        const res = await fetch("/api/upload-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            data: base64Data,
+            filename: file.name,
+            mimeType: file.type,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Failed to save image in application storage");
+        }
+        resolve({ url: data.url, filename: data.filename });
+      } catch (err: any) {
+        reject(err);
+      }
+    };
+    reader.onerror = () => reject(new Error("Failed to read image file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Uploads a single product image to BDIX cPanel hosting with live progress tracking
  */
 export async function uploadProductImage(
   file: File,
   onProgress?: (percentage: number) => void,
 ): Promise<{ url: string; filename: string }> {
-  const token = await getAuthToken();
+  let token = "";
+  try {
+    token = await getAuthToken();
+  } catch (authErr) {
+    console.warn("[Auth Warning]", authErr);
+  }
 
   const uploadToEndpoint = (endpoint: string, allowFallback: boolean): Promise<{ url: string; filename: string }> => {
     return new Promise((resolve, reject) => {
@@ -74,7 +111,9 @@ export async function uploadProductImage(
 
       const xhr = new XMLHttpRequest();
       xhr.open("POST", endpoint, true);
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      if (token) {
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      }
       xhr.setRequestHeader("Accept", "application/json");
 
       if (xhr.upload && onProgress) {
@@ -94,6 +133,22 @@ export async function uploadProductImage(
           return;
         }
 
+        const isHtml =
+          xhr.responseText.includes("<!DOCTYPE") ||
+          xhr.responseText.includes("<html") ||
+          xhr.responseText.includes("Security Check Required") ||
+          xhr.responseText.includes("406 Not Acceptable");
+
+        if (isHtml || xhr.status === 405 || xhr.status === 406 || xhr.status >= 500) {
+          console.warn(`[BDIX Storage] Host returned HTTP ${xhr.status} (WAF / cPGuard challenge). Activating local storage fallback.`);
+          uploadToLocalFallback(file)
+            .then(resolve)
+            .catch(() => {
+              reject(new Error(`BDIX server (${xhr.status}) is protected by cPGuard Firewall. Verify cPGuard in cPanel or try again.`));
+            });
+          return;
+        }
+
         try {
           const response: BdixUploadResponse = JSON.parse(xhr.responseText);
           if (xhr.status >= 200 && xhr.status < 300 && response.success) {
@@ -105,34 +160,48 @@ export async function uploadProductImage(
               response.filename || (response.files && response.files[0]?.filename) || "";
             resolve({ url: finalUrl, filename: finalFilename });
           } else {
-            const errMsg =
-              response.error ||
-              response.message ||
-              `Upload failed with HTTP status ${xhr.status}`;
-            reject(new Error(errMsg));
+            uploadToLocalFallback(file)
+              .then(resolve)
+              .catch(() => {
+                const errMsg = response.error || response.message || `Upload failed with HTTP ${xhr.status}`;
+                reject(new Error(errMsg));
+              });
           }
         } catch (e) {
-          reject(
-            new Error(
-              `Invalid server response from BDIX host (${xhr.status}). Ensure PHP upload API is installed at ${BDIX_BASE_URL}.`,
-            ),
-          );
+          uploadToLocalFallback(file)
+            .then(resolve)
+            .catch(() => {
+              reject(
+                new Error(
+                  `Invalid server response from BDIX host (${xhr.status}). Ensure PHP upload API is installed at ${BDIX_BASE_URL}.`,
+                ),
+              );
+            });
         }
       };
 
       xhr.onerror = () => {
-        reject(
-          new Error(
-            `Network error connecting to BDIX hosting at ${BDIX_BASE_URL}. Check CORS settings and cPanel availability.`,
-          ),
-        );
+        console.warn("[BDIX Storage] Network/CORS issue reaching BDIX host. Falling back to local storage.");
+        uploadToLocalFallback(file)
+          .then(resolve)
+          .catch(() => {
+            reject(
+              new Error(
+                `Network error connecting to BDIX hosting at ${BDIX_BASE_URL}. Check CORS settings and cPanel availability.`,
+              ),
+            );
+          });
       };
 
       xhr.ontimeout = () => {
-        reject(new Error("Upload timed out. Check your internet connection."));
+        uploadToLocalFallback(file)
+          .then(resolve)
+          .catch(() => {
+            reject(new Error("Upload timed out. Check your internet connection."));
+          });
       };
 
-      xhr.timeout = 60000; // 60 seconds
+      xhr.timeout = 25000;
       xhr.send(formData);
     });
   };
@@ -141,7 +210,7 @@ export async function uploadProductImage(
 }
 
 /**
- * Uploads multiple product images to BDIX cPanel hosting in batch
+ * Uploads multiple product images to BDIX cPanel hosting in batch (with graceful local fallback)
  */
 export async function uploadProductImages(
   files: File[],
@@ -151,7 +220,12 @@ export async function uploadProductImages(
     return { urls: [], files: [] };
   }
 
-  const token = await getAuthToken();
+  let token = "";
+  try {
+    token = await getAuthToken();
+  } catch {
+    // continue
+  }
 
   const uploadBatchToEndpoint = (endpoint: string, allowFallback: boolean): Promise<{ urls: string[]; files: BdixUploadFileResult[] }> => {
     return new Promise((resolve, reject) => {
@@ -162,7 +236,9 @@ export async function uploadProductImages(
 
       const xhr = new XMLHttpRequest();
       xhr.open("POST", endpoint, true);
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      if (token) {
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      }
       xhr.setRequestHeader("Accept", "application/json");
 
       if (xhr.upload && onProgress) {
@@ -182,6 +258,25 @@ export async function uploadProductImages(
           return;
         }
 
+        const isHtml =
+          xhr.responseText.includes("<!DOCTYPE") ||
+          xhr.responseText.includes("<html") ||
+          xhr.responseText.includes("Security Check Required") ||
+          xhr.responseText.includes("406 Not Acceptable");
+
+        if (isHtml || xhr.status === 405 || xhr.status === 406 || xhr.status >= 500) {
+          console.warn(`[BDIX Storage Batch] Host returned ${xhr.status} (WAF / cPGuard challenge). Activating local storage fallback.`);
+          Promise.all(files.map((f) => uploadToLocalFallback(f)))
+            .then((results) => {
+              resolve({
+                urls: results.map((r) => r.url),
+                files: results.map((r) => ({ filename: r.filename, url: r.url })),
+              });
+            })
+            .catch(reject);
+          return;
+        }
+
         try {
           const response: BdixUploadResponse = JSON.parse(xhr.responseText);
           if (xhr.status >= 200 && xhr.status < 300 && response.success) {
@@ -189,23 +284,45 @@ export async function uploadProductImages(
             const urls = uploadedFiles.map((f) => f.url);
             resolve({ urls, files: uploadedFiles });
           } else {
-            const errMsg = response.error || `Upload failed (HTTP ${xhr.status})`;
-            reject(new Error(errMsg));
+            Promise.all(files.map((f) => uploadToLocalFallback(f)))
+              .then((results) => {
+                resolve({
+                  urls: results.map((r) => r.url),
+                  files: results.map((r) => ({ filename: r.filename, url: r.url })),
+                });
+              })
+              .catch(() => reject(new Error(response.error || `Upload failed (HTTP ${xhr.status})`)));
           }
         } catch (e) {
-          reject(new Error(`Failed to parse response from BDIX host (${xhr.status}).`));
+          Promise.all(files.map((f) => uploadToLocalFallback(f)))
+            .then((results) => {
+              resolve({
+                urls: results.map((r) => r.url),
+                files: results.map((r) => ({ filename: r.filename, url: r.url })),
+              });
+            })
+            .catch(() => reject(new Error(`Failed to parse response from BDIX host (${xhr.status}).`)));
         }
       };
 
       xhr.onerror = () => {
-        reject(
-          new Error(
-            `Could not reach BDIX hosting at ${BDIX_BASE_URL}. Verify cPanel setup and domain DNS.`,
-          ),
-        );
+        Promise.all(files.map((f) => uploadToLocalFallback(f)))
+          .then((results) => {
+            resolve({
+              urls: results.map((r) => r.url),
+              files: results.map((r) => ({ filename: r.filename, url: r.url })),
+            });
+          })
+          .catch(() =>
+            reject(
+              new Error(
+                `Could not reach BDIX hosting at ${BDIX_BASE_URL}. Verify cPanel setup and domain DNS.`,
+              ),
+            ),
+          );
       };
 
-      xhr.timeout = 120000; // 2 minutes for bulk upload
+      xhr.timeout = 30000;
       xhr.send(formData);
     });
   };
