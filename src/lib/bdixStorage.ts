@@ -179,7 +179,8 @@ async function uploadToBdixViaJson(
         if (res.ok && data?.success && data?.url) {
           resolve({ url: data.url, filename: data.filename || file.name });
         } else {
-          throw new Error(data?.error || `BDIX JSON upload returned HTTP ${res.status}`);
+          const detail = data?.error || (data?.details && JSON.stringify(data.details)) || `HTTP ${res.status}`;
+          throw new Error(detail);
         }
       } catch (err) {
         reject(err);
@@ -276,7 +277,7 @@ export async function uploadProductImage(
       const msg = jsonErr?.message || err?.message || "Failed to upload image to BDIX hosting.";
       throw new Error(
         msg.includes("No files")
-          ? "BDIX server rejected upload. Please verify cPanel upload folder permissions or server upload limit."
+          ? "BDIX server rejected upload. Please verify cPanel upload folder permissions (chmod 755 on uploads/products/) or check https://files.feliciteclo.com/health.php."
           : msg
       );
     }

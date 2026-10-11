@@ -201,7 +201,7 @@ export async function uploadAndOptimizeProductVideo(
     const errorMsg = err?.message || 'Failed to upload video to BDIX hosting.';
     throw new Error(
       errorMsg.includes('No files')
-        ? 'BDIX server rejected upload. Please verify cPanel upload folder permissions or server upload limit.'
+        ? 'BDIX server rejected upload. Please verify cPanel upload folder permissions (chmod 755 on uploads/videos/) or check https://files.feliciteclo.com/health.php.'
         : errorMsg
     );
   }
