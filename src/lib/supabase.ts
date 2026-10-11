@@ -48,9 +48,12 @@ const initialCategories = Array.from(
 }));
 
 const initialShowcases = [
-  { section: "must_buy", product_id: initialProducts[0]?.id, sort_order: 1 },
-  { section: "trending", product_id: initialProducts[1]?.id, sort_order: 1 },
-  { section: "new_arrivals", product_id: initialProducts[2]?.id, sort_order: 1 },
+  { section: "trending_now", product_id: initialProducts[0]?.id, sort_order: 1 },
+  { section: "best_selling", product_id: initialProducts[1]?.id, sort_order: 1 },
+  { section: "comics_series_movies", product_id: initialProducts[2]?.id, sort_order: 1 },
+  { section: "comics_series_movies", product_id: initialProducts[3]?.id, sort_order: 2 },
+  { section: "boxy_fit", product_id: initialProducts[4]?.id, sort_order: 1 },
+  { section: "must_buy", product_id: initialProducts[5]?.id, sort_order: 1 },
 ];
 
 const mockStore: Record<string, any[]> = {

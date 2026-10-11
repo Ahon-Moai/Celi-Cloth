@@ -303,6 +303,7 @@ const GIFT_ADDONS = [
 export const SHOWCASE_SECTIONS = [
   { id: "trending_now", label: "Trending Now", icon: "🔥", accent: "#ef4444" },
   { id: "best_selling", label: "Best Selling", icon: "⚡", accent: "#f59e0b" },
+  { id: "comics_series_movies", label: "Comics X series X movies", icon: "🎬", accent: "#e11d48" },
   { id: "boxy_fit", label: "Boxy Fit T-Shirts", icon: "👕", accent: "#3b82f6" },
   { id: "must_buy", label: "Must Buy", icon: "★", accent: "#8b5cf6" },
 ];
@@ -6249,7 +6250,15 @@ export default function App() {
     setCheckoutSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
   };
   const pageHistoryRef = useRef(["home"]);
-  const [showcaseMap, setShowcaseMap] = useState({});
+  const DEFAULT_SHOWCASE_MAP: Record<string, string[]> = {
+    trending_now: (defaultProducts || []).slice(0, 4).map((p) => p.id),
+    best_selling: (defaultProducts || []).slice(4, 8).map((p) => p.id),
+    comics_series_movies: (defaultProducts || []).slice(8, 14).map((p) => p.id),
+    boxy_fit: (defaultProducts || []).filter((p) => p.category?.toLowerCase().includes("boxy")).slice(0, 5).map((p) => p.id),
+    must_buy: (defaultProducts || []).slice(2, 6).map((p) => p.id),
+  };
+
+  const [showcaseMap, setShowcaseMap] = useState<Record<string, string[]>>(DEFAULT_SHOWCASE_MAP);
 
   useEffect(() => {
     window.history.pushState({ felicite: true }, "");
@@ -6287,17 +6296,27 @@ export default function App() {
     setCurrentPage(page);
   };
   const fetchShowcases = async () => {
-    const { data, error } = await supabase
-      .from("showcases")
-      .select("section, product_id")
-      .order("sort_order");
-    if (!error && data) {
-      const map = {};
-      for (const row of data) {
-        if (!map[row.section]) map[row.section] = [];
-        map[row.section].push(row.product_id);
+    try {
+      const { data, error } = await supabase
+        .from("showcases")
+        .select("section, product_id")
+        .order("sort_order");
+      if (!error && data && data.length > 0) {
+        const map: Record<string, string[]> = {};
+        for (const row of data) {
+          if (!map[row.section]) map[row.section] = [];
+          map[row.section].push(row.product_id);
+        }
+        // Retain default products for sections not yet populated in the database
+        SHOWCASE_SECTIONS.forEach((sec) => {
+          if (!map[sec.id] || map[sec.id].length === 0) {
+            map[sec.id] = DEFAULT_SHOWCASE_MAP[sec.id] || [];
+          }
+        });
+        setShowcaseMap(map);
       }
-      setShowcaseMap(map);
+    } catch (e) {
+      console.warn("Could not fetch showcases:", e);
     }
   };
 
@@ -6730,6 +6749,12 @@ export default function App() {
               alert("Max 10 products per section.");
               return;
             }
+            setShowcaseMap((prev: any) => ({
+              ...prev,
+              [section]: prev[section]?.includes(productId)
+                ? prev[section]
+                : [...(prev[section] || []), productId],
+            }));
             await supabase
               .from("showcases")
               .upsert(
@@ -6741,6 +6766,10 @@ export default function App() {
                 { onConflict: "section,product_id" },
               );
           } else {
+            setShowcaseMap((prev: any) => ({
+              ...prev,
+              [section]: (prev[section] || []).filter((id: string) => id !== productId),
+            }));
             await supabase
               .from("showcases")
               .delete()
