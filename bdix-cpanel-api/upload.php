@@ -420,7 +420,7 @@ function process_and_save_media($file, $config, $upload_dir, $video_upload_dir) 
         'size' => $final_size,
         'width' => $orig_width,
         'height' => $orig_height,
-        'format' => $target_ext,
+        'format' => $processed ? $target_ext : $ext,
     ];
 }
 

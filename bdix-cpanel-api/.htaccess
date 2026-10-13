@@ -3,6 +3,7 @@
 # ----------------------------------------------------------------------
 
 # 1. Enable Authorization header in Apache / cPanel FastCGI
+CGIPassAuth On
 <IfModule mod_rewrite.c>
     RewriteEngine On
 

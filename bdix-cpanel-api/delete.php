@@ -49,7 +49,7 @@ $parsed_path = parse_url($target, PHP_URL_PATH);
 $filename = basename($parsed_path ?: $target);
 
 // 1. Strict filename character whitelist (Prevents path traversal, injection, or deletion of system files)
-if (!preg_match('/^[a-zA-Z0-9_\-\.]+\.(jpg|jpeg|png|webp)$/i', $filename)) {
+if (!preg_match('/^[a-zA-Z0-9_\-\.]+\.(jpg|jpeg|png|webp|mp4|webm|mov|m4v)$/i', $filename)) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
@@ -69,30 +69,32 @@ if ($filename === '.' || $filename === '..' || strpos($filename, '..') !== false
 }
 
 $upload_dir = realpath(rtrim($config['upload_dir'], '/'));
-if (!$upload_dir) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Upload directory does not exist on server.',
-    ]);
-    exit;
+$video_upload_dir = realpath(rtrim($config['video_upload_dir'] ?? ($config['upload_dir'] . '../videos/'), '/'));
+
+$file_path = null;
+$target_dir = null;
+
+if ($upload_dir && file_exists($upload_dir . DIRECTORY_SEPARATOR . $filename)) {
+    $file_path = $upload_dir . DIRECTORY_SEPARATOR . $filename;
+    $target_dir = $upload_dir;
+} elseif ($video_upload_dir && file_exists($video_upload_dir . DIRECTORY_SEPARATOR . $filename)) {
+    $file_path = $video_upload_dir . DIRECTORY_SEPARATOR . $filename;
+    $target_dir = $video_upload_dir;
 }
 
-$file_path = $upload_dir . DIRECTORY_SEPARATOR . $filename;
-
-// Check if file exists
-if (!file_exists($file_path)) {
+// Check if file exists in either directory
+if (!$file_path || !file_exists($file_path)) {
     http_response_code(404);
     echo json_encode([
         'success' => false,
-        'error' => "Image '{$filename}' not found in upload directory.",
+        'error' => "File '{$filename}' not found in upload directories.",
     ]);
     exit;
 }
 
-// Verify realpath is strictly inside $upload_dir
+// Verify realpath is strictly inside target upload directory
 $real_file_path = realpath($file_path);
-if ($real_file_path === false || strpos($real_file_path, $upload_dir) !== 0) {
+if ($real_file_path === false || strpos($real_file_path, $target_dir) !== 0) {
     http_response_code(403);
     echo json_encode([
         'success' => false,

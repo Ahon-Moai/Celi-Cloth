@@ -65,8 +65,11 @@ return [
     // Allowed MIME types
     'allowed_mime_types' => [
         'image/jpeg',
+        'image/jpg',
+        'image/pjpeg',
         'image/png',
         'image/webp',
+        'image/x-webp',
         'video/mp4',
         'video/webm',
         'video/quicktime',

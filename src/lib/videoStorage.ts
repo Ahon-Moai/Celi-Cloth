@@ -1,4 +1,29 @@
 import { BDIX_BASE_URL } from "./bdixStorage";
+import { supabase } from "./supabase";
+
+async function getAuthToken(): Promise<string> {
+  try {
+    if (supabase?.auth?.getSession) {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      if (token) return token;
+    }
+  } catch (err) {
+    console.warn("[Video Auth] Failed to retrieve session from Supabase:", err);
+  }
+
+  try {
+    const stored = localStorage.getItem("felicite_mock_auth_user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      if (user?.id) return `mock-token-${user.id}`;
+    }
+  } catch {
+    // ignore
+  }
+
+  return "";
+}
 
 /**
  * Product Video Optimization and Upload Engine
@@ -112,6 +137,8 @@ async function uploadVideoToBdix(
   clientPoster: string,
   onProgress?: (percentage: number) => void
 ): Promise<VideoUploadResult> {
+  const token = await getAuthToken();
+
   return new Promise((resolve, reject) => {
     const formData = new FormData();
     formData.append("video", file);
@@ -119,6 +146,9 @@ async function uploadVideoToBdix(
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${BDIX_BASE_URL}/upload.php`, true);
+    if (token) {
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    }
     xhr.setRequestHeader("Accept", "application/json");
 
     if (xhr.upload && onProgress) {
