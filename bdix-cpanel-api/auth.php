@@ -25,6 +25,10 @@ function get_bearer_token() {
         $header = $_SERVER['HTTP_AUTHORIZATION'];
     } elseif (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
         $header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    } elseif (!empty($_ENV['HTTP_AUTHORIZATION'])) {
+        $header = $_ENV['HTTP_AUTHORIZATION'];
+    } elseif (getenv('HTTP_AUTHORIZATION')) {
+        $header = getenv('HTTP_AUTHORIZATION');
     } elseif (function_exists('apache_request_headers')) {
         $headers = apache_request_headers();
         if (!empty($headers['Authorization'])) {
@@ -66,20 +70,31 @@ function verify_token_with_supabase_api($token, $supabase_url, $supabase_anon_ke
 
     $url = rtrim($supabase_url, '/') . '/auth/v1/user';
 
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $token,
-        'apikey: ' . $supabase_anon_key,
-        'Accept: application/json',
-    ]);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    $make_request = function($verify_ssl) use ($url, $token, $supabase_anon_key) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $token,
+            'apikey: ' . $supabase_anon_key,
+            'Accept: application/json',
+        ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $verify_ssl);
 
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curl_error = curl_error($ch);
-    curl_close($ch);
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
+        curl_close($ch);
+
+        return [$response, $http_code, $curl_error];
+    };
+
+    list($response, $http_code, $curl_error) = $make_request(true);
+
+    // Retry with SSL verify off if shared hosting missing local CA bundle
+    if ($curl_error && (strpos($curl_error, 'SSL') !== false || strpos($curl_error, 'certificate') !== false)) {
+        list($response, $http_code, $curl_error) = $make_request(false);
+    }
 
     if ($curl_error) {
         return ['success' => false, 'error' => 'Supabase connection error: ' . $curl_error];

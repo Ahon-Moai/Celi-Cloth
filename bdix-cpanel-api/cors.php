@@ -18,13 +18,13 @@ function handle_cors($config) {
         elseif (!empty($config['allowed_origin_regex']) && preg_match($config['allowed_origin_regex'], $origin)) {
             $is_allowed = true;
         }
-        // 3. Allow Cloud Run / dev preview domains
-        elseif (preg_match('/^https:\/\/ais-.*\.run\.app$/i', $origin)) {
+        // 3. Allow Cloud Run / dev preview domains or netlify or feliciteclo.com
+        elseif (preg_match('/^https:\/\/([a-zA-Z0-9-]+\.)*(run\.app|netlify\.app|feliciteclo\.com)$/i', $origin)) {
             $is_allowed = true;
         }
     }
 
-    if ($is_allowed) {
+    if ($is_allowed && !empty($origin)) {
         header("Access-Control-Allow-Origin: {$origin}");
         header("Access-Control-Allow-Credentials: true");
     } else {
