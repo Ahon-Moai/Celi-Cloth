@@ -55,11 +55,6 @@ import {
   Upload,
   Image as ImageIcon,
   Server,
-  Film,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 
 import { Product, CartItem, Order, CheckoutSession } from "./types";
@@ -70,11 +65,6 @@ import {
   isBdixImageUrl,
   BDIX_BASE_URL,
 } from "./lib/bdixStorage";
-import {
-  uploadAndOptimizeProductVideo,
-  formatBytes,
-  isVideoUrl,
-} from "./lib/videoStorage";
 import { products as defaultProducts } from "./products";
 import { BrandFilm } from "./BrandFilm";
 import { BrandTransitionBanner } from "./BrandTransitionBanner";
@@ -303,7 +293,6 @@ const GIFT_ADDONS = [
 export const SHOWCASE_SECTIONS = [
   { id: "trending_now", label: "Trending Now", icon: "🔥", accent: "#ef4444" },
   { id: "best_selling", label: "Best Selling", icon: "⚡", accent: "#f59e0b" },
-  { id: "comics_series_movies", label: "Comics X series X movies", icon: "🎬", accent: "#e11d48" },
   { id: "boxy_fit", label: "Boxy Fit T-Shirts", icon: "👕", accent: "#3b82f6" },
   { id: "must_buy", label: "Must Buy", icon: "★", accent: "#8b5cf6" },
 ];
@@ -421,11 +410,6 @@ const ProductView = ({
   const [activeAccordion, setActiveAccordion] = useState("details");
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [isVideoActive, setIsVideoActive] = useState(false);
-  const [isVideoMuted, setIsVideoMuted] = useState(true);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
-  const videoPlayerRef = useRef<HTMLVideoElement>(null);
-  const hasVideo = Boolean(product.video);
 
   useEffect(() => {
     metaViewContent(product);
@@ -553,129 +537,30 @@ const ProductView = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Top Bar Switcher between Photos and Video */}
-          {hasVideo && (
-            <div className="absolute top-6 right-6 z-30 flex items-center gap-1 bg-white/90 backdrop-blur-md p-1 rounded-full shadow-lg border border-gray-200">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsVideoActive(false);
-                  if (videoPlayerRef.current) videoPlayerRef.current.pause();
-                }}
-                className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${
-                  !isVideoActive
-                    ? "bg-black text-white shadow-xs"
-                    : "text-gray-500 hover:text-black"
-                }`}
+          <div className="absolute inset-0 flex items-center justify-center p-4 pt-26 md:p-12 md:pt-20 transition-all duration-700">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeImageIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="w-full h-full"
               >
-                Photos ({gallery.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsVideoActive(true);
-                  if (videoPlayerRef.current) {
-                    videoPlayerRef.current.play().catch(() => {});
-                  }
-                }}
-                className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
-                  isVideoActive
-                    ? "bg-black text-white shadow-xs"
-                    : "text-black bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                <Play className="w-2.5 h-2.5 fill-current text-current" />
-                Motion Video
-              </button>
-            </div>
-          )}
-
-          {/* Media Content: Video Player or Photo Gallery */}
-          {isVideoActive && hasVideo ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/95">
-              <video
-                ref={videoPlayerRef}
-                src={product.video}
-                poster={product.videoThumbnail || optimizeImageUrl(product.image, 800)}
-                preload="metadata"
-                playsInline
-                autoPlay
-                muted={isVideoMuted}
-                loop
-                className="w-full h-full object-contain"
-                onPlay={() => setIsVideoPlaying(true)}
-                onPause={() => setIsVideoPlaying(false)}
-              />
-
-              {/* Floating Minimalist Video Controls */}
-              <div className="absolute bottom-6 right-6 flex items-center gap-2 z-30">
-                <button
-                  type="button"
-                  onClick={() => setIsVideoMuted((prev) => !prev)}
-                  className="p-3 bg-black/70 hover:bg-black text-white rounded-full backdrop-blur-md transition-all border border-white/20 shadow-xl"
-                  title={isVideoMuted ? "Unmute" : "Mute"}
-                >
-                  {isVideoMuted ? (
-                    <VolumeX className="w-4 h-4 text-white" />
-                  ) : (
-                    <Volume2 className="w-4 h-4 text-white" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (videoPlayerRef.current) {
-                      if (videoPlayerRef.current.paused) {
-                        videoPlayerRef.current.play().catch(() => {});
-                      } else {
-                        videoPlayerRef.current.pause();
-                      }
-                    }
-                  }}
-                  className="p-3 bg-black/70 hover:bg-black text-white rounded-full backdrop-blur-md transition-all border border-white/20 shadow-xl"
-                  title={isVideoPlaying ? "Pause" : "Play"}
-                >
-                  {isVideoPlaying ? (
-                    <Pause className="w-4 h-4 text-white" />
-                  ) : (
-                    <Play className="w-4 h-4 text-white fill-current" />
-                  )}
-                </button>
-              </div>
-
-              <div className="absolute top-6 left-20 z-30 pointer-events-none">
-                <span className="bg-black/60 backdrop-blur-md border border-white/20 text-white text-[8px] font-black uppercase tracking-[0.25em] px-3 py-1 rounded-full flex items-center gap-1.5 shadow-md">
-                  <Film className="w-2.5 h-2.5 text-white" />
-                  FastStart Optimized Video
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center p-4 pt-26 md:p-12 md:pt-20 transition-all duration-700">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeImageIndex}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="w-full h-full"
-                >
-                  {gallery[activeImageIndex] ? (
-                    <img
-                      src={optimizeImageUrl(gallery[activeImageIndex], 800)}
-                      alt={product.name}
-                      className="w-full h-full object-contain pointer-events-none"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[10px] uppercase font-black text-gray-200">
-                      No Visual Available
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          )}
+                {gallery[activeImageIndex] ? (
+                  <img
+                    src={optimizeImageUrl(gallery[activeImageIndex], 800)}
+                    alt={product.name}
+                    className="w-full h-full object-contain pointer-events-none"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[10px] uppercase font-black text-gray-200">
+                    No Visual Available
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           <button
             onClick={onBack}
@@ -684,7 +569,7 @@ const ProductView = ({
             <ChevronLeft className="w-6 h-6 text-white drop-shadow-md" />
           </button>
 
-          {!isVideoActive && gallery.length > 1 && (
+          {gallery.length > 1 && (
             <>
               <div className="absolute bottom-12 left-12 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
                 {activeImageIndex + 1} / {gallery.length}
@@ -713,32 +598,16 @@ const ProductView = ({
                   <ChevronRight className="w-8 h-8 text-gray-300 group-hover:text-white transition-colors" />
                 </button>
               </div>
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
                 {gallery.map((_, i) => (
                   <button
                     key={i}
-                    onClick={() => {
-                      setIsVideoActive(false);
-                      setActiveImageIndex(i);
-                    }}
-                    className={`h-2 rounded-full transition-all ${
-                      activeImageIndex === i ? "w-8 bg-black" : "w-2 bg-gray-300"
+                    onClick={() => setActiveImageIndex(i)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      activeImageIndex === i ? "w-8 bg-black" : "bg-gray-300"
                     }`}
                   />
                 ))}
-                {hasVideo && (
-                  <button
-                    onClick={() => {
-                      setIsVideoActive(true);
-                      if (videoPlayerRef.current) videoPlayerRef.current.play().catch(() => {});
-                    }}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-black text-white hover:bg-neutral-800 transition-colors shadow-xs"
-                    title="Watch Runway Video"
-                  >
-                    <Play className="w-2 h-2 fill-current" />
-                    Video
-                  </button>
-                )}
               </div>
               <div className="absolute bottom-20 left-1/2 -translate-x-1/2 lg:hidden pointer-events-none">
                 <motion.p
@@ -2333,9 +2202,6 @@ const AdminDashboard = ({
     category: categories[0] || "T-shirts",
     image: "",
     gallery: [],
-    video: "",
-    videoThumbnail: "",
-    videoSize: 0,
     colors: [],
     sizes: ["S", "M", "L"],
     description: "",
@@ -2356,54 +2222,6 @@ const AdminDashboard = ({
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
   const [galleryUploadError, setGalleryUploadError] = useState("");
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
-
-  // Optimized Video Upload States
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
-  const [videoUploadError, setVideoUploadError] = useState("");
-  const [videoUploadStats, setVideoUploadStats] = useState<{
-    originalSize: number;
-    optimizedSize: number;
-    savingsPercent: number;
-    message?: string;
-  } | null>(null);
-  const videoFileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleVideoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingVideo(true);
-    setVideoUploadProgress(0);
-    setVideoUploadError("");
-    setVideoUploadStats(null);
-
-    try {
-      const res = await uploadAndOptimizeProductVideo(file, (pct) => {
-        setVideoUploadProgress(pct);
-      });
-
-      setProductForm((prev) => ({
-        ...prev,
-        video: res.url,
-        videoThumbnail: res.thumbnail || prev.videoThumbnail || "",
-        videoSize: res.optimizedSize || 0,
-      }));
-
-      setVideoUploadStats({
-        originalSize: res.originalSize,
-        optimizedSize: res.optimizedSize,
-        savingsPercent: res.savingsPercent,
-        message: res.message,
-      });
-    } catch (err: any) {
-      console.error("[Video Upload Error]", err);
-      setVideoUploadError(err.message || "Failed to upload and optimize video.");
-    } finally {
-      setIsUploadingVideo(false);
-      if (e.target) e.target.value = "";
-    }
-  };
 
   const handlePrimaryFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2471,20 +2289,14 @@ const AdminDashboard = ({
     setEditingProduct(null);
     setPrimaryUploadError("");
     setGalleryUploadError("");
-    setVideoUploadError("");
     setPrimaryUploadProgress(0);
     setGalleryUploadProgress(0);
-    setVideoUploadProgress(0);
-    setVideoUploadStats(null);
     setProductForm({
       name: "",
       price: 0,
       category: "T-shirts",
       image: "",
       gallery: [],
-      video: "",
-      videoThumbnail: "",
-      videoSize: 0,
       colors: [],
       sizes: ["S", "M", "L"],
       description: "",
@@ -2498,20 +2310,14 @@ const AdminDashboard = ({
     setEditingProduct(p);
     setPrimaryUploadError("");
     setGalleryUploadError("");
-    setVideoUploadError("");
     setPrimaryUploadProgress(0);
     setGalleryUploadProgress(0);
-    setVideoUploadProgress(0);
-    setVideoUploadStats(null);
     setProductForm({
       name: p.name,
       price: p.price,
       category: p.category,
       image: p.image,
       gallery: p.gallery || [],
-      video: p.video || "",
-      videoThumbnail: p.videoThumbnail || "",
-      videoSize: p.videoSize || 0,
       colors: p.colors || [],
       sizes: p.sizes || ["S", "M", "L"],
       description: p.description || "",
@@ -2541,8 +2347,6 @@ const AdminDashboard = ({
         category: p.category,
         image: p.image || null,
         gallery: p.gallery || [],
-        video: p.video || null,
-        video_thumbnail: p.videoThumbnail || p.video_thumbnail || null,
         colors: p.colors || [],
         sizes: p.sizes || ["S", "M", "L"],
         description: p.description || null,
@@ -2985,174 +2789,6 @@ const AdminDashboard = ({
                         ))}
                       </div>
                     </div>
-
-                    {/* Product Motion Video Section (Runway Showcase) */}
-                    <div className="space-y-4 pt-2 border-t border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                          <Film className="w-3.5 h-3.5 text-black" />
-                          Product Motion Video (Optimized Showcase)
-                        </label>
-                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-xs uppercase tracking-wider">
-                          H.264 FastStart Auto-Compressed
-                        </span>
-                      </div>
-
-                      {/* Hidden Video Input */}
-                      <input
-                        type="file"
-                        ref={videoFileInputRef}
-                        accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
-                        onChange={handleVideoFileSelect}
-                        className="hidden"
-                      />
-
-                      {!productForm.video ? (
-                        <div
-                          onClick={() => !isUploadingVideo && videoFileInputRef.current?.click()}
-                          className={`border-2 border-dashed border-gray-200 hover:border-black transition-all p-6 text-center cursor-pointer bg-gray-50/50 flex flex-col items-center justify-center gap-2 group ${
-                            isUploadingVideo ? "opacity-60 cursor-not-allowed" : ""
-                          }`}
-                        >
-                          {isUploadingVideo ? (
-                            <>
-                              <Loader2 className="w-6 h-6 animate-spin text-black" />
-                              <span className="text-xs font-black uppercase tracking-widest">
-                                Compressing & Optimizing Video ({videoUploadProgress}%)
-                              </span>
-                              <div className="w-48 bg-gray-200 h-1.5 mt-1 overflow-hidden">
-                                <div
-                                  className="bg-black h-full transition-all duration-200"
-                                  style={{ width: `${videoUploadProgress}%` }}
-                                />
-                              </div>
-                              <span className="text-[9px] text-gray-400 font-mono">
-                                Downscaling to 1080p • Encoding H.264 FastStart • Bandwidth Guard Active
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-10 h-10 border border-gray-200 bg-white flex items-center justify-center group-hover:border-black transition-colors">
-                                <Film className="w-4 h-4 text-gray-600 group-hover:text-black" />
-                              </div>
-                              <span className="text-xs font-black uppercase tracking-wider">
-                                Upload Product Motion Video
-                              </span>
-                              <span className="text-[10px] text-gray-400 font-mono">
-                                MP4, WebM, MOV • Max 100MB • Auto-Reduced by ~70-85% for Zero Lag
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {/* Video Preview */}
-                          <div className="relative bg-black aspect-video overflow-hidden group rounded-xs border border-gray-200">
-                            <video
-                              src={productForm.video}
-                              poster={productForm.videoThumbnail}
-                              muted
-                              loop
-                              autoPlay
-                              playsInline
-                              className="w-full h-full object-contain"
-                            />
-
-                            <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm text-white px-2 py-0.5 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
-                              <Film className="w-2.5 h-2.5 text-emerald-400" />
-                              Active Runway Video
-                            </div>
-
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => videoFileInputRef.current?.click()}
-                                className="px-3 py-1.5 bg-white text-black text-[9px] font-black uppercase tracking-wider hover:bg-gray-100"
-                              >
-                                Replace Video
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setProductForm((prev) => ({
-                                    ...prev,
-                                    video: "",
-                                    videoThumbnail: "",
-                                    videoSize: 0,
-                                  }));
-                                  setVideoUploadStats(null);
-                                }}
-                                className="p-1.5 bg-red-600 text-white hover:bg-red-700"
-                                title="Remove Video"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Bandwidth Optimization Stats Banner */}
-                          {videoUploadStats && (
-                            <div className="p-2.5 bg-emerald-50 border border-emerald-100 text-[10px] text-emerald-800 flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold">✓ Bandwidth Optimized:</span>
-                                <span>
-                                  {formatBytes(videoUploadStats.originalSize)} → {formatBytes(videoUploadStats.optimizedSize)}
-                                </span>
-                              </div>
-                              <span className="font-black bg-emerald-200/80 px-2 py-0.5 rounded-xs">
-                                -{videoUploadStats.savingsPercent}% Bandwidth
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Poster frame preview */}
-                          {productForm.videoThumbnail && (
-                            <div className="flex items-center gap-2 text-[9px] text-gray-500 font-mono bg-gray-50 p-2 border border-gray-100">
-                              <span className="text-[8px] uppercase tracking-wider font-bold text-gray-400">Poster:</span>
-                              <img
-                                src={productForm.videoThumbnail}
-                                alt="Poster Frame"
-                                className="w-8 h-8 object-cover border border-gray-200"
-                              />
-                              <span>Instant poster generated to prevent mobile bandwidth waste</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {videoUploadError && (
-                        <div className="text-[11px] text-red-600 font-mono bg-red-50 p-2.5 border border-red-100 flex items-start justify-between gap-2">
-                          <span>{videoUploadError}</span>
-                          <button
-                            type="button"
-                            onClick={() => setVideoUploadError("")}
-                            className="text-red-400 hover:text-red-700"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Direct Video URL input fallback */}
-                      <div className="pt-1">
-                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                          Direct Video URL (or Cloudinary / MP4 link)
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="https://.../video.mp4"
-                          className="w-full border-b border-gray-100 py-2 text-xs outline-none focus:border-black font-mono text-gray-600"
-                          value={productForm.video || ""}
-                          onChange={(e) =>
-                            setProductForm((prev) => ({
-                              ...prev,
-                              video: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                         Color Palette
@@ -4806,12 +4442,6 @@ const ProductCard = ({ product, onAddToCart, onClick }) => {
                 New Arrival
               </div>
             )}
-            {product.video && (
-              <div className="bg-white/95 backdrop-blur-sm text-black px-2.5 py-0.5 text-[8px] uppercase font-black tracking-widest whitespace-nowrap flex items-center gap-1 border border-gray-200/60 shadow-xs">
-                <Film className="w-2.5 h-2.5 text-black" />
-                Motion
-              </div>
-            )}
           </div>
 
           {hasSecondImage && (
@@ -6250,15 +5880,7 @@ export default function App() {
     setCheckoutSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
   };
   const pageHistoryRef = useRef(["home"]);
-  const DEFAULT_SHOWCASE_MAP: Record<string, string[]> = {
-    trending_now: (defaultProducts || []).slice(0, 4).map((p) => p.id),
-    best_selling: (defaultProducts || []).slice(4, 8).map((p) => p.id),
-    comics_series_movies: (defaultProducts || []).slice(8, 14).map((p) => p.id),
-    boxy_fit: (defaultProducts || []).filter((p) => p.category?.toLowerCase().includes("boxy")).slice(0, 5).map((p) => p.id),
-    must_buy: (defaultProducts || []).slice(2, 6).map((p) => p.id),
-  };
-
-  const [showcaseMap, setShowcaseMap] = useState<Record<string, string[]>>(DEFAULT_SHOWCASE_MAP);
+  const [showcaseMap, setShowcaseMap] = useState({});
 
   useEffect(() => {
     window.history.pushState({ felicite: true }, "");
@@ -6296,27 +5918,17 @@ export default function App() {
     setCurrentPage(page);
   };
   const fetchShowcases = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("showcases")
-        .select("section, product_id")
-        .order("sort_order");
-      if (!error && data && data.length > 0) {
-        const map: Record<string, string[]> = {};
-        for (const row of data) {
-          if (!map[row.section]) map[row.section] = [];
-          map[row.section].push(row.product_id);
-        }
-        // Retain default products for sections not yet populated in the database
-        SHOWCASE_SECTIONS.forEach((sec) => {
-          if (!map[sec.id] || map[sec.id].length === 0) {
-            map[sec.id] = DEFAULT_SHOWCASE_MAP[sec.id] || [];
-          }
-        });
-        setShowcaseMap(map);
+    const { data, error } = await supabase
+      .from("showcases")
+      .select("section, product_id")
+      .order("sort_order");
+    if (!error && data) {
+      const map = {};
+      for (const row of data) {
+        if (!map[row.section]) map[row.section] = [];
+        map[row.section].push(row.product_id);
       }
-    } catch (e) {
-      console.warn("Could not fetch showcases:", e);
+      setShowcaseMap(map);
     }
   };
 
@@ -6370,10 +5982,8 @@ export default function App() {
           setProductsList(
             data.map((p) => ({
               ...p,
-              video: p.video || p.video_url || undefined,
-              videoThumbnail: p.video_thumbnail || p.videoThumbnail || undefined,
-              isNewArrival: p.is_new_arrival ?? p.isNewArrival,
-              soldOut: p.sold_out ?? p.soldOut,
+              isNewArrival: p.is_new_arrival,
+              soldOut: p.sold_out,
             })),
           );
         }
@@ -6393,10 +6003,8 @@ export default function App() {
                 setProductsList(
                   data.map((p) => ({
                     ...p,
-                    video: p.video || p.video_url || undefined,
-                    videoThumbnail: p.video_thumbnail || p.videoThumbnail || undefined,
-                    isNewArrival: p.is_new_arrival ?? p.isNewArrival,
-                    soldOut: p.sold_out ?? p.soldOut,
+                    isNewArrival: p.is_new_arrival,
+                    soldOut: p.sold_out,
                   })),
                 );
               }
@@ -6608,51 +6216,13 @@ export default function App() {
   };
 
   const addOrUpdateProduct = async (p) => {
-    const updatedItem: Product = {
-      id: p.id || `felicite_${Date.now()}`,
-      name: p.name,
-      price: Number(p.price) || 0,
-      currency: p.currency || "BDT",
-      category: p.category,
-      image: p.image || "",
-      gallery: p.gallery || [],
-      video: p.video || "",
-      videoThumbnail: p.videoThumbnail || "",
-      videoSize: p.videoSize || 0,
-      colors: p.colors || [],
-      sizes: p.sizes || ["S", "M", "L"],
-      description: p.description || "",
-      isNewArrival: p.isNewArrival || false,
-      soldOut: p.soldOut || false,
-      stock: p.stock ?? null,
-    };
-
-    // 1. Optimistic UI update and sync to /api/products
-    setProductsList((prev) => {
-      const exists = prev.some((item) => item.id === updatedItem.id);
-      const nextList = exists
-        ? prev.map((item) => (item.id === updatedItem.id ? { ...item, ...updatedItem } : item))
-        : [updatedItem, ...prev];
-
-      fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nextList),
-      }).catch((e) => console.warn("Could not sync products to /api/products:", e));
-
-      return nextList;
-    });
-
-    // 2. Persist to Supabase if connected
-    const dbRow: any = {
+    const dbRow = {
       name: p.name,
       price: p.price,
       currency: p.currency || "BDT",
       category: p.category,
       image: p.image || null,
       gallery: p.gallery || [],
-      video: p.video || null,
-      video_thumbnail: p.videoThumbnail || null,
       colors: p.colors || [],
       sizes: p.sizes || ["S", "M", "L"],
       description: p.description || null,
@@ -6668,26 +6238,15 @@ export default function App() {
         await supabase.from("products").insert([dbRow]);
       }
     } catch (err) {
-      console.warn("Supabase product save note:", err);
+      console.error("Product save error:", err);
+      alert("Failed to save product.");
     }
   };
 
   const deleteProduct = async (id) => {
     if (!window.confirm("Delete this product?")) return;
-    setProductsList((prev) => {
-      const nextList = prev.filter((p) => p.id !== id);
-      fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nextList),
-      }).catch((e) => console.warn("Failed to sync deletion to /api/products:", e));
-      return nextList;
-    });
-    try {
-      await supabase.from("products").delete().eq("id", id);
-    } catch (err) {
-      console.warn("Supabase delete note:", err);
-    }
+    await supabase.from("products").delete().eq("id", id);
+    setProductsList((prev) => prev.filter((p) => p.id !== id));
   };
 
   const addToCart = (product, selectedSize, selectedColor) => {
@@ -6749,12 +6308,6 @@ export default function App() {
               alert("Max 10 products per section.");
               return;
             }
-            setShowcaseMap((prev: any) => ({
-              ...prev,
-              [section]: prev[section]?.includes(productId)
-                ? prev[section]
-                : [...(prev[section] || []), productId],
-            }));
             await supabase
               .from("showcases")
               .upsert(
@@ -6766,10 +6319,6 @@ export default function App() {
                 { onConflict: "section,product_id" },
               );
           } else {
-            setShowcaseMap((prev: any) => ({
-              ...prev,
-              [section]: (prev[section] || []).filter((id: string) => id !== productId),
-            }));
             await supabase
               .from("showcases")
               .delete()

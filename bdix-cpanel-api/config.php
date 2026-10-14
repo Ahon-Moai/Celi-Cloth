@@ -35,7 +35,7 @@ return [
     // -------------------------------------------------------------
     // Storage & URL Configuration
     // -------------------------------------------------------------
-    // Absolute physical path on cPanel server where images and videos will be saved
+    // Absolute physical path on cPanel server where images will be saved
     // Auto-detects whether config is directly in public_html or inside an /api subfolder
     'upload_dir' => (is_dir(__DIR__ . '/uploads/products/') 
         ? __DIR__ . '/uploads/products/' 
@@ -43,37 +43,21 @@ return [
             ? dirname(__DIR__) . '/uploads/products/' 
             : __DIR__ . '/uploads/products/')),
 
-    'video_upload_dir' => (is_dir(__DIR__ . '/uploads/videos/') 
-        ? __DIR__ . '/uploads/videos/' 
-        : (is_dir(dirname(__DIR__) . '/uploads/videos/') 
-            ? dirname(__DIR__) . '/uploads/videos/' 
-            : __DIR__ . '/uploads/videos/')),
-
     // Public domain URL pointing to the /uploads/products/ directory
     // Format: https://files.feliciteclo.com/uploads/products/
     'public_base_url' => rtrim(getenv('PUBLIC_BASE_URL') ?: 'https://files.feliciteclo.com/uploads/products', '/') . '/',
 
-    // Public domain URL pointing to the /uploads/videos/ directory
-    'video_public_base_url' => rtrim(getenv('VIDEO_PUBLIC_BASE_URL') ?: 'https://files.feliciteclo.com/uploads/videos', '/') . '/',
+    // Maximum file upload size in bytes (10 MB = 10 * 1024 * 1024)
+    'max_file_size' => 10 * 1024 * 1024,
 
-    // Maximum file upload size in bytes (100 MB for videos, 25 MB for images)
-    'max_file_size' => 100 * 1024 * 1024,
+    // Allowed image file extensions
+    'allowed_extensions' => ['jpg', 'jpeg', 'png', 'webp'],
 
-    // Allowed file extensions (Images & Optimized Videos)
-    'allowed_extensions' => ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'webm', 'mov', 'm4v'],
-
-    // Allowed MIME types
+    // Allowed image MIME types
     'allowed_mime_types' => [
         'image/jpeg',
-        'image/jpg',
-        'image/pjpeg',
         'image/png',
         'image/webp',
-        'image/x-webp',
-        'video/mp4',
-        'video/webm',
-        'video/quicktime',
-        'video/x-m4v',
     ],
 
     // -------------------------------------------------------------
