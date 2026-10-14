@@ -232,11 +232,11 @@ export const BrandFilm: React.FC<BrandFilmProps> = ({ onShopClick }) => {
               </span>
               <span className="text-zinc-600">/</span>
               <span className="text-[10px] tracking-[0.2em] text-zinc-400 uppercase font-sans font-bold">
-                SPRING / SUMMER CAPSULE
+                AUTUMN / WINTER CAPSULE
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white font-sans">
-              SPRING &apos;26 VISUAL MANIFESTO
+              AUTUMN &apos;26 VISUAL MANIFESTO
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mt-2 tracking-wide font-light">
               Contemporary silhouettes, brutalist tailoring, and architectural drape. 

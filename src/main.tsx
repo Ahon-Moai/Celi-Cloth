@@ -1,10 +1,11 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
+import EntranceWrapper from './EntranceWrapper.tsx';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <EntranceWrapper />
   </StrictMode>,
 );
+

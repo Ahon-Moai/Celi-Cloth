@@ -1084,7 +1084,7 @@ const Ticker = () => (
     >
       {[...Array(20)].map((_, i) => (
         <span key={i} className="mx-12 uppercase tracking-widest font-medium">
-          Felicite™ · SPRING '26 · LIVE NOW · FELICITE CLOTHING · LIMITED
+          Felicite™ · AUTUMN '26 · LIVE NOW · FELICITE CLOTHING · LIMITED
           EDITION · FREE SHIPPING ON ORDERS OVER 3K
         </span>
       ))}
@@ -4308,7 +4308,7 @@ const Hero = ({ setCurrentPage }) => {
 
       <div className="absolute bottom-12 left-6 md:bottom-16 md:left-24 text-white space-y-4 md:space-y-6 z-20">
         <p className="text-sm md:text-lg font-bold uppercase tracking-tight">
-          SPRING'26
+          AUTUMN'26
         </p>
         <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight uppercase leading-[0.9]">
           COLLECTION IS LIVE
@@ -4318,7 +4318,7 @@ const Hero = ({ setCurrentPage }) => {
             onClick={() => setCurrentPage("shop")}
             className="underline underline-offset-8 decoration-2 hover:opacity-70 transition-all cursor-pointer"
           >
-            Surf Spring'26
+            Surf Autumn'26
           </button>
           <button
             onClick={() => setCurrentPage("shop")}

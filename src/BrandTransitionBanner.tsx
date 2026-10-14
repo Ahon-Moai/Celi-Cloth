@@ -15,7 +15,7 @@ export const BrandTransitionBanner: React.FC = () => {
         <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <span className="h-[1px] w-6 sm:w-12 bg-neutral-200" />
           <p className="text-[10px] sm:text-[11px] tracking-[0.35em] sm:tracking-[0.45em] text-neutral-400 uppercase font-bold font-sans">
-            SPRING ARCHIVE 2026
+            AUTUMN ARCHIVE 2026
           </p>
           <span className="h-[1px] w-6 sm:w-12 bg-neutral-200" />
         </div>
