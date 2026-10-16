@@ -174,7 +174,8 @@ export async function uploadProductImage(
             uploadToLocalFallback(file)
               .then(resolve)
               .catch(() => {
-                const errMsg = response.error || response.message || `Upload failed with HTTP ${xhr.status}`;
+                const detailErr = response.details && response.details[0]?.error;
+                const errMsg = detailErr || response.error || response.message || `Upload failed with HTTP ${xhr.status}`;
                 reject(new Error(errMsg));
               });
           }
