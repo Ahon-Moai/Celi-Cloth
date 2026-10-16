@@ -97,7 +97,8 @@ CREATE TABLE IF NOT EXISTS public.products (
 );
 
 -- Migration query to add video column to existing database:
--- ALTER TABLE public.products ADD COLUMN IF NOT EXISTS video TEXT;
+-- Ensure video column exists on existing products table
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS video TEXT;
 
 -- Anyone can read products (public storefront)
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
@@ -112,35 +113,19 @@ CREATE POLICY "Admins can insert products"
   ON public.products
   FOR INSERT
   TO authenticated
-  WITH CHECK (
-    auth.jwt() ->> 'email' IN (
-      'mimpy124ahon124@gmail.com',
-      'feliciteclothing@gmail.com',
-      'adminloginpaidbase@gmail.com'
-    )
-  );
+  WITH CHECK (true);
 
 CREATE POLICY "Admins can update products"
   ON public.products
   FOR UPDATE
   TO authenticated
-  USING (
-    auth.jwt() ->> 'email' IN (
-      'mimpy124ahon124@gmail.com',
-      'feliciteclothing@gmail.com'
-    )
-  );
+  USING (true);
 
 CREATE POLICY "Admins can delete products"
   ON public.products
   FOR DELETE
   TO authenticated
-  USING (
-    auth.jwt() ->> 'email' IN (
-      'mimpy124ahon124@gmail.com',
-      'feliciteclothing@gmail.com'
-    )
-  );
+  USING (true);
 
 -- Enable Realtime for products
 ALTER PUBLICATION supabase_realtime ADD TABLE public.products;

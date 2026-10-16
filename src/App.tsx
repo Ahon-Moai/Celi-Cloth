@@ -6442,7 +6442,7 @@ export default function App() {
   };
 
   const addOrUpdateProduct = async (p) => {
-    const dbRow = {
+    const dbRow: any = {
       name: p.name,
       price: p.price,
       currency: p.currency || "BDT",
@@ -6458,15 +6458,43 @@ export default function App() {
       video: p.video || null,
       updated_at: new Date().toISOString(),
     };
+
     try {
-      if (p.id) {
-        await supabase.from("products").update(dbRow).eq("id", p.id);
-      } else {
-        await supabase.from("products").insert([dbRow]);
+      let res = p.id
+        ? await supabase.from("products").update(dbRow).eq("id", p.id)
+        : await supabase.from("products").insert([dbRow]);
+
+      if (res.error) {
+        console.error("Product save error from Supabase:", res.error);
+        const errMsg = res.error.message || "";
+        const isVideoColumnMissing =
+          errMsg.includes("video") ||
+          errMsg.includes("schema cache") ||
+          res.error.code === "PGRST204";
+
+        if (isVideoColumnMissing) {
+          console.warn("[Products API] 'video' column missing in Supabase schema. Retrying without video column...");
+          const fallbackRow = { ...dbRow };
+          delete fallbackRow.video;
+
+          const retryRes = p.id
+            ? await supabase.from("products").update(fallbackRow).eq("id", p.id)
+            : await supabase.from("products").insert([fallbackRow]);
+
+          if (retryRes.error) {
+            alert(`Failed to save product: ${retryRes.error.message}`);
+          } else {
+            alert(
+              "Product saved successfully! Note: Your Supabase 'products' table is missing the 'video' column, so the video URL was not saved to database.\n\nTo enable video saving, run this SQL in Supabase SQL Editor:\nALTER TABLE public.products ADD COLUMN IF NOT EXISTS video TEXT;"
+            );
+          }
+        } else {
+          alert(`Failed to save product: ${res.error.message}`);
+        }
       }
-    } catch (err) {
-      console.error("Product save error:", err);
-      alert("Failed to save product.");
+    } catch (err: any) {
+      console.error("Product save exception:", err);
+      alert(`Failed to save product: ${err?.message || err}`);
     }
   };
 
