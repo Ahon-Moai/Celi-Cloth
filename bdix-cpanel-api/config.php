@@ -47,17 +47,22 @@ return [
     // Format: https://files.feliciteclo.com/uploads/products/
     'public_base_url' => rtrim(getenv('PUBLIC_BASE_URL') ?: 'https://files.feliciteclo.com/uploads/products', '/') . '/',
 
-    // Maximum file upload size in bytes (10 MB = 10 * 1024 * 1024)
-    'max_file_size' => 10 * 1024 * 1024,
+    // Maximum file upload size in bytes (100 MB = 100 * 1024 * 1024 for images and videos)
+    'max_file_size' => 100 * 1024 * 1024,
 
-    // Allowed image file extensions
-    'allowed_extensions' => ['jpg', 'jpeg', 'png', 'webp'],
+    // Allowed image and video file extensions
+    'allowed_extensions' => ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'webm', 'mov', 'm4v', 'ogv'],
 
-    // Allowed image MIME types
+    // Allowed image and video MIME types
     'allowed_mime_types' => [
         'image/jpeg',
         'image/png',
         'image/webp',
+        'video/mp4',
+        'video/webm',
+        'video/quicktime',
+        'video/x-m4v',
+        'video/ogg',
     ],
 
     // -------------------------------------------------------------

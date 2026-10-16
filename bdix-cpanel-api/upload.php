@@ -139,10 +139,40 @@ function process_and_save_image($file, $config, $upload_dir) {
     finfo_close($finfo);
 
     if (!in_array($real_mime, $config['allowed_mime_types'], true)) {
-        return ['success' => false, 'error' => "File MIME type '{$real_mime}' is not an allowed image format."];
+        return ['success' => false, 'error' => "File MIME type '{$real_mime}' is not an allowed file format."];
     }
 
-    // 4. Verify image content using getimagesize
+    // 4. Handle video uploads directly without image GD processing
+    $video_exts = ['mp4', 'webm', 'mov', 'm4v', 'ogv'];
+    $is_video = (strpos($real_mime, 'video/') === 0) || in_array($ext, $video_exts, true);
+
+    if ($is_video) {
+        $unique_id = bin2hex(random_bytes(8));
+        $timestamp = time();
+        $filename = "felicite_video_{$timestamp}_{$unique_id}.{$ext}";
+        $destination = $upload_dir . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+            return ['success' => false, 'error' => 'Failed to save uploaded video file to destination folder.'];
+        }
+
+        @chmod($destination, 0644);
+        $public_url = $config['public_base_url'] . $filename;
+        $final_size = filesize($destination);
+
+        return [
+            'success' => true,
+            'filename' => $filename,
+            'url' => $public_url,
+            'size' => $final_size,
+            'width' => 0,
+            'height' => 0,
+            'format' => $ext,
+            'is_video' => true,
+        ];
+    }
+
+    // 5. Verify image content using getimagesize
     $img_info = @getimagesize($file['tmp_name']);
     if ($img_info === false) {
         return ['success' => false, 'error' => 'File appears to be corrupted or is not a valid image.'];
