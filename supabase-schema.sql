@@ -90,10 +90,14 @@ CREATE TABLE IF NOT EXISTS public.products (
   is_new_arrival  BOOLEAN NOT NULL DEFAULT false,
   sold_out        BOOLEAN NOT NULL DEFAULT false,
   stock           INTEGER,
+  video           TEXT,           -- product video URL (BDIX hosted)
   sort_order      INTEGER DEFAULT 0,   -- lower = shown first
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ
 );
+
+-- Migration query to add video column to existing database:
+-- ALTER TABLE public.products ADD COLUMN IF NOT EXISTS video TEXT;
 
 -- Anyone can read products (public storefront)
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;

@@ -33,6 +33,17 @@ export function isBdixImageUrl(url: string): boolean {
 }
 
 /**
+ * Helper to check if a URL points to a video file
+ */
+export function isVideoUrl(url: string): boolean {
+  if (!url) return false;
+  return (
+    /\.(mp4|webm|mov|m4v|ogv)($|\?)/i.test(url) ||
+    url.startsWith("data:video/")
+  );
+}
+
+/**
  * Retrieves the current Supabase session token to authorize the BDIX PHP API request
  */
 async function getAuthToken(): Promise<string> {
@@ -201,12 +212,36 @@ export async function uploadProductImage(
           });
       };
 
-      xhr.timeout = 25000;
+      xhr.timeout = 120000;
       xhr.send(formData);
     });
   };
 
   return uploadToEndpoint(`${BDIX_BASE_URL}/upload.php`, true);
+}
+
+/**
+ * Uploads a product video file to BDIX cPanel hosting with live upload progress tracking
+ */
+export async function uploadProductVideo(
+  file: File,
+  onProgress?: (percentage: number) => void,
+): Promise<{ url: string; filename: string }> {
+  const maxBytes = 100 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    throw new Error("Video file size exceeds maximum limit of 100 MB.");
+  }
+
+  const validExts = [".mp4", ".webm", ".mov", ".m4v", ".ogv"];
+  const lowerName = file.name.toLowerCase();
+  const isValidExt = validExts.some((ext) => lowerName.endsWith(ext));
+  const isValidMime = file.type.startsWith("video/") || file.type === "application/octet-stream";
+
+  if (!isValidExt && !isValidMime) {
+    throw new Error("Invalid video file format. Supported formats: MP4, WebM, MOV, M4V, OGV.");
+  }
+
+  return uploadProductImage(file, onProgress);
 }
 
 /**

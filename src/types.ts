@@ -15,6 +15,7 @@ export interface Product {
   isNewArrival?: boolean;
   soldOut?: boolean;
   stock?: number;
+  video?: string;
 }
 
 export interface Order {
