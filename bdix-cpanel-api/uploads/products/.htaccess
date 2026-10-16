@@ -26,10 +26,22 @@ RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .cgi .pl .py .sh .bas
     php_flag engine off
 </IfModule>
 
-# Ensure public images cache well for fast BDIX delivery
+# Force explicit video MIME types for HTML5 video streaming
+<IfModule mod_mime.c>
+    AddType video/mp4 .mp4 .m4v
+    AddType video/webm .webm
+    AddType video/quicktime .mov
+    AddType video/ogg .ogv
+</IfModule>
+
+# Ensure public images and videos cache well for fast BDIX delivery
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresByType image/jpeg "access plus 1 year"
     ExpiresByType image/png "access plus 1 year"
     ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType video/mp4 "access plus 1 year"
+    ExpiresByType video/webm "access plus 1 year"
+    ExpiresByType video/quicktime "access plus 1 year"
+    ExpiresByType video/ogg "access plus 1 year"
 </IfModule>

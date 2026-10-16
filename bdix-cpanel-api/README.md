@@ -43,8 +43,8 @@ Ensure your HostSeba cPanel hosting meets these standard PHP settings:
 | :--- | :--- | :--- |
 | **PHP Version** | **PHP 8.0, 8.1, or 8.2** (PHP 7.4 minimum) | **cPanel > Select PHP Version** |
 | **PHP Extensions** | `gd`, `curl`, `fileinfo`, `openssl`, `json`, `mbstring`, `exif` | **cPanel > Select PHP Version > Extensions** |
-| **upload_max_filesize** | `20M` (or `30M`) | **cPanel > Select PHP Version > Options** |
-| **post_max_size** | `25M` (or `35M`) | **cPanel > Select PHP Version > Options** |
+| **upload_max_filesize** | **100M** | **cPanel > Select PHP Version > Options** |
+| **post_max_size** | **105M** | **cPanel > Select PHP Version > Options** |
 | **memory_limit** | `128M` (or `256M`) | **cPanel > Select PHP Version > Options** |
 | **max_execution_time** | `120` seconds | **cPanel > Select PHP Version > Options** |
 
@@ -257,7 +257,8 @@ This confirms that random visitors cannot upload files to your hosting.
 | :--- | :--- | :--- |
 | **HTTP 401 "Missing Authorization header"** | Apache in FastCGI mode strips the `Authorization` header before passing it to PHP. | Ensure the root `.htaccess` is present and contains: <br>`RewriteCond %{HTTP:Authorization} ^(.*)`<br>`RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]` |
 | **HTTP 500 "Upload directory is not writable"** | Permission on `/uploads/products/` is read-only. | In cPanel File Manager, right-click `uploads/products` > Change Permissions > set to `755` (or `775`). |
-| **HTTP 413 "File Too Large"** | `upload_max_filesize` or `post_max_size` is too low in php.ini. | In cPanel > **Select PHP Version > Options**, set `upload_max_filesize = 30M` and `post_max_size = 35M`. |
+| **HTTP 413 "File Too Large"** | `upload_max_filesize` or `post_max_size` is too low in php.ini. | In cPanel > **Select PHP Version > Options**, set `upload_max_filesize = 100M` and `post_max_size = 105M`. |
+| **"No video with supported format and MIME type found"** | Apache is serving uploaded video files without correct video MIME headers. | Ensure `/uploads/products/.htaccess` is present and includes explicit `AddType` rules (`AddType video/mp4 .mp4 .m4v`, `AddType video/webm .webm`, `AddType video/quicktime .mov`, `AddType video/ogg .ogv`). |
 | **CORS Error in Browser Console** | Vercel domain not recognized by CORS handler. | Check `config.php`: make sure your domain or `allowed_origin_regex` covers your Vercel preview domain. |
 | **Images return 404** | Document root of subdomain doesn't match folder path. | Confirm in cPanel > Subdomains that `files.feliciteclo.com` points directly to the folder containing `upload.php` and `uploads/`. |
 
