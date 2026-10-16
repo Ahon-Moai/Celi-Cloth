@@ -67,6 +67,7 @@ import {
   uploadProductVideo,
   isBdixImageUrl,
   isVideoUrl,
+  getVideoMimeType,
   BDIX_BASE_URL,
 } from "./lib/bdixStorage";
 import { products as defaultProducts } from "./products";
@@ -562,14 +563,22 @@ const ProductView = ({
                   isVideoUrl(gallery[activeImageIndex]) ? (
                     <div className="w-full h-full flex items-center justify-center bg-black/95 relative rounded overflow-hidden">
                       <video
-                        src={gallery[activeImageIndex]}
+                        key={gallery[activeImageIndex]}
                         controls
                         autoPlay
                         loop
                         muted
                         playsInline
+                        preload="metadata"
                         className="w-full h-full object-contain"
-                      />
+                      >
+                        <source
+                          src={gallery[activeImageIndex]}
+                          type={getVideoMimeType(gallery[activeImageIndex])}
+                        />
+                        <source src={gallery[activeImageIndex]} />
+                        Your browser does not support HTML5 video playback.
+                      </video>
                       <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white px-2.5 py-1 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 z-10 pointer-events-none border border-white/10">
                         <Film className="w-3 h-3 text-emerald-400" />
                         Product Reel
@@ -2789,11 +2798,19 @@ const AdminDashboard = ({
                         ) : (
                           <div className="bg-black border border-gray-800 rounded overflow-hidden relative group">
                             <video
-                              src={productForm.video}
+                              key={productForm.video}
                               controls
                               playsInline
+                              preload="metadata"
                               className="w-full max-h-48 object-contain bg-black"
-                            />
+                            >
+                              <source
+                                src={productForm.video}
+                                type={getVideoMimeType(productForm.video)}
+                              />
+                              <source src={productForm.video} />
+                              Your browser does not support HTML5 video preview.
+                            </video>
                             <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm text-white px-2 py-0.5 text-[8px] font-black uppercase tracking-widest flex items-center gap-1 z-10 pointer-events-none">
                               {isBdixImageUrl(productForm.video) ? (
                                 <>

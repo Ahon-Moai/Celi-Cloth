@@ -37,10 +37,25 @@ export function isBdixImageUrl(url: string): boolean {
  */
 export function isVideoUrl(url: string): boolean {
   if (!url) return false;
+  const cleanUrl = url.toLowerCase().split('?')[0];
   return (
-    /\.(mp4|webm|mov|m4v|ogv)($|\?)/i.test(url) ||
+    /\.(mp4|webm|mov|m4v|ogv|mkv|avi|flv)($|\?)/i.test(url) ||
+    cleanUrl.includes("felicite_video_") ||
     url.startsWith("data:video/")
   );
+}
+
+/**
+ * Returns appropriate video MIME type hint for HTML5 <source> elements
+ */
+export function getVideoMimeType(url: string): string {
+  if (!url) return "video/mp4";
+  const cleanUrl = url.toLowerCase().split('?')[0];
+  if (cleanUrl.endsWith(".webm")) return "video/webm";
+  if (cleanUrl.endsWith(".mov")) return "video/quicktime";
+  if (cleanUrl.endsWith(".m4v")) return "video/x-m4v";
+  if (cleanUrl.endsWith(".ogv")) return "video/ogg";
+  return "video/mp4";
 }
 
 /**
