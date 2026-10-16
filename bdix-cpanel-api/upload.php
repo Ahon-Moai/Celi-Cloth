@@ -147,17 +147,27 @@ function process_and_save_image($file, $config, $upload_dir) {
     $is_video = (strpos($real_mime, 'video/') === 0) || in_array($ext, $video_exts, true);
 
     if ($is_video) {
+        // Ensure video directory exists and is writable (defaults to /uploads/videos/)
+        $video_dir = rtrim($config['video_upload_dir'] ?? ($config['upload_dir'] . '../videos/'), '/') . '/';
+        if (!is_dir($video_dir)) {
+            @mkdir($video_dir, 0755, true);
+        }
+        $target_video_dir = (is_dir($video_dir) && is_writable($video_dir)) ? $video_dir : $upload_dir;
+
         $unique_id = bin2hex(random_bytes(8));
         $timestamp = time();
         $filename = "felicite_video_{$timestamp}_{$unique_id}.{$ext}";
-        $destination = $upload_dir . $filename;
+        $destination = $target_video_dir . $filename;
 
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
             return ['success' => false, 'error' => 'Failed to save uploaded video file to destination folder.'];
         }
 
         @chmod($destination, 0644);
-        $public_url = $config['public_base_url'] . $filename;
+        $base_url = ($target_video_dir === $video_dir && !empty($config['video_public_base_url']))
+            ? $config['video_public_base_url']
+            : $config['public_base_url'];
+        $public_url = rtrim($base_url, '/') . '/' . $filename;
         $final_size = filesize($destination);
 
         return [
