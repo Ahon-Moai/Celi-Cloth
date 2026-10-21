@@ -3494,21 +3494,45 @@ const AdminDashboard = ({
                           </td>
                           <td className="px-8 py-8">
                             <div className="space-y-3">
-                              {order.items?.map((item, idx) => (
-                                <div key={idx} className="flex items-center gap-3">
-                                  <div className="w-10 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                    <img src={item.image} className="w-full h-full object-cover" alt="" />
+                              {order.items?.map((item, idx) => {
+                                const itemColor = item.selectedColor || item.color || item.selected_color;
+                                return (
+                                  <div key={idx} className="flex items-center gap-3">
+                                    <div className="w-10 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                                      {item.image ? (
+                                        <img src={item.image} className="w-full h-full object-cover" alt="" />
+                                      ) : (
+                                        <div className="w-full h-full bg-gray-100" />
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] font-black text-black uppercase">
+                                        {item.name}
+                                      </p>
+                                      <div className="flex items-center flex-wrap gap-1.5 text-[9px] text-gray-400 font-bold uppercase mt-0.5">
+                                        <span>Size: {item.selectedSize || "N/A"}</span>
+                                        <span>·</span>
+                                        <span className="flex items-center gap-1">
+                                          Color:
+                                          {itemColor ? (
+                                            <>
+                                              <span
+                                                className="inline-block w-2.5 h-2.5 rounded-sm border border-gray-300 flex-shrink-0"
+                                                style={{ backgroundColor: itemColor }}
+                                              />
+                                              <span className="text-gray-700">{itemColor}</span>
+                                            </>
+                                          ) : (
+                                            "N/A"
+                                          )}
+                                        </span>
+                                        <span>·</span>
+                                        <span>{item.quantity || 1} UNIT</span>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <p className="text-[10px] font-black text-black uppercase">
-                                      {item.name}
-                                    </p>
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase">
-                                      {item.selectedSize} / {item.quantity} UNIT
-                                    </p>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </td>
                           <td className="px-8 py-8">
@@ -3668,6 +3692,58 @@ const AdminDashboard = ({
                         </p>
                       )}
                     </div>
+                    {/* Ordered Items */}
+                    {order.items && order.items.length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-gray-100">
+                        <p className="text-[9px] font-black uppercase tracking-wider text-gray-400">
+                          Ordered Items ({order.items.length})
+                        </p>
+                        <div className="space-y-2">
+                          {order.items.map((item, idx) => {
+                            const itemColor = item.selectedColor || item.color || item.selected_color;
+                            return (
+                              <div key={idx} className="flex items-center gap-2.5 bg-gray-50/70 p-2 rounded-lg border border-gray-100">
+                                <div className="w-9 h-11 bg-white rounded overflow-hidden flex-shrink-0 border border-gray-100">
+                                  {item.image ? (
+                                    <img src={item.image} className="w-full h-full object-cover" alt="" />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-100" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[10px] font-black text-black uppercase truncate">
+                                    {item.name}
+                                  </p>
+                                  <div className="flex items-center flex-wrap gap-1 text-[9px] text-gray-400 font-bold uppercase mt-0.5">
+                                    <span>Size: {item.selectedSize || "N/A"}</span>
+                                    <span>·</span>
+                                    <span className="flex items-center gap-1">
+                                      Color:
+                                      {itemColor ? (
+                                        <>
+                                          <span
+                                            className="inline-block w-2.5 h-2.5 rounded-sm border border-gray-300 flex-shrink-0"
+                                            style={{ backgroundColor: itemColor }}
+                                          />
+                                          <span className="text-gray-700">{itemColor}</span>
+                                        </>
+                                      ) : (
+                                        "N/A"
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <p className="text-[10px] font-black text-black">
+                                    x{item.quantity || 1}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     {order.add_ons && order.add_ons.length > 0 && (
                       <div className="space-y-1">
                         {order.add_ons.map((addon, idx) => (
@@ -3827,9 +3903,24 @@ const AdminDashboard = ({
                                 </div>
                                 <div>
                                   <p className="text-xs font-black uppercase text-black">{item.name}</p>
-                                  <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">
-                                    Size: {item.selectedSize || "N/A"} / Color: {item.selectedColor || "N/A"}
-                                  </p>
+                                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase mt-0.5">
+                                    <span>Size: {item.selectedSize || "N/A"}</span>
+                                    <span>/</span>
+                                    <span className="flex items-center gap-1">
+                                      Color:
+                                      {(item.selectedColor || item.color || item.selected_color) ? (
+                                        <>
+                                          <span
+                                            className="inline-block w-2.5 h-2.5 rounded-sm border border-gray-300 flex-shrink-0"
+                                            style={{ backgroundColor: item.selectedColor || item.color || item.selected_color }}
+                                          />
+                                          <span className="text-gray-700">{item.selectedColor || item.color || item.selected_color}</span>
+                                        </>
+                                      ) : (
+                                        "N/A"
+                                      )}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                               <div className="text-right">
@@ -6617,11 +6708,14 @@ export default function App() {
                 Order Manifest
               </p>
               <div className="space-y-1">
-                {orderSuccess.items.map((item, idx) => (
-                  <p key={idx} className="text-[11px] font-bold">
-                    {item.name} ({item.selectedSize}) x{item.quantity}
-                  </p>
-                ))}
+                {orderSuccess.items.map((item, idx) => {
+                  const itemColor = item.selectedColor || item.color || item.selected_color;
+                  return (
+                    <p key={idx} className="text-[11px] font-bold">
+                      {item.name} ({item.selectedSize}{itemColor ? ` / ${itemColor}` : ""}) x{item.quantity}
+                    </p>
+                  );
+                })}
               </div>
               {orderSuccess.add_ons && orderSuccess.add_ons.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">

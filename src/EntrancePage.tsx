@@ -134,7 +134,7 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
 
   return (
     <aside
-      className={`fixed inset-0 z-[99999] select-none text-white overflow-hidden flex flex-col justify-between p-4 sm:p-6 md:p-8 lg:p-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`fixed inset-0 z-[99999] select-none text-white overflow-hidden flex flex-col justify-between p-4 sm:p-6 md:p-8 lg:p-10 font-['Inter',sans-serif] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isExiting
           ? "opacity-0 scale-105 pointer-events-none filter blur-sm"
           : "opacity-100 scale-100"
@@ -173,7 +173,7 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
       ───────────────────────────────────────────────────────────── */}
       <header className="relative z-20 w-full flex items-center justify-between shrink-0 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
         {/* Brand Stamp */}
-        <div className="flex items-center gap-2 tracking-[0.25em] text-[10px] sm:text-xs font-mono uppercase text-white font-semibold">
+        <div className="flex items-center gap-2 tracking-[0.25em] text-[10px] sm:text-xs uppercase text-white font-semibold">
           <span className="w-1.5 h-1.5 bg-white inline-block"></span>
           <span>FÉLICITÉ</span>
           <span className="text-white/60 hidden xs:inline">// ARCHIVE '26</span>
@@ -182,7 +182,7 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
         {/* Audio Toggle Button */}
         <button
           onClick={toggleMute}
-          className="flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 border border-white/40 hover:border-white bg-black/20 hover:bg-white text-white hover:text-black backdrop-blur-md transition-all duration-200 text-[10px] sm:text-xs tracking-[0.2em] font-mono uppercase cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 border border-white/40 hover:border-white bg-black/20 hover:bg-white text-white hover:text-black backdrop-blur-md transition-all duration-200 text-[10px] sm:text-xs tracking-[0.2em] uppercase cursor-pointer"
           aria-label={isMuted ? "Unmute entrance video" : "Mute entrance video"}
         >
           {isMuted ? (
@@ -190,7 +190,7 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
           ) : (
             <Volume2 className="w-3.5 h-3.5 animate-pulse" />
           )}
-          <span className="font-medium">
+          <span className="font-semibold">
             {isMuted ? "SOUND OFF" : "SOUND ON"}
           </span>
         </button>
@@ -202,20 +202,17 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
       <main className="relative z-20 w-full flex-1 flex flex-col items-center justify-center my-auto py-4 text-center px-2">
         <div className="flex flex-col items-center max-w-4xl mx-auto w-full">
           {/* Season / Collection Kicker */}
-          <div className="text-[10px] sm:text-xs md:text-sm font-mono tracking-[0.3em] sm:tracking-[0.45em] text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] uppercase mb-2 sm:mb-3">
+          <div className="text-[10px] sm:text-xs md:text-sm tracking-[0.3em] sm:tracking-[0.45em] text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] uppercase mb-2 sm:mb-3 font-semibold">
             [ AUTUMN / WINTER 2026 ]
           </div>
 
-          {/* Fluid Responsive Brand Wordmark using high-fashion streetwear Condensed font */}
-          <h1
-            className="font-condensed text-[clamp(2.8rem,9.5vw,8.5rem)] font-black tracking-[0.12em] sm:tracking-[0.18em] uppercase text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.85)] leading-none my-1 sm:my-2 pl-[0.12em] sm:pl-[0.18em]"
-            style={{ fontFamily: "'Barlow Condensed', 'Oswald', sans-serif" }}
-          >
+          {/* Fluid Responsive Brand Wordmark using Inter font */}
+          <h1 className="text-[clamp(2.8rem,9.5vw,8.5rem)] font-black tracking-[0.12em] sm:tracking-[0.18em] uppercase text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.85)] leading-none my-1 sm:my-2 pl-[0.12em] sm:pl-[0.18em]">
             FELICITÉ
           </h1>
 
           {/* Clean Sub-tagline */}
-          <p className="text-[10px] sm:text-xs md:text-sm tracking-[0.25em] sm:tracking-[0.35em] text-white/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] uppercase font-mono mt-1 sm:mt-2 max-w-lg">
+          <p className="text-[10px] sm:text-xs md:text-sm tracking-[0.25em] sm:tracking-[0.35em] text-white/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] uppercase mt-1 sm:mt-2 max-w-lg font-medium">
             CONTEMPORARY LUXURY WEAR
           </p>
 
@@ -231,10 +228,7 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
               className="relative flex items-center justify-center gap-3 sm:gap-4 px-8 sm:px-14 md:px-18 py-3.5 sm:py-4.5 md:py-5 border-2 border-white bg-black/25 hover:bg-white text-white hover:text-black backdrop-blur-md transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.6)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-white"
               aria-label="Start and enter Félicité"
             >
-              <span
-                className="font-condensed font-black text-base sm:text-xl md:text-2xl tracking-[0.3em] sm:tracking-[0.4em] uppercase pl-[0.3em] sm:pl-[0.4em]"
-                style={{ fontFamily: "'Barlow Condensed', 'Oswald', sans-serif" }}
-              >
+              <span className="font-black text-base sm:text-xl md:text-2xl tracking-[0.3em] sm:tracking-[0.4em] uppercase pl-[0.3em] sm:pl-[0.4em]">
                 START
               </span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 -ml-1.5 transition-transform duration-300 group-hover:translate-x-1" />
@@ -242,7 +236,7 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
           </div>
 
           {/* Interactive Keyboard / Click Hint */}
-          <div className="mt-4 sm:mt-6 text-[9px] sm:text-[11px] font-mono tracking-[0.25em] text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] uppercase">
+          <div className="mt-4 sm:mt-6 text-[9px] sm:text-[11px] tracking-[0.25em] text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] uppercase font-semibold">
             CLICK OR PRESS [ENTER]
           </div>
         </div>
@@ -251,7 +245,7 @@ export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
       {/* ─────────────────────────────────────────────────────────────
           4. BOTTOM BAR (CLEAN, MINIMAL, NON-COLLIDING)
       ───────────────────────────────────────────────────────────── */}
-      <footer className="relative z-20 w-full flex items-center justify-between shrink-0 text-[9px] sm:text-[11px] font-mono tracking-[0.2em] text-white/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] uppercase">
+      <footer className="relative z-20 w-full flex items-center justify-between shrink-0 text-[9px] sm:text-[11px] tracking-[0.2em] text-white/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] uppercase font-semibold">
         <div className="flex items-center gap-2">
           <span>PARIS</span>
           <span className="text-white/40">·</span>
