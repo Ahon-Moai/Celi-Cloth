@@ -5,8 +5,7 @@ interface EntrancePageProps {
   onEnter: () => void;
 }
 
-const VIDEO_URL =
-  "https://ik.imagekit.io/t1q0n1ovm/SQ4.mp4?updatedAt=1791991278161";
+const VIDEO_URL = "https://ik.imagekit.io/ecrp2tqh2/SQ4.mp4";
 
 export const EntrancePage: React.FC<EntrancePageProps> = ({ onEnter }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
